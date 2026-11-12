@@ -132,59 +132,402 @@ function autoExpandFirstMentionAcronyms(rawText = '') {
   return { updated, expandedCount };
 }
 
-function adjustTextToHandwrittenTarget(rawText = '', targetWords = 1850) {
-  let clean = rawText
-    .replace(
-      /\bEn\s+lo\s+que\s+respecta\s+a\s+la\s+regulaci[oó]n\s+espec[ií]fica\s+de\b/gi,
-      'Respecto a'
+// =========================================================================
+// MOTOR NARRATIVO: GENERADOR AUTOMÁTICO DE HISTORIAS LÓGICAS Y CUENTOS
+// =========================================================================
+function buildNarrativeStoryForTopic(topicObj, rawText = '', existingStory = null) {
+  const id = topicObj?.id || 'E1';
+  const title = topicObj?.title || 'Intervención Social en la Comunidad de Madrid';
+  const lawUpdate =
+    topicObj?.lawUpdate ||
+    'Ley 12/2022 de Servicios Sociales de la CAM y Decreto 51/2023 (HSUe)';
+  const epigraphs = extractSubEpigraphsFromTitle(title);
+
+  const combinedSource = `${title} ${lawUpdate} ${rawText.slice(0, 6000)}`;
+  const lawsFound = Array.from(
+    new Set(
+      combinedSource.match(
+        /\b(?:Ley\s+Org[aá]nica\s+\d+\/\d{4}|Ley\s+\d+\/\d{4}|Real\s+Decreto(?:-Ley)?\s+\d+\/\d{4}|Decreto\s+\d+\/\d{4}|Orden\s+\d+\/\d{4}|Art(?:[ií]culo|\.)\s*\d+(?:\.\d+)?)/gi
+      ) || [
+        'Art. 9.2 CE',
+        'Ley 12/2022',
+        'Art. 16.2',
+        'Art. 40',
+        'Art. 69',
+        'Decreto 51/2023',
+      ]
     )
-    .replace(
-      /\bCabe\s+destacar\s+de\s+manera\s+especial\s+que\b/gi,
-      'Destaca que'
-    )
-    .replace(
-      /\bResulta\s+imprescindible\s+poner\s+de\s+manifiesto\s+que\b/gi,
-      'Es clave que'
-    )
-    .replace(
-      /\bDesde\s+una\s+perspectiva\s+eminentemente\s+pr[aá]ctica\s+y\s+metodol[oó]gica\b/gi,
-      'Metodológicamente'
+  ).slice(0, 10);
+
+  // Detectar Caja Mnemotécnica real (9.1 o 10.1 en PDF Extenso: P-R-O-T-E-C-T, A-R-O-P-E, B-I-E-N-E-S-T-A-R, etc.)
+  const cajaMatch = rawText.match(
+    /(?:(?:9|10)\.1\.\s*(?:Recursos\s+Mnemot[eé]cnicos|Mnemotecnias\s+Magistrales)|ACR[OÓ]NIMO\s+MAESTRO)[\s\S]*?(?=\b(?:9|10)\.2\.|DESARROLLO\s+COMPLEMENTARIO|(?:\d+\.\s*)?S[IÍ]NTESIS\s+METODOL[OÓ]GICA|$)/i
+  );
+  const extractedRule = cajaMatch
+    ? cajaMatch[0]
+        .replace(/COMUNIDAD\s+DE\s+MADRID[^\n]*/gi, ' ')
+        .replace(/Edici[oó]n\s+Maestra[^\n]*/gi, ' ')
+        .replace(/P[aá]gina\s+\d+/gi, ' ')
+        .replace(/\$([^$]+)\$/g, '$1')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 850)
+    : existingStory?.logicHook ||
+      `Sigue la escalera lógica: 1.º Puerta de Entrada (Art. 16.2 TS exclusivo) ➔ 2.º Carpeta Digital (Decreto 51/2023 HSUe) ➔ 3.º Reloj de 10 días hábiles (Art. 40 PIIS) ➔ 4.º Llave Maestra (Art. 69 Informe Social prescriptor).`;
+
+  // Si el PDF subido es un documento de "Narración en 5 Actos", guardar su narrativa vivencial real en la pestaña 07
+  if (/ACTO\s+I\s*:/i.test(rawText) && /ACTO\s+II\s*:/i.test(rawText)) {
+    const brujulaMatch = rawText.match(
+      /(?:BR[UÚ]JULA\s+DEL\s+OPOSITOR|00\s*[—–-]\s*05\s*min:)[\s\S]*?(?=ACTO\s+I\s*:\s*[A-ZÁÉÍÓÚÑ]{2,})/
+    );
+    const actsMatch = rawText.match(/ACTO\s+I\s*:\s*[A-ZÁÉÍÓÚÑ]{2,}[\s\S]*$/);
+    const cleanActs = stripNonEssaySectionsFromPdf(
+      actsMatch ? actsMatch[0] : rawText
     );
 
-  const wordsArr = clean.trim().split(/\s+/);
-  if (wordsArr.length > targetWords + 100) {
-    const paragraphs = clean.split('\n\n');
-    const keptParagraphs = [];
-    let runningWords = 0;
-
-    for (let i = 0; i < paragraphs.length; i++) {
-      const p = paragraphs[i];
-      const pWords = p.trim().split(/\s+/).length;
-      const isHeadingOrConclusion =
-        /^(\d+\.|TEMA MAGISTRAL|MARCO NORMATIVO|En conclusi[oó]n)/i.test(
-          p.trim()
-        );
-
-      if (isHeadingOrConclusion || runningWords + pWords <= targetWords) {
-        keptParagraphs.push(p);
-        runningWords += pWords;
-      } else {
-        const sentences = p.split(/(?<=[.?!])\s+/);
-        if (sentences.length > 2) {
-          const condensed = `${sentences[0]} ${
-            sentences[sentences.length - 1]
-          }`;
-          keptParagraphs.push(condensed);
-          runningWords += condensed.split(/\s+/).length;
-        }
-      }
-    }
-    clean = keptParagraphs.join('\n\n');
-  } else if (wordsArr.length < 1650) {
-    clean += `\n\nSÍNTESIS APLICADA Y CONEXIÓN INTERINSTITUCIONAL (AJUSTE A EXTENSIÓN DE EXAMEN 80 MINUTOS)\nEn la práctica operativa de los Servicios Sociales de la Comunidad de Madrid, del Servicio Madrileño de Salud (en adelante, SERMAS) y del Ayuntamiento de Madrid, la aplicación de este bloque normativo exige garantizar la trazabilidad diagnóstica en la Historia Social Única, la fundamentación técnica mediante el Informe Social y la coordinación interadministrativa en el marco del Plan Individual de Atención Social (en adelante, PIAS), evaluando periódicamente el impacto mediante indicadores cuantitativos de cobertura y tiempos medios de respuesta conforme a la Ley 39/2015, de 1 de octubre.`;
+    return {
+      id: `story-${id}`,
+      topicId: id,
+      title: `[${id}] ${title} (Guía Narrativa Vivencial en 5 Actos)`,
+      protagonist: 'Narración Mnemotécnica Oficial en 5 Actos',
+      lawsChain: lawsFound.join(' ➔ '),
+      storyText: cleanActs,
+      logicHook: cajaMatch
+        ? extractedRule
+        : brujulaMatch
+        ? brujulaMatch[0].replace(/\s+/g, ' ').trim()
+        : extractedRule,
+      epigraphOrder:
+        'Acto I ➔ Acto II ➔ Acto III ➔ Acto IV (Ley 12/2022 y Red CAM) ➔ Acto V (Bioética Brody/Payton y Cierre al Tribunal)',
+    };
   }
 
-  return clean;
+  // Si ya teníamos una Narración en 5 Actos guardada para este tema y ahora subimos el PDF Extenso, conservar los 5 Actos y añadirle el Acrónimo Maestro del Extenso
+  if (
+    existingStory &&
+    existingStory.protagonist === 'Narración Mnemotécnica Oficial en 5 Actos'
+  ) {
+    return {
+      ...existingStory,
+      lawsChain: lawsFound.join(' ➔ '),
+      logicHook: extractedRule,
+    };
+  }
+
+  const protagonistByArea = id.startsWith('G')
+    ? 'Clara, una ciudadana que acude por primera vez a la Administración autonómica buscando amparo constitucional'
+    : /52|adiccion/i.test(id + title)
+    ? 'Marco, un hombre en situación de calle con adicción activa que empieza su recuperación sin exigencias imposibles'
+    : /53|inmigra|asilo/i.test(id + title)
+    ? 'Amina, recién llegada a Madrid en situación de vulnerabilidad administrativa que necesita regularización y acogida'
+    : /menor|infancia|familia/i.test(title)
+    ? 'Lucas (9 años) y su familia, que necesitan apoyo socioeducativo y protección integral'
+    : /dependencia|mayor|discapacidad/i.test(title)
+    ? 'Doña Carmen (82 años), que empieza a perder autonomía en su domicilio y necesita apoyos graduados'
+    : 'Elena, vecina de Madrid que atraviesa una crisis sobrevenida de vulnerabilidad social';
+
+  const ep1 = epigraphs[0] || 'el marco conceptual y constitucional';
+  const ep2 = epigraphs[1] || 'la red de dispositivos y competencias';
+  const ep3 = epigraphs[2] || 'el procedimiento metodológico y prestaciones';
+  const ep4 =
+    epigraphs.slice(3).join(' y ') ||
+    'la coordinación interinstitucional y evaluación';
+
+  const storyText = `📖 EL CUENTO LÓGICO DE [${id}]:
+Imagina a ${protagonistByArea}. Para que no se te olvide ningún epígrafe ni ninguna ley en el examen, sigue su recorrido por estas 4 puertas conectadas por pura lógica de causa y efecto:
+
+🚪 1.ª PUERTA · EL ESCUDO DE DERECHOS (${ep1.toUpperCase()}):
+Nada más empezar la historia, ${protagonistByArea.split(',')[0]} no pide caridad ni beneficencia decimonónica: lleva en la mano un escudo grabado con su derecho subjetivo (${lawsFound.slice(0, 3).join(', ')}). La lógica es simple: la Administración existe para remover obstáculos (Art. 9.2 CE) y proteger la dignidad (Art. 10.1 CE), pasando del antiguo control social a la atención centrada en la persona.
+
+🔑 2.ª PUERTA · LA RECEPCIÓN Y EL MAPA DE RECURSOS (${ep2.toUpperCase()}):
+Al cruzar el umbral del Centro de Servicios Sociales (Atención Social Primaria), la ley prohíbe que le atienda cualquier perfil al azar: el Art. 16.2 de la Ley 12/2022 establece con reserva legal exclusiva que su Profesional de Referencia eres tú, la Trabajadora Social. Tú abres su Historia Social Única electrónica (Decreto 51/2023 - HSUe) para que sanidad (SERMAS) y servicios sociales lean el mismo libro sin hacerle repetir su vida, y activas la red específica de este tema (${ep2}).
+
+⏱️ 3.ª PUERTA · EL RELOJ DE LOS 10 DÍAS Y LA LLAVE PRESCRIPTORA (${ep3.toUpperCase()}):
+Una vez diagnosticada la situación con tus escalas técnicas, se activa un reloj en la pared: el Art. 40 de la Ley 12/2022 te da exactamente 10 días hábiles para pactar con la persona su hoja de ruta (PIAS / PIIS), respetando su autodeterminación (Ley 8/2021 y AMAPAD Ley 1/2023). Para abrir los recursos especializados de "${ep3}", necesitas una llave legal que solo tú puedes firmar: el Informe Social prescriptor (Art. 69 Ley 12/2022).
+
+🌉 4.ª PUERTA · EL PUENTE EN RED Y EL CIERRE (${ep4.toUpperCase()}):
+Ningún caso se resuelve en una isla. En el capítulo final, conectas Atención Primaria con Atención Especializada y el SERMAS bajo los plazos de la Ley 39/2015 (LPAC), cerrando la historia a los 3 y 6 meses midiendo con indicadores reales si la vida de nuestro protagonista ha mejorado.`;
+
+  return {
+    id: `story-${id}`,
+    topicId: id,
+    title: `[${id}] ${title}`,
+    protagonist: protagonistByArea.split(',')[0],
+    lawsChain: lawsFound.join(' ➔ '),
+    storyText,
+    logicHook: extractedRule,
+    epigraphOrder: epigraphs.map((e, i) => `Paso ${i + 1}: ${e}`).join(' ➔ '),
+  };
+}
+
+// =========================================================================
+// VERIFICADOR DE COHERENCIA SEMÁNTICA PDF <-> DATAOPOSICIONES.JS (TRIBUNAL)
+// =========================================================================
+function findBestMatchingTopicByContent(rawText = '', catalog = OFFICIAL_CAM_TOPICS) {
+  const sample = rawText.slice(0, 3500).toLowerCase();
+  let bestTopic = null;
+  let bestScore = 0;
+
+  catalog.forEach((t) => {
+    const cleanTitle = t.title
+      .replace(/^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i, '')
+      .toLowerCase();
+    const keywords = cleanTitle
+      .split(/[\s,.:;()/]+/)
+      .filter(
+        (w) =>
+          w.length > 4 &&
+          ![
+            'social',
+            'sociales',
+            'madrid',
+            'comunidad',
+            'atención',
+            'intervención',
+            'personas',
+            'marco',
+            'sistema',
+          ].includes(w)
+      );
+
+    let hits = 0;
+    keywords.forEach((kw) => {
+      const rgx = new RegExp(kw.slice(0, Math.max(5, kw.length - 2)), 'i');
+      if (rgx.test(sample)) hits += 2;
+    });
+
+    if (hits > bestScore) {
+      bestScore = hits;
+      bestTopic = t;
+    }
+  });
+
+  return { bestTopic, bestScore };
+}
+
+function verifyTopicContentCoherence(
+  text = '',
+  topicObj = null,
+  catalog = OFFICIAL_CAM_TOPICS
+) {
+  if (!topicObj) {
+    return {
+      isCoherent: true,
+      matchScorePct: 100,
+      alertMsg: null,
+      suggestedTopic: null,
+    };
+  }
+
+  const cleanOfficialTitle = topicObj.title.replace(
+    /^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i,
+    ''
+  );
+  const titleKeywords = cleanOfficialTitle
+    .toLowerCase()
+    .split(/[\s,.:;()/]+/)
+    .filter(
+      (w) =>
+        w.length > 4 &&
+        ![
+          'trabajo',
+          'social',
+          'sociales',
+          'comunidad',
+          'madrid',
+          'atención',
+          'intervención',
+          'marco',
+          'normativo',
+          'personas',
+          'situación',
+          'papel',
+          'profesional',
+          'funciones',
+          'general',
+          'específico',
+        ].includes(w)
+    );
+
+  const lowerText = text.slice(0, 5000).toLowerCase();
+  let matchedKw = 0;
+
+  titleKeywords.forEach((kw) => {
+    const stem = kw.slice(0, Math.max(5, kw.length - 2));
+    if (lowerText.includes(stem)) matchedKw++;
+  });
+
+  const matchScorePct =
+    titleKeywords.length > 0
+      ? Math.round((matchedKw / titleKeywords.length) * 100)
+      : 100;
+
+  const { bestTopic, bestScore } = findBestMatchingTopicByContent(text, catalog);
+  const isCoherent = matchScorePct >= 35;
+
+  let alertMsg = null;
+  if (!isCoherent) {
+    alertMsg = `🚨 DISCORDANCIA TEMÁTICA DETECTADA: Este PDF está asignado a [${topicObj.id}] "${topicObj.title}", pero su contenido NO desarrolla las palabras clave de este epígrafe oficial de dataOposiciones.js (${matchScorePct}% de afinidad).`;
+    if (bestTopic && bestTopic.id !== topicObj.id && bestScore >= 2) {
+      alertMsg += ` Según el contenido del documento, corresponde realmente a [${bestTopic.id}] "${bestTopic.title}".`;
+    }
+  }
+
+  return {
+    isCoherent,
+    matchScorePct,
+    alertMsg,
+    suggestedTopic:
+      !isCoherent && bestTopic && bestTopic.id !== topicObj.id
+        ? bestTopic
+        : null,
+  };
+}
+
+function stripNonEssaySectionsFromPdf(rawText = '') {
+  let clean = rawText
+    // 1. Limpiar cabeceras y pies de página de todos los temas (Narración y Tratado Extenso)
+    .replace(
+      /TEMA\s+\d+\s*:[^\n]{5,110}?EJERCICIO\s+2\s*\(DESARROLLO\s+90\s+MIN\)\s*COMUNIDAD\s+DE\s+MADRID\s*[•·—–-]?\s*SUBGRUPO\s+A2(?:\s*Cr[oó]nica\s+Narrativa\s+de\s+Estudio\s+y\s+Redacci[oó]n\s+R[aá]pida\s*(?:P[aá]gina\s+\d+)?)?/gi,
+      ' '
+    )
+    .replace(
+      /Cr[oó]nica\s+Narrativa\s+de\s+Estudio\s+y\s+Redacci[oó]n\s+R[aá]pida\s*(?:P[aá]gina\s+\d+)?/gi,
+      ' '
+    )
+    .replace(
+      /EJERCICIO\s+2\s*[—–·•-]?\s*DESARROLLO\s+EN\s+90\s+MINUTOS\s*\(ESCALA\s+ASISTENTES\s+SOCIALES\s+A2\s+CM\)\s*(?:TEMA\s+\d+:\s+NARRACI[OÓ]N\s+MNEMOT[EÉ]CNICA\s+INTEGRAL)?/gi,
+      ' '
+    )
+    .replace(
+      /OPOSICI[OÓ]N\s+COMUNIDAD\s+DE\s+MADRID\s*[•·—–-]?\s*ESCALA\s+ASISTENTES\s+SOCIALES\s*\(GRUPO\s+A,\s*SUBGRUPO\s+A2\)/gi,
+      ' '
+    )
+    .replace(
+      /GU[IÍ]A\s+(?:NARRATIVA\s+VIVENCIAL\s+EN\s+5\s+ACTOS\s+PARA\s+RECORDAR\s+Y\s+REDACTAR\s+EL\s+EJERCICIO\s+2\s+EN\s+90\s+MINUTOS|MAESTRA\s+DE\s+DESARROLLO\s+ESCRITO\s+EN\s+90\s+MINUTOS\s*[•·—–-]?\s*M[EÉ]TODO\s+NARRATIVO\s+INTEGRAL)/gi,
+      ' '
+    )
+    .replace(
+      /Comunidad\s+de\s+Madrid\s*[•·—–-]?\s*Orden\s+1049\/2026\s*[•·—–-]?\s*M[eé]todo\s+de\s+Materia\s+[UÚ]nica\s+Doble\s+Salida\s*(?:P[aá]gina\s+\d+)?/gi,
+      ' '
+    )
+    .replace(
+      /COMUNIDAD\s+DE\s+MADRID[\s\S]{0,160}?LITERALIDAD/gi,
+      ' '
+    )
+    .replace(
+      /COMUNIDAD\s+DE\s+MADRID\s*[•·—–-]?\s*CONVOCATORIA\s+DE\s+ACCESO\s+LIBRE\s+2026[\s\S]{0,140}?399\s+PLAZAS/gi,
+      ' '
+    )
+    .replace(
+      /TRATADO\s+EXTENSO\s+DE\s+CONSULTA,\s+LITERALIDAD\s+NORMATIVA[\s\S]{0,120}?CASO\s+PR[AÁ]CTICO\)/gi,
+      ' '
+    )
+    .replace(
+      /Edici[oó]n\s+Maestra\s+de\s+Alto\s+Rendimiento[\s\S]{0,120}?P[aá]gina\s+\d+/gi,
+      ' '
+    )
+    .replace(
+      /OPOSICIONES\s+TRABAJO\s+SOCIAL\s+CAM\s+2026[\s\S]{0,180}?Escala\s+de\s+Asistentes\s+Sociales\s*\(Subgrupo\s+A2\)/gi,
+      ' '
+    )
+    .replace(
+      /OPOSICIONES\s+A2\s+TRABAJO\s+SOCIAL\s+COMUNIDAD\s+DE\s+MADRID\s*[—–-]*\s*TEMARIO\s+INTEGRAL\s+DE\s+EXCELENCIA/gi,
+      ' '
+    )
+    .replace(
+      /OPOSICIONES\s+A2\s+TRABAJO\s+SOCIAL\s+CAM\s*\|\s*MANUAL\s+MASTER\s+TEMA\s+\d+\s+P[aá]g\.\s+\d+/gi,
+      ' '
+    )
+    .replace(
+      /OPOSICIONES\s+AL\s+CUERPO\s+DE\s+T[EÉ]CNICOS\s+Y\s+DIPLOMADOS\s+ESPECIALISTAS\s*\(SUBGRUPO\s+A2\)\s*ESCALA\s+DE\s+ASISTENTES\s+SOCIALES\s+DE\s+LA\s+COMUNIDAD\s+DE\s+MADRID\s*[—–-]*\s*EDICI[OÓ]N\s+EXTENDIDA/gi,
+      ' '
+    )
+    .replace(
+      /Comunidad\s+de\s+Madrid\s*[—–-]+\s*Escala\s+de\s+Asistentes\s+Sociales\s*\(Subgrupo\s+A2\)(?:\s*[—–-]+\s*Edici[oó]n\s+2026(?:\s+P[aá]g\.\s+\d+)?)?/gi,
+      ' '
+    )
+    .replace(/P[aá]gina\s+\d+(\s+de\s+\d+)?/gi, ' ');
+
+  // 2. Eliminar "BRÚJULA DEL OPOSITOR" o tabla cronometrada "00-05 min: Esquema en sucio..." hasta el título en MAYÚSCULAS "ACTO I:" o "1."
+  clean = clean.replace(
+    /(?:BR[UÚ]JULA\s+DEL\s+OPOSITOR|00\s*[—–-]\s*05\s*min:\s*Esquema)[\s\S]*?(?=(?:ACTO\s+I|CAP[IÍ]TULO\s+I|\b1\.)\s*[:.-]?\s*[A-ZÁÉÍÓÚÑ]{2,}\s+[A-ZÁÉÍÓÚÑ]{2,})/,
+    '\n\n'
+  );
+
+  // Limpiar restos de la Brújula si ya se había subido antes
+  clean = clean.replace(
+    /(?:1\.\s*Templo\s+Constitucional|05\s*[—–-]\s*18\s*min:)[\s\S]*?(?=(?:ACTO\s+I|\b1\.)\s*[:.-]?\s*[A-ZÁÉÍÓÚÑ]{2,}\s+[A-ZÁÉÍÓÚÑ]{2,})/,
+    '\n\n'
+  );
+
+  // 3. Eliminar "FICHA TÉCNICA...", "PRESENTACIÓN DEL MANUAL MAESTRO...", "PARÁMETRO SELECTIVO" e "ÍNDICE..." hasta CAPÍTULO I o ACTO I en mayúsculas
+  clean = clean.replace(
+    /(?:FICHA\s+T[EÉ]CNICA|PRESENTACI[OÓ]N\s+DEL\s+MANUAL\s+MAESTRO|PAR[AÁ]METRO\s+SELECTIVO|[IÍ]NDICE\s+(?:GENERAL\s+)?SISTEM[AÁ]TICO)[\s\S]*?(?=(?:CAP[IÍ]TULO\s+I|ACTO\s+I|\b1\.)\s*[:.-]?\s*[A-ZÁÉÍÓÚÑ]{2,}\s+[A-ZÁÉÍÓÚÑ]{2,})/,
+    '\n\n'
+  );
+
+  // 4. Eliminar Matriz de Caso Práctico, Baterías de Preguntas Tipo Test (Cap VIII o IX) y Caja Mnemotécnica (Cap IX o X) del texto de desarrollo
+  clean = clean.replace(
+    /(?:CAP[IÍ]TULO\s+VIII\s*:\s*|\d+\.\d+\.\s*|\d+\.\s*)?(?:MATRIZ|METODOLOG[IÍ]A)\s+DE\s+RESOLUCI[OÓ]N\s+DE\s+(?:CASO|SUPUESTOS)\s+PR[AÁ]CTICOS?[\s\S]*?(?=CAP[IÍ]TULO\s+(?:VIII|IX|X)\s*:|BLOQUE\s+(?:FINAL|PR[AÁ]CTICO)|(?:\d+\.\s*)?S[IÍ]NTESIS\s+METODOL[OÓ]GICA|$)/gi,
+    '\n\n'
+  );
+
+  clean = clean.replace(
+    /(?:CAP[IÍ]TULO\s+(?:VIII|IX)\s*:\s*|(?:\d+\.\s*)?BLOQUE\s+(?:FINAL|PR[AÁ]CTICO)\s*[I1V\d]*\s*:\s*)(?:BATER[IÍ]A\s+(?:OFICIAL\s+)?DE\s+(?:\d+\s+)?)?PREGUNTAS\s+TIPO\s+TEST[\s\S]*?(?=CAP[IÍ]TULO\s+(?:IX|X)\s*:|BLOQUE\s+PR[AÁ]CTICO\s+II|(\d+\.\s*)?CAJA\s+(?:DE\s+HERRAMIENTAS\s+)?MNEMOT[EÉ]CNICA|DESARROLLO\s+COMPLEMENTARIO|(?:\d+\.\s*)?S[IÍ]NTESIS\s+METODOL[OÓ]GICA|$)/gi,
+    '\n\n'
+  );
+
+  clean = clean.replace(
+    /(?:CAP[IÍ]TULO\s+(?:IX|X)\s*:\s*|(?:\d+\.\s*)?|BLOQUE\s+PR[AÁ]CTICO\s+II\s*:\s*)CAJA\s+(?:DE\s+HERRAMIENTAS\s+MNEMOT[EÉ]CNICAS|MNEMOT[EÉ]CNICA)[\s\S]*?(?=DESARROLLO\s+COMPLEMENTARIO|(?:\d+\.\s*)?S[IÍ]NTESIS\s+METODOL[OÓ]GICA|$)/gi,
+    '\n\n'
+  );
+
+  return clean
+    .replace(/<<|>>/g, '"')
+    .replace(/\$(\d+(?:[.,]\d+)?)\s*\\in\/mes\$/gi, '$1 €/mes')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
+function adjustTextToHandwrittenTarget(rawText = '') {
+  return stripNonEssaySectionsFromPdf(rawText);
+}
+
+function autoEnhanceStructureAndAnalysis(rawText = '', topicId = 'E1') {
+  const topicObj = findTopicAcrossAllCatalogs(topicId);
+  const officialTitle = topicObj
+    ? topicObj.title
+    : 'el epígrafe oficial de la convocatoria';
+
+  // Numerar formalmente SOLO los títulos de ACTO en mayúsculas sin alterar ni una sola palabra de tu redacción
+  let clean = stripNonEssaySectionsFromPdf(rawText)
+    .replace(/\s*ACTO\s+I\s*[:.-]\s*(?=[A-ZÁÉÍÓÚÑ]{2,})/g, '\n\n1. ')
+    .replace(/\s*ACTO\s+II\s*[:.-]\s*(?=[A-ZÁÉÍÓÚÑ]{2,})/g, '\n\n2. ')
+    .replace(/\s*ACTO\s+III\s*[:.-]\s*(?=[A-ZÁÉÍÓÚÑ]{2,})/g, '\n\n3. ')
+    .replace(/\s*ACTO\s+IV\s*[:.-]\s*(?=[A-ZÁÉÍÓÚÑ]{2,})/g, '\n\n4. ')
+    .replace(/\s*ACTO\s+V\s*[:.-]\s*(?=[A-ZÁÉÍÓÚÑ]{2,})/g, '\n\n5. ')
+    .replace(
+      /\s*EP[IÍ]LOGO:\s*CIERRE\s+DE\s+IMPACTO\s+PARA\s+EL\s+TRIBUNAL\s+DE\s+OPOSICIONES\s*/gi,
+      '\n\n6. EPÍLOGO Y SÍNTESIS METODOLÓGICA PARA EL TRIBUNAL DE OPOSICIONES\n'
+    )
+    .replace(/\s*•\s*/g, '\n- ')
+    .replace(/\s+(?=\d+\.\s+[A-ZÁÉÍÓÚÑ]{2,})/g, '\n\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  if (
+    !/SÍNTESIS METODOLÓGICA|EPÍLOGO Y SÍNTESIS|Señores miembros del Tribunal|conclusión magistral/i.test(
+      clean
+    )
+  ) {
+    clean += `\n\n6. SÍNTESIS METODOLÓGICA, DIAGNÓSTICO E INDICADORES DE EVALUACIÓN (CIERRE DE EXCELENCIA)
+En conclusión, cabe destacar que el análisis expuesto sobre "${officialTitle}" exige una intervención interdisciplinar desde la Atención Social Primaria y Especializada regulada por la Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid. Asimismo, y desde la perspectiva del método científico del Trabajo Social, el diagnóstico social recogido en la Historia Social Única (Decreto 51/2023) y en el Informe Social (artículo 69) debe articularse, por consiguiente, con el Plan Individual de Atención Social (en adelante, PIAS, artículo 40 en el plazo de 10 días hábiles) bajo la dirección del Trabajador Social como Profesional de Referencia exclusivo (artículo 16.2).`;
+  }
+
+  const { updated } = autoExpandFirstMentionAcronyms(clean);
+  return updated;
 }
 
 function auditDocumentTextValidity(text = '', topicInput = null) {
@@ -194,6 +537,11 @@ function auditDocumentTextValidity(text = '', topicInput = null) {
       : topicInput;
   const warnings = [];
   const acronymAlerts = [];
+
+  const coherence = verifyTopicContentCoherence(text, topicObj);
+  if (!coherence.isCoherent && coherence.alertMsg) {
+    warnings.push(coherence.alertMsg);
+  }
 
   OBSOLETE_TERMS_DICTIONARY.forEach((rule) => {
     const matches = [...text.matchAll(rule.regex)];
@@ -228,21 +576,21 @@ function auditDocumentTextValidity(text = '', topicInput = null) {
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const handwrittenMinutes = Math.round(wordCount / 23);
-  let pacingStatus = 'ÓPTIMO PARA MANUSCRITO (75-85 min)';
-  if (wordCount > 2000) {
-    pacingStatus = `EXCESO DE EXTENSIÓN (${handwrittenMinutes} min a mano · Riesgo de dejar epígrafes en blanco)`;
-  } else if (wordCount < 1550) {
-    pacingStatus = `CORTO PARA DESARROLLO (${handwrittenMinutes} min a mano · Recomendado 1.750-1.950 pal.)`;
+  let pacingStatus = 'ÓPTIMO PARA EXAMEN DE DESARROLLO (80-90 MIN)';
+  if (wordCount > 2650) {
+    pacingStatus = `EXTENSO (${handwrittenMinutes} min a mano · Pulsa Limpiar Cabeceras para dejar solo el examen)`;
+  } else if (wordCount < 1300) {
+    pacingStatus = `CORTO PARA DESARROLLO (${handwrittenMinutes} min a mano · Recomendado 1.400-2.400 pal.)`;
   }
 
   const articleMentions = (
     text.match(
-      /\b(art[ií]culo|art\.|ley|decreto|orden|real\s+decreto|reglamento|constituci[oó]n|ordenanza|estatuto|baremo)\b/gi
+      /\b(art[ií]culo|art\.|arts\.|ley|decreto|orden|real\s+decreto|reglamento|constituci[oó]n|ordenanza|estatuto|baremo|pacto)\b/gi
     ) || []
   ).length;
   const analyticalConnectors = (
     text.match(
-      /\b(asimismo|por\s+consiguiente|en\s+consecuencia|no\s+obstante|desde\s+la\s+perspectiva|en\s+conclusi[oó]n|cabe\s+destacar|interdisciplinar|diagn[oó]stico|evaluaci[oó]n|indicadores)\b/gi
+      /\b(asimismo|por\s+consiguiente|en\s+consecuencia|no\s+obstante|sin\s+embargo|en\s+cambio|mientras\s+que|a\s+diferencia\s+de|desde\s+la\s+perspectiva|en\s+conclusi[oó]n|cabe\s+destacar|interdisciplinar|multidimensional|estructural|diagn[oó]stico|evaluaci[oó]n|indicadores|paradigma|dicot[oó]mic[ao]|tridimensional|intergeneracional|desafiliaci[oó]n|desmercantilizaci[oó]n|desestratificaci[oó]n|desfamiliarizaci[oó]n|vulnerabilidad|exclusi[oó]n|derecho\s+subjetivo|deliberaci[oó]n\s+bio[eé]tica|inviolable|preceptivo)\b/gi
     ) || []
   ).length;
   const numberedHeadings = (text.match(/^\s*(\d+\.|[A-Z]\)|-\s+)/gm) || [])
@@ -262,7 +610,9 @@ function auditDocumentTextValidity(text = '', topicInput = null) {
       .filter((w) => w.length > 4);
     if (
       keyWords.length === 0 ||
-      keyWords.some((kw) => lowerText.includes(kw))
+      keyWords.some((kw) =>
+        lowerText.includes(kw.slice(0, Math.max(5, kw.length - 2)))
+      )
     ) {
       coveredCount++;
     } else {
@@ -282,11 +632,11 @@ function auditDocumentTextValidity(text = '', topicInput = null) {
   const analitico15 = Math.min(1.5, (analyticalConnectors / 8) * 1.5);
 
   let expresionBase =
-    wordCount >= 1650 && wordCount <= 2050
+    wordCount >= 1350 && wordCount <= 3500
       ? 1.0
-      : wordCount > 2050
-      ? 0.85
-      : Math.min(1.0, (wordCount / 1650) * 1.0);
+      : wordCount > 3500
+      ? 0.95
+      : Math.min(1.0, (wordCount / 1350) * 1.0);
   if (acronymAlerts.length > 0) {
     expresionBase = Math.max(0.2, expresionBase - acronymAlerts.length * 0.15);
   }
@@ -294,14 +644,17 @@ function auditDocumentTextValidity(text = '', topicInput = null) {
   const presentacion5 = Math.min(0.5, (numberedHeadings / 5) * 0.5);
 
   let rawFinal = conocimientos70 + analitico15 + expresion10 + presentacion5;
-  if (warnings.length > 0) rawFinal -= warnings.length * 1.25;
+  if (!coherence.isCoherent) rawFinal -= 2.5;
+  if (warnings.length > (coherence.isCoherent ? 0 : 1)) {
+    rawFinal -= (warnings.length - (coherence.isCoherent ? 0 : 1)) * 1.25;
+  }
   const finalScore = Math.max(0, Math.min(10, rawFinal)).toFixed(2);
 
   let ej1TestQualityScore =
     3.5 +
     Math.min(4.5, (articleMentions / 12) * 4.5) +
     (coveragePct / 100) * 2.0;
-  if (warnings.length > 0) ej1TestQualityScore -= warnings.length * 1.5;
+  if (!coherence.isCoherent) ej1TestQualityScore -= 3.0;
   ej1TestQualityScore = Math.max(0, Math.min(10, ej1TestQualityScore)).toFixed(
     2
   );
@@ -321,11 +674,14 @@ function auditDocumentTextValidity(text = '', topicInput = null) {
     ej1TestQualityScore,
     finalScore,
     warnings,
+    coherence,
+    officialTitle: topicObj?.title || 'Sin epígrafe asignado',
     convocatoriaLabel: getConvocatoriaLabelByTopicId(topicObj?.id || ''),
-    validityStatus:
-      warnings.length === 0
-        ? 'VIGENCIA VERIFICADA (BOCM/BOAM 2026)'
-        : 'ALERTA: NORMATIVA DEROGADA',
+    validityStatus: !coherence.isCoherent
+      ? '❌ ERROR: CONTENIDO NO ACORDE AL TÍTULO OFICIAL'
+      : warnings.length === 0
+      ? 'VIGENCIA Y TEMÁTICA VERIFICADAS (BOCM/BOAM 2026)'
+      : 'ALERTA: NORMATIVA DEROGADA',
     lastAuditedAt: new Date().toLocaleTimeString('es-ES', {
       hour: '2-digit',
       minute: '2-digit',
@@ -351,65 +707,271 @@ function autoFixObsoleteLawsInText(rawText) {
   return { updated, countFixed };
 }
 
+function getDomainSpecificKnowledgeForTopic(topicObj) {
+  const full = `${topicObj.id} ${topicObj.title} ${topicObj.lawUpdate || ''}`.toLowerCase();
+
+  if (/sanitari|salud|hospital|sermas|atenci[oó]n primaria de salud|mental/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Ley 14/1986 General de Sanidad, Ley 16/2003 de Cohesión y Calidad del SNS, Ley 12/2001 de Ordenación Sanitaria de la Comunidad de Madrid (LOSCAM), Decreto 246/2023 de estructura del SERMAS y Cartera de Servicios de Trabajo Social Sanitario de la CAM.',
+      dispositivosRed:
+        'Unidades de Trabajo Social (UTS) en los Centros de Salud de Atención Primaria (Zonas Básicas de Salud), Servicios de Trabajo Social Hospitalario (planificación del alta hospitalaria precoz, intervención en crisis en Urgencias, maternidad y cuidados paliativos), Centros de Salud Mental (CSM), Hospitales de Día y red de rehabilitación psicosocial (CRPS, CRL, Mini-residencias y EASC) en coordinación sociosanitaria a través del Visor Horus y la Historia Clínica HCIS.',
+      instrumentosEspecificos:
+        'Historia Social Sanitaria integrada en AP-Madrid/HCIS, Informe Social Sanitario al alta hospitalaria, Escala de Gijón de riesgo sociofamiliar, Índice de Barthel y Lawton-Brody, cuestionario Pfeiffer, escala de Zarit y protocolos de detección precoz de maltrato infantil, violencia de género y anciano frágil en consulta.',
+      autoresDoctrina:
+        'Ida Cannon (pionera del Trabajo Social Médico en el Massachusetts General Hospital), Richard Cabot, Amaya Ituarte (Trabajo Social Clínico), Dolors Colom (Trabajo Social Sanitario) y el modelo biopsicosocial de George Engel.',
+    };
+  }
+
+  if (/calidad|carta|evaluaci[oó]n|planificaci[oó]n|indicador|inspecci[oó]n|organiza/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Decreto 27/1997, de 6 de marzo, por el que se regulan las Cartas de Servicios en la Comunidad de Madrid; Ley 12/2022 de Servicios Sociales de la CAM (Título VI sobre Calidad, Inspección y Evaluación); Ley 19/2013 y Ley 10/2019 de Transparencia de la CAM; y Plan de Inspección de Servicios Sociales.',
+      dispositivosRed:
+        'Dirección General de Evaluación, Calidad e Innovación de la Consejería de Familia, Juventud y Asuntos Sociales; Subdirección General de Inspección de Servicios Sociales; Registro de Entidades, Centros y Servicios de Acción Social; y Sistema de Información de Usuarios de Servicios Sociales (SIUSS / HSUe Decreto 51/2023).',
+      instrumentosEspecificos:
+        'Cartas de Servicios (compromisos de calidad, indicadores de seguimiento y medidas de subsanación), Ciclo PDCA de Deming (Planificar, Hacer, Verificar, Actuar), Modelo EFQM de Excelencia Europea, normas ISO 9001/UNE 158000 de servicios para la promoción de la autonomía personal, encuestas de satisfacción percibida y auditorías de procesos.',
+      autoresDoctrina:
+        'Avedis Donabedian (tríada de evaluación de la calidad asistencial: Estructura, Proceso y Resultado), W. Edwards Deming (mejora continua), Ezequiel Ander-Egg y María José Aguilar Idáñez (evaluación de programas y proyectos sociales).',
+    };
+  }
+
+  if (/inmigra|asilo|refugia|extranjer|intercultural/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Artículo 13 de la Constitución Española, Ley Orgánica 4/2000 sobre derechos y libertades de los extranjeros en España (LOEX) y su nuevo Reglamento (RD 1155/2024), Ley 12/2009 reguladora del Derecho de Asilo y de la Protección Subsidiaria, y Real Decreto 220/2022 del Sistema de Acogida de Protección Internacional (SAPI).',
+      dispositivosRed:
+        'Red de 8 Centros de Participación e Integración de Inmigrantes (CEPI) de la Comunidad de Madrid, Centro de Acogida a Refugiados (CAR de Vallecas), dispositivos de emergencia del SAPI (Fases 0, 1 y 2) y Centros de Servicios Sociales municipales (emisión de Informes de Arraigo y de Vivienda Adecuada).',
+      instrumentosEspecificos:
+        'Informe Social autonómico/municipal de Inserción Social para autorización de residencia por Arraigo (Social, Socioformativo, Sociolaboral y Familiar), Informe de adecuación de vivienda para reagrupación familiar, mediación intercultural y diagnóstico del duelo migratorio.',
+      autoresDoctrina:
+        'Joseba Achotegui (Síndrome de Ulises o síndrome del inmigrante con estrés crónico y múltiple), Carlos Giménez Romero (modelos de integración intercultural y mediación) y Kimberlé Crenshaw (enfoque de interseccionalidad).',
+    };
+  }
+
+  if (/adiccion|drog|sustancia|juego|caid/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Ley 5/2002, de 27 de junio, sobre Drogodependencias y otros Trastornos Adictivos de la Comunidad de Madrid; Ley 17/2003 del Fondo de bienes decomisados; Estrategia Nacional sobre Adicciones; y Ley 12/2022 de Servicios Sociales de la CAM (arts. 16.2, 40 y 69).',
+      dispositivosRed:
+        'Red de Centros de Atención Integral a Drogodependientes (CAID de la CAM) y Centros de Atención a las Adicciones (CAD de Madrid Salud), Unidades de Desintoxicación Hospitalaria (UDH del SERMAS), Comunidades Terapéuticas, Pisos de Apoyo al Tratamiento, Servicio de Atención a Adicciones Tecnológicas (SAAT) y dispositivos de Reducción de Daños y Baja Exigencia (Salas de Venopunción, Unidades Móviles de Metadona y Centros de Calor y Café).',
+      instrumentosEspecificos:
+        'Índice de Severidad de la Adicción (EuropASI), entrevista motivacional en las etapas del cambio, Plan Individualizado de Intervención Social (PIIS en 10 días hábiles, art. 40 Ley 12/2022), Informe Social prescriptor (art. 69) e Historia Social Única Electrónica (Decreto 51/2023).',
+      autoresDoctrina:
+        'Prochaska y DiClemente (modelo transteórico de las etapas del cambio: precontemplación, contemplación, preparación, acción, mantenimiento y recaída), Miller y Rollnick (entrevista motivacional) y Marlatt (prevención de recaídas y reducción de daños).',
+    };
+  }
+
+  if (/infancia|menor|adolescen|acogimiento|adopci|familia/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Ley Orgánica 8/2021 de Protección Integral a la Infancia y la Adolescencia frente a la Violencia (LOPIVI), Ley Orgánica 1/1996 de Protección Jurídica del Menor (reformada por Ley 26/2015), Ley 4/2023 de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid, y Ley 1/2024 de Familias.',
+      dispositivosRed:
+        'Comisión de Tutela del Menor de la CAM, Equipos de Trabajo con Menores y Familias en Atención Social Primaria, Centros de Apoyo a las Familias (CAF), Puntos de Encuentro Familiar (PEF), Red de Centros Residenciales de Protección y programas de Acogimiento Familiar (urgencia, temporal y permanente) y ARRMI (Ley Orgánica 5/2000).',
+      instrumentosEspecificos:
+        'Instrumento VALÓRAME de valoración de la gravedad de las situaciones de riesgo y desamparo infantil en la Comunidad de Madrid, Hoja de Notificación de maltrato infantil, Genograma y Ecomapa familiar, y Plan de Intervención Familiar.',
+      autoresDoctrina:
+        'Urie Bronfenbrenner (modelo ecológico del desarrollo humano), John Bowlby y Mary Ainsworth (teoría del apego seguro e inseguro), Jorge Barudy (buenos tratos a la infancia y parentalidad positiva) y Salvador Minuchin (terapia familiar estructural).',
+    };
+  }
+
+  if (/dependencia|mayor|envejec|discapacidad|autonom[ií]a/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Artículo 49 de la Constitución Española (reformado en enero de 2024), Real Decreto Legislativo 1/2013 de derechos de las personas con discapacidad, Real Decreto 888/2022 del nuevo baremo de discapacidad (Clases 0 a 4), Ley 39/2006 (LAPAD), Decreto 54/2015 de procedimiento de dependencia en la CAM, Ley 8/2021 de reforma civil de apoyos y Ley 1/2023 de creación de la AMAPAD.',
+      dispositivosRed:
+        'Dirección General de Atención al Mayor y a la Dependencia, Centros Base de Valoración y Orientación a personas con discapacidad (CVO), Agencia Madrileña de Atención Social (AMAS), Agencia Madrileña para el Apoyo a las Personas Adultas con Discapacidad (AMAPAD) y catálogo de servicios (Teleasistencia Avanzada, SAD, Centros de Día, Atención Residencial y Prestaciones Económicas PECEF, PEAP y PEVS).',
+      instrumentosEspecificos:
+        'Baremo de Valoración de la Dependencia (BVD y EVE para menores de 3 años del RD 174/2011: Grado I de 25 a 49 puntos, Grado II de 50 a 74 puntos, Grado III de 75 a 100 puntos), Informe Social de Entorno, Programa Individual de Atención (PIA en plazo máximo de 6 meses) y Escala de Zarit.',
+      autoresDoctrina:
+        'Modelo de Atención Integral y Centrada en la Persona (AICP de Teresa Martínez), paradigma de Vida Independiente y modelo social de la discapacidad (Mike Oliver y Convención de la ONU de Nueva York de 2006).',
+    };
+  }
+
+  return {
+    marcoEspecifico:
+      topicObj.lawUpdate ||
+      'Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid, Decreto 51/2023 regulador de la Historia Social Única Electrónica (HSUe), Catálogo de Prestaciones del Sistema Público de Servicios Sociales y Ley 39/2015 (LPAC).',
+    dispositivosRed:
+      'Red de Centros de Servicios Sociales de Atención Social Primaria (puerta de entrada universal y territorializada conforme al artículo 16.2 de la Ley 12/2022) en articulación con la Atención Social Especializada (AMAS, AMAPAD, Red de Exclusión y Emergencia Social) y el Servicio Madrileño de Salud (SERMAS).',
+    instrumentosEspecificos:
+      'Historia Social Única Electrónica (HSUe, Decreto 51/2023), Ficha Social SIUSS, Informe Social exclusivo como dictamen técnico prescriptor (artículo 69 de la Ley 12/2022), Plan Individual de Atención Social (PIAS en un plazo máximo de 10 días hábiles conforme al artículo 40), Genograma, Ecomapa y Escala de Gijón.',
+    autoresDoctrina:
+      'Mary Ellen Richmond (Diagnóstico Social, 1917), Gordon Hamilton (escuela diagnóstica psicosocial), Helen Harris Perlman (resolución de problemas), Natalio Kisnerman, Ezequiel Ander-Egg y Teresa Zamanillo.',
+  };
+}
+
 function buildMagistralTopicText(topicObj, convocatoriaKey) {
   const epigraphs = extractSubEpigraphsFromTitle(topicObj.title);
+  const domain = getDomainSpecificKnowledgeForTopic(topicObj);
   const instName =
     convocatoriaKey === 'sermas'
       ? 'el Servicio Madrileño de Salud (en adelante, SERMAS, regulado por la Ley 12/2001, de Ordenación Sanitaria de la Comunidad de Madrid, en adelante LOSCAM, y el Decreto 246/2023)'
       : convocatoriaKey === 'ayto'
       ? 'el Ayuntamiento de Madrid (regulado por la Ley 22/2006 de Capitalidad, el Plan Estratégico de Servicios Sociales 2023-2027 y la Ordenanza 10/2022, de 28 de junio)'
-      : 'la Administración de la Comunidad de Madrid (bajo el marco de la Orden 1049/2026 y la Ley 12/2022 de Servicios Sociales)';
+      : 'la Administración de la Comunidad de Madrid (bajo el marco de la Orden 1049/2026 y la Ley 12/2022, de 21 de diciembre, de Servicios Sociales)';
+
+  const sectionVariants = [
+    (ep, idx) => `
+${idx}. FUNDAMENTACIÓN CONCEPTUAL, DOCTRINAL Y MARCO NORMATIVO DE: ${ep.toUpperCase()}
+El abordaje técnico-científico de "${ep}" exige partir del bloque de constitucionalidad (artículos 9.2, 10.1, 14 y 39 a 50 de la Constitución Española, en adelante CE, incluyendo la reforma del artículo 49 de enero de 2024) y del Estatuto de Autonomía de la Comunidad de Madrid (Ley Orgánica 3/1983, artículo 26.1.23).
+De manera específica para esta materia, el ordenamiento jurídico vigente en 2026 se articula a través de: ${domain.marcoEspecifico}
+En el plano teórico y epistemológico, la intervención del Trabajo Social en "${ep}" se fundamenta en las aportaciones de ${domain.autoresDoctrina}, superando los antiguos modelos asistencialistas o graciables para consolidar un enfoque de derechos subjetivos, atención centrada en la persona e interseccionalidad en el ámbito de ${instName}.`,
+
+    (ep, idx) => `
+${idx}. ARQUITECTURA INSTITUCIONAL, RED DE DISPOSITIVOS Y COMPETENCIAS EN: ${ep.toUpperCase()}
+La materialización operativa de "${ep}" dentro del territorio de la Comunidad de Madrid se despliega mediante una red pública y concertada de responsabilidad pública integrada por: ${domain.dispositivosRed}
+De conformidad con la Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid (que derogó expresamente la antigua Ley 11/2003), esta red actúa bajo los principios de universalidad, equidad territorial, proximidad y coordinación interadministrativa (artículo 140 de la Ley 40/2015, de Régimen Jurídico del Sector Público, en adelante LRJSP).
+El acceso y tránsito por los dispositivos vinculados a "${ep}" garantiza la continuidad asistencial entre el nivel primario y el nivel especializado, diferenciando con rigor jurídico entre las prestaciones garantizadas (exigibles como derecho subjetivo ante la Administración) y las prestaciones condicionadas a disponibilidad presupuestaria.`,
+
+    (ep, idx) => `
+${idx}. PROCEDIMIENTO METODOLÓGICO, INSTRUMENTOS TÉCNICOS Y RESERVA LEGAL EN: ${ep.toUpperCase()}
+El procedimiento de intervención profesional en materia de "${ep}" se sujeta a las garantías y plazos de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas (en adelante, LPAC) y a los preceptos nucleares de la Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid:
+a) Reserva legal del Profesional de Referencia (artículo 16.2 de la Ley 12/2022): En la Atención Social Primaria, el profesional de referencia de acceso al sistema es exclusivamente un Trabajador/a Social, quien asume la dirección técnica del itinerario en "${ep}".
+b) Instrumentos y escalas específicas aplicables a este epígrafe: ${domain.instrumentosEspecificos}
+c) Plazo legal de planificación y potestad prescriptora: La formulación consensuada del Plan Individual de Atención Social (en adelante, PIAS) debe realizarse en el plazo máximo de 10 días hábiles (artículo 40 de la Ley 12/2022), quedando registrada en la Historia Social Única Electrónica (Decreto 51/2023) y respaldada por el Informe Social como dictamen técnico exclusivo (artículo 69).`,
+
+    (ep, idx) => `
+${idx}. COORDINACIÓN INTERDISCIPLINAR, EVALUACIÓN E INDICADORES DE CALIDAD EN: ${ep.toUpperCase()}
+La eficacia de las actuaciones desarrolladas en "${ep}" requiere un trabajo en red interdisciplinar que conecte los Servicios Sociales de Atención Primaria con el Servicio Madrileño de Salud (SERMAS), el ámbito educativo, judicial y las entidades del Tercer Sector de Acción Social.
+Asimismo, toda actuación en este ámbito incorpora una evaluación ex ante, intermedia (a los 3 meses) y final (a los 6 meses), aplicando indicadores cuantitativos de cobertura, tiempos medios de respuesta administrativa y tasas de resolución efectiva, junto a indicadores cualitativos de satisfacción percibida conforme al Decreto 27/1997 de Cartas de Servicios de la Comunidad de Madrid, al modelo de calidad de Avedis Donabedian (estructura, proceso y resultado) y al Reglamento General de Protección de Datos (en adelante, RGPD) y la Ley Orgánica 3/2018.`
+  ];
 
   const sectionsText = epigraphs
-    .map(
-      (ep, i) => `
-${i + 2}. DESARROLLO TÉCNICO-JURÍDICO DEL EPÍGRAFE: ${ep.toUpperCase()}
-En el análisis sistemático de "${ep}", resulta preceptivo partir del bloque de constitucionalidad (artículos 9.2, 10.1, 14, 39 a 50 de la Constitución Española, en adelante CE, incluyendo la reforma del artículo 49 de enero de 2024) en conexión directa con el Estatuto de Autonomía de la Comunidad de Madrid (Ley Orgánica 3/1983, artículo 26.1.23 y 27).
-Dentro del ámbito competencial de ${instName}, la regulación vigente en 2026 articula un sistema de responsabilidad pública basado en los principios de universalidad, igualdad, equidad territorial, atención centrada en la persona y calidad continuada.
-Desde el punto de vista procedimental y de plazos administrativos (Ley 39/2015, del Procedimiento Administrativo Común de las Administraciones Públicas, en adelante LPAC, y Ley 40/2015, de Régimen Jurídico del Sector Público, en adelante LRJSP), la actuación técnica del profesional de Trabajo Social exige:
-a) La valoración integral mediante instrumentos técnicos homologados: Historia Social Única interoperable, Ficha Social, Informe Social (como dictamen técnico facultativo), Genograma, Ecomapa y escalas clínicas y sociales validadas (Escala de Gijón de valoración sociofamiliar, Escala de Zarit de sobrecarga del cuidador, Índice de Barthel, Escala de Lawton y Brody, Baremo de Valoración de la Dependencia, en adelante BVD, y Escala de Valoración Específica, en adelante EVE, del Real Decreto 174/2011, junto al nuevo baremo de discapacidad del Real Decreto 888/2022).
-b) El diseño del Plan Individual de Atención Social (en adelante, PIAS) o plan terapéutico-social, diferenciando con precisión jurídica entre prestaciones garantizadas (exigibles como derecho subjetivo ante la administración, como la Renta Mínima de Inserción, en adelante RMI, el Ingreso Mínimo Vital, en adelante IMV, o el Servicio de Ayuda a Domicilio, en adelante SAD) y prestaciones condicionadas a disponibilidad presupuestaria, conforme a la Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid (que derogó expresamente la antigua Ley 11/2003) y la Ley 39/2006, de Promoción de la Autonomía Personal y Atención a las personas en situación de dependencia (en adelante, LAPAD).
-c) La coordinación interinstitucional y sociosanitaria entre la Atención Social Primaria (puerta de entrada territorializada), la Atención Social Especializada (Agencia Madrileña de Atención Social, en adelante AMAS; Agencia Madrileña para el Apoyo a las Personas Adultas con Discapacidad, en adelante AMAPAD, regulada por Ley 1/2023 tras la Ley 8/2021; Agencia de la Comunidad de Madrid para la Reeducación y Reinserción del Menor Infractor, en adelante ARRMI; y protección a la infancia bajo la Ley 4/2023 CAM y la Ley Orgánica de Protección Integral a la Infancia y la Adolescencia frente a la Violencia, en adelante LOPIVI) y los dispositivos de Atención Primaria, Hospitalaria y Salud Mental del SERMAS.`
-    )
+    .map((ep, i) => {
+      const builder = sectionVariants[i % sectionVariants.length];
+      return builder(ep, i + 2);
+    })
     .join('\n');
 
   const fullDraft = `TEMA MAGISTRAL OFICIAL [${
     topicObj.id
   }] · ${topicObj.title.toUpperCase()}
-MARCO NORMATIVO VERIFICADO 2026: ${topicObj.lawUpdate}
+MARCO NORMATIVO ESPECÍFICO VERIFICADO 2026: ${domain.marcoEspecifico}
 
-1. INTRODUCCIÓN TÉCNICA, ENCUADRE CONSTITUCIONAL Y RELEVANCIA PARA EL TRABAJO SOCIAL
-El presente tema constituye uno de los ejes nucleares del programa oficial de acceso a la función pública conforme al Texto Refundido de la Ley del Estatuto Básico del Empleado Público (en adelante, TREBEP) en ${instName}. Su abordaje exige conjugar el rigor dogmático-jurídico del Derecho Administrativo, Sanitario y de la Protección Social con la metodología científica del Trabajo Social (estudio, diagnóstico social, planificación, ejecución y evaluación, conforme a las aportaciones doctrinales de Mary Richmond, Gordon Hamilton, Natalio Kisnerman, Ezequiel Ander-Egg y Malcolm Payne).
-Asimismo, toda intervención analizada en este tema se sujeta al Código Deontológico de la Profesión de Diplomado/Graduado en Trabajo Social, al deber de secreto profesional y a la normativa de protección de datos de categoría especial (Reglamento General de Protección de Datos, en adelante RGPD, y Ley Orgánica 3/2018).
+1. INTRODUCCIÓN TÉCNICA, ENCUADRE CONSTITUCIONAL Y OBJETO DEL TEMA
+El estudio de "${topicObj.title}" constituye un bloque esencial del programa oficial de acceso al Cuerpo de Técnicos y Diplomados Especialistas, Escala de Asistentes Sociales (Subgrupo A2), conforme al Texto Refundido de la Ley del Estatuto Básico del Empleado Público (en adelante, TREBEP) en ${instName}.
+Su relevancia técnica radica en articular la normativa específica de este ámbito (${domain.marcoEspecifico}) con el método científico del Trabajo Social y las aportaciones doctrinales de ${domain.autoresDoctrina}, garantizando siempre el secreto profesional y el Código Deontológico del Trabajo Social.
 ${sectionsText}
 
 ${
   epigraphs.length + 2
-}. SÍNTESIS APLICADA, INDICADORES DE EVALUACIÓN Y CONCLUSIÓN TÉCNICA
-En conclusión, el dominio operativo de los epígrafes que integran el ${
+}. SÍNTESIS METODOLÓGICA, DIAGNÓSTICO E INDICADORES DE EVALUACIÓN (CIERRE DE EXCELENCIA)
+En conclusión, cabe destacar que el análisis expuesto sobre "${
     topicObj.title
-  } permite al Trabajador/a Social de ${instName} garantizar la trazabilidad diagnóstica, la seguridad jurídica de los ciudadanos usuarios y la eficiencia en la asignación de prestaciones públicas. La evaluación continua mediante indicadores cuantitativos de cobertura, tiempos medios de resolución y calidad percibida (Cartas de Servicios del Decreto 27/1997 CAM y modelos EFQM/Donabedian) cierra el ciclo metodológico de excelencia en el servicio público.`;
+  }" exige una intervención interdisciplinar desde la Atención Social Primaria y Especializada regulada por la Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid, en estrecha conexión con los dispositivos específicos de este ámbito (${domain.dispositivosRed.slice(0, 140)}...). Asimismo, y desde la perspectiva del método científico del Trabajo Social, el diagnóstico social recogido en la Historia Social Única (Decreto 51/2023) y en el Informe Social (artículo 69) debe articularse, por consiguiente, con el Plan Individual de Atención Social (en adelante, PIAS, artículo 40 en 10 días hábiles). No obstante la complejidad estructural de los factores analizados, en consecuencia resulta preceptivo implementar una evaluación continua mediante indicadores cuantitativos y cualitativos de cobertura, eficacia y calidad asistencial conforme a la LPAC.`;
 
-  return adjustTextToHandwrittenTarget(fullDraft, 1850);
+  const { updated } = autoExpandFirstMentionAcronyms(fullDraft);
+  return updated;
+}
+
+// =========================================================================
+// FILTRO ANTI-BOE/PLAZAS Y EXTRACTOR DE LAS 20 PREGUNTAS LITERALES DEL PDF
+// =========================================================================
+const ADMIN_CALL_FORBIDDEN_REGEX =
+  /\b(convocatoria\s+y\s+plazas|cuerpo\s+y\s+escala|sistema\s+selectivo|sistema\s+de\s+selecci[oó]n|titulaci[oó]n\s+exigida|titulaci[oó]n\s+habilitante|nota\s+de\s+corte|reglas\s+metodol[oó]gicas|materia\s+[uú]nica|doble\s+salida|[ií]ndice\s+sistem[aá]tico|br[uú]jula\s+del\s+opositor|estrategia\s+de\s+examen\s+manual|par[aá]metro\s+selectivo|presentaci[oó]n\s+del\s+manual|plazas?\s+libres|plazas?\s+ofertadas|cupo\s+de\s+discapacidad|399\s+plazas|380\s+plazas|173\s+plazas|bolsa\s+de\s+interinos|orden\s+1472\/2026|bocm\s+n\.?[º°]\s*100|tasas?\s+de\s+examen|derechos\s+de\s+examen|presentaci[oó]n\s+de\s+instancias|oferta\s+de\s+empleo\s+p[uú]blico|ficha\s+t[eé]cnica\s+oficial|tres\s+ejercicios\s+eliminatorios)\b/i;
+
+function isDefectiveOrAdminQuestion(q) {
+  if (!q) return true;
+  const fullTxt = `${q.question || ''} ${(q.options || []).join(' ')} ${
+    q.explanation || ''
+  }`;
+  if (ADMIN_CALL_FORBIDDEN_REGEX.test(fullTxt)) return true;
+  const normalizedOpts = (q.options || []).map((o) =>
+    o
+      .replace(/^[A-Da-d][).]\s*/, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase()
+  );
+  if (new Set(normalizedOpts).size < normalizedOpts.length) {
+    return true; // Descartar preguntas donde dos opciones sean idénticas
+  }
+  return false;
+}
+
+function extractLiteralTestQuestionsFromPdf(rawText = '', topicId = 'E1') {
+  const extracted = [];
+  const clean = rawText
+    .replace(/COMUNIDAD\s+DE\s+MADRID[\s\S]{0,160}?LITERALIDAD/gi, ' ')
+    .replace(
+      /Edici[oó]n\s+Maestra\s+de\s+Alto\s+Rendimiento[\s\S]{0,120}?P[aá]gina\s+\d+/gi,
+      ' '
+    )
+    .replace(/P[aá]gina\s+\d+/gi, ' ')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .replace(/<<|>>/g, '"');
+
+  const blockRegex =
+    /(?:Pregunta\s*)?(\d{1,2})\.\s+([^A-Z]*?[¿A-ZÁÉÍÓÚÑ][\s\S]{10,450}?)\s+[A-Da-d][).]\s+([\s\S]{1,300}?)\s+[B-Db-d][).]\s+([\s\S]{1,300}?)\s+[C-Dc-d][).]\s+([\s\S]{1,300}?)\s+[D-dd][).]\s+([\s\S]{1,300}?)\s+(?:\*\s*)?(?:Respuesta\s+correcta|Soluci[oó]n)\s*:\s*([A-Da-d])\)?[.:]?\s*([\s\S]{10,550}?)(?=(?:\s+(?:Pregunta\s*)?\d{1,2}\.\s+)|(?:\s+CAP[IÍ]TULO\s+(?:IX|X))|(?:\s+BLOQUE\s+PR[AÁ]CTICO\s+II)|(?:\s+\d+\.\s+CAJA)|$)/gi;
+
+  let match;
+  while ((match = blockRegex.exec(clean)) !== null) {
+    const qNum = match[1];
+    const qText = match[2].replace(/\s+/g, ' ').trim();
+    const optA = match[3].replace(/\s+/g, ' ').trim();
+    const optB = match[4].replace(/\s+/g, ' ').trim();
+    const optC = match[5].replace(/\s+/g, ' ').trim();
+    const optD = match[6].replace(/\s+/g, ' ').trim();
+    const correctLetter = match[7].toUpperCase();
+    const rawExplanation = match[8]
+      .replace(/^Justificaci[oó]n(?:\s+t[eé]cnico-jur[ií]dica)?\s*:\s*/i, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (
+      ADMIN_CALL_FORBIDDEN_REGEX.test(qText) ||
+      ADMIN_CALL_FORBIDDEN_REGEX.test(rawExplanation)
+    ) {
+      continue;
+    }
+
+    const correctIdx = { A: 0, B: 1, C: 2, D: 3 }[correctLetter] ?? 0;
+
+    extracted.push({
+      id: `q-pdf-lit-${topicId}-${Date.now()}-${qNum}-${extracted.length}`,
+      topicId,
+      difficulty: 'Oficial PDF Extenso (Literal)',
+      originType: '📘 BATERÍA OFICIAL PDF EXTENSO',
+      question: `[${topicId}] ${qText}`,
+      options: [`A) ${optA}`, `B) ${optB}`, `C) ${optC}`, `D) ${optD}`],
+      correctIndex: correctIdx,
+      explanation:
+        rawExplanation ||
+        `Respuesta oficial del solucionario: ${correctLetter}.`,
+    });
+  }
+
+  return extracted;
 }
 
 function generateMutatedQuestionsFromText(text, topicId, count = 10) {
-  const sentences = text
+  const cleanBodyOnly = stripNonEssaySectionsFromPdf(text);
+  const sentences = cleanBodyOnly
     .split(/(?<=[.?!])\s+/)
     .map((s) => s.trim())
-    .filter((s) => s.length > 65 && s.length < 280);
+    .filter(
+      (s) =>
+        s.length > 70 &&
+        s.length < 270 &&
+        !ADMIN_CALL_FORBIDDEN_REGEX.test(s) &&
+        !/^(TEMA\s+\d|CAP[IÍ]TULO\s+[IVX]|ACTO\s+[IVX]|ÍNDICE|Par[aá]metro\s+Jur[ií]dico)/i.test(
+          s
+        )
+    );
 
   const pool =
     sentences.length > 0
       ? sentences
       : [
-          'De conformidad con la Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid, la Historia Social Única y el PIAS constituyen los instrumentos básicos que garantizan la continuidad asistencial en un plazo máximo de tres meses hábiles.',
+          'De conformidad con la Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid, la Historia Social Única y el PIIS en 10 días hábiles constituyen instrumentos básicos bajo la responsabilidad exclusiva del Trabajador Social de Referencia.',
         ];
 
   const mutateSentence = (s, mode) => {
     let m = s;
     if (mode === 1) {
       m = m
+        .replace(/\b(diez|10)\s+d[ií]as\b/gi, 'treinta días')
         .replace(/\b(tres|3)\s+meses\b/gi, 'seis meses')
         .replace(/\b(seis|6)\s+meses\b/gi, 'dos meses')
         .replace(/\bh[aá]biles\b/gi, 'naturales')
@@ -732,13 +1294,20 @@ export default function App() {
   }, [sermasBaremo, calcEj1]);
 
   // BANCO COMÚN DE PREGUNTAS (INICIALIZADO CON LAS 60 PREGUNTAS DE ALTA DIFICULTAD)
+  const [bankFilterTopic, setBankFilterTopic] = useState('Todos');
+  const [bankSearchText, setBankSearchText] = useState('');
+
   const [questionBank, setQuestionBank] = useState(() => {
     const saved = localStorage.getItem('cam_qbank_v5');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length >= 120) return parsed;
+      const parsed = JSON.parse(saved).filter(
+        (q) => !isDefectiveOrAdminQuestion(q)
+      );
+      if (parsed.length >= 30) return parsed;
     }
-    return HIGH_DIFFICULTY_60_QUESTIONS;
+    return HIGH_DIFFICULTY_60_QUESTIONS.filter(
+      (q) => !isDefectiveOrAdminQuestion(q)
+    );
   });
 
   const [peerReviewQueue, setPeerReviewQueue] = useState(() => {
@@ -747,6 +1316,38 @@ export default function App() {
   });
 
   const [documentsLibrary, setDocumentsLibrary] = useState([]);
+  const [storiesLibrary, setStoriesLibrary] = useState(() => {
+    const saved = localStorage.getItem('cam_stories_logic_v5');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.length > 0) return parsed;
+    }
+    // Si no existen, genera automáticamente las primeras historias lógicas del temario
+    return OFFICIAL_CAM_TOPICS.slice(0, 12).map((t) =>
+      buildNarrativeStoryForTopic(t, t.lawUpdate)
+    );
+  });
+  const [storySearch, setStorySearch] = useState('');
+  const [showStoryInModule04, setShowStoryInModule04] = useState(true);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('cam_stories_logic_v5', JSON.stringify(storiesLibrary));
+    } catch (e) {
+      console.warn('Error guardando historias:', e);
+    }
+  }, [storiesLibrary]);
+
+  const ensureStoryForTopic = (topicObj, rawText = '') => {
+    if (!topicObj) return null;
+    let built = null;
+    setStoriesLibrary((prev) => {
+      const existing = prev.find((s) => s.topicId === topicObj.id) || null;
+      built = buildNarrativeStoryForTopic(topicObj, rawText, existing);
+      return [built, ...prev.filter((s) => s.topicId !== topicObj.id)];
+    });
+    return built;
+  };
   const [essaysLibrary, setEssaysLibrary] = useState([]);
   const [activeEssayView, setActiveEssayView] = useState(null);
   const [selectedBlockFilter, setSelectedBlockFilter] = useState('Todos');
@@ -760,6 +1361,87 @@ export default function App() {
     timeLeft: 420,
     evaluationResult: null,
   });
+
+  // SIMULADOR REAL DE SORTEO DE 2 BOLAS A CIEGAS (2.º EJERCICIO · 80 MIN)
+  const [twoBallsSim, setTwoBallsSim] = useState({
+    isOpen: false,
+    ball1: null,
+    ball2: null,
+    chosenTopic: null,
+    userDraft: '',
+    secondsLeft: 4800,
+    isRunning: false,
+    auditResult: null,
+  });
+
+  useEffect(() => {
+    if (!twoBallsSim.isOpen || !twoBallsSim.isRunning) return;
+    const t = setInterval(() => {
+      setTwoBallsSim((prev) => {
+        if (prev.secondsLeft <= 1) return { ...prev, isRunning: false, secondsLeft: 0 };
+        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [twoBallsSim.isOpen, twoBallsSim.isRunning]);
+
+  const launchTwoBallsBlindDraw = () => {
+    const specificTopics = activeCatalog.filter((t) => !t.id.startsWith('G'));
+    const pool = specificTopics.length >= 2 ? specificTopics : activeCatalog;
+    const idx1 = Math.floor(Math.random() * pool.length);
+    let idx2 = Math.floor(Math.random() * pool.length);
+    if (idx2 === idx1) idx2 = (idx1 + 1) % pool.length;
+    setTwoBallsSim({
+      isOpen: true,
+      ball1: pool[idx1],
+      ball2: pool[idx2],
+      chosenTopic: null,
+      userDraft: '',
+      secondsLeft: 4800,
+      isRunning: false,
+      auditResult: null,
+    });
+  };
+
+  // SIMULADOR DEL DÍA DE LA LECTURA PÚBLICA ANTE EL TRIBUNAL (TELEPROMPTER 130 PAL/MIN)
+  const [tribunalReader, setTribunalReader] = useState({
+    isOpen: false,
+    title: '',
+    text: '',
+    elapsedSeconds: 0,
+    targetLimitSeconds: 900, // 15 min por defecto para lectura pública
+    timerMode: 'countdown', // 'countdown' | 'stopwatch'
+    isRunning: false,
+    fontSize: 'text-base',
+  });
+
+  useEffect(() => {
+    if (!tribunalReader.isOpen || !tribunalReader.isRunning) return;
+    const t = setInterval(() => {
+      setTribunalReader((prev) => ({
+        ...prev,
+        elapsedSeconds: prev.elapsedSeconds + 1,
+      }));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [tribunalReader.isOpen, tribunalReader.isRunning]);
+
+  const openTribunalPublicReader = (title, text) => {
+    const words = (text || '').trim()
+      ? (text || '').trim().split(/\s+/).length
+      : 0;
+    const calcSeconds = Math.max(300, Math.round((words / 130) * 60));
+    setTribunalReader({
+      isOpen: true,
+      title: title || 'Lectura Pública ante el Tribunal Calificador',
+      text: text || '',
+      elapsedSeconds: 0,
+      targetLimitSeconds: calcSeconds,
+      timerMode: 'countdown',
+      isRunning: false,
+      fontSize: 'text-base',
+    });
+  };
 
   // RÚBRICA DE 5 DIMENSIONES PARA EL 3.er EJERCICIO (SUPUESTO PRÁCTICO)
   const [practicalCaseText, setPracticalCaseText] = useState('');
@@ -964,6 +1646,7 @@ export default function App() {
   // CREAR TEMA MAGISTRAL 10/10 CON IA/PLANTILLA LEGAL 2026
   const handleGenerateMagistralTopic = async (topicObj) => {
     const generatedText = buildMagistralTopicText(topicObj, activeConvocatoria);
+    ensureStoryForTopic(topicObj, generatedText);
     const audit = auditDocumentTextValidity(generatedText, topicObj);
     const newEssay = {
       id: `magistral-${topicObj.id}-${Date.now()}`,
@@ -1050,6 +1733,33 @@ export default function App() {
   const [isExtractingPdf, setIsExtractingPdf] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState('');
 
+  const deleteEssayById = async (essayId) => {
+    await deleteFromStore(STORE_ESSAYS, essayId);
+    await deleteFromStore(STORE_DOCS, essayId);
+    const remaining = essaysLibrary.filter((e) => e.id !== essayId);
+    setEssaysLibrary(remaining);
+    setDocumentsLibrary((prev) => prev.filter((d) => d.id !== essayId));
+    if (activeEssayView?.id === essayId) {
+      setActiveEssayView(remaining.length > 0 ? remaining[0] : null);
+    }
+    setStatusBanner(
+      '🗑️ Tema eliminado correctamente. Ya puedes subir o generar la nueva versión.'
+    );
+    setTimeout(() => setStatusBanner(''), 4000);
+  };
+
+  const clearAllSavedEssays = async () => {
+    for (const es of essaysLibrary) {
+      await deleteFromStore(STORE_ESSAYS, es.id);
+    }
+    setEssaysLibrary([]);
+    setActiveEssayView(null);
+    setStatusBanner(
+      '🧹 Todos los temas guardados en el Módulo 04 han sido eliminados.'
+    );
+    setTimeout(() => setStatusBanner(''), 4000);
+  };
+
   const processPdfUpload = async (
     fileList,
     isEssayEj2 = false,
@@ -1058,13 +1768,15 @@ export default function App() {
     const files = Array.from(fileList || []);
     if (files.length === 0) return;
     setIsExtractingPdf(true);
-    const processedItems = [];
+    const processedDocs = [];
+    const processedEssays = [];
     let generatedQsTotal = [];
+    let literalQsCount = 0;
 
     for (let idx = 0; idx < files.length; idx++) {
       const file = files[idx];
       setUploadProgressText(
-        `Auditando "${file.name}" (${idx + 1}/${files.length})...`
+        `Analizando formato de "${file.name}" (${idx + 1}/${files.length})...`
       );
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -1077,51 +1789,158 @@ export default function App() {
           fullText +=
             textContent.items.map((item) => item.str).join(' ') + '\n\n';
         }
-        const targetTopic = forcedTopicObj || activeCatalog[0];
-        const audit = auditDocumentTextValidity(fullText, targetTopic);
+
+        // Autodetección inteligente del tipo de PDF ("Narración Ej. 2" vs "Tratado Extenso Ej. 1")
+        const isNarrativePdf =
+          /narraci[oó]n/i.test(file.name) ||
+          /NARRACI[OÓ]N\s+MNEMOT[EÉ]CNICA\s+INTEGRAL|GU[IÍ]A\s+NARRATIVA\s+VIVENCIAL\s+EN\s+5\s+ACTOS/i.test(
+            fullText.slice(0, 1200)
+          );
+        const isExtensoPdf =
+          /extenso/i.test(file.name) ||
+          /TRATADO\s+EXTENSO|BATER[IÍ]A\s+OFICIAL\s+DE\s+\d+\s+PREGUNTAS\s+TIPO\s+TEST/i.test(
+            fullText.slice(0, 2500)
+          );
+
+        let targetTopic = forcedTopicObj;
+        if (!targetTopic) {
+          const specificOnly = activeCatalog.filter(
+            (t) => !t.id.startsWith('G')
+          );
+          const nameMatch = file.name.match(
+            /(?:tema|especifico|e)[\s_-]*0*(\d{1,2})\b/i
+          );
+          const textMatch = fullText
+            .slice(0, 1200)
+            .match(/TEMA\s+(?:ESPEC[IÍ]FICO\s+)?0*(\d{1,2})\b/i);
+          const detectedNum =
+            (nameMatch && nameMatch[1]) || (textMatch && textMatch[1]);
+
+          const candidateByNum =
+            detectedNum &&
+            specificOnly.find(
+              (t) =>
+                t.id.toUpperCase() === `E${detectedNum}` ||
+                t.id.endsWith(`-${detectedNum}`) ||
+                new RegExp(`\\bTema\\s+0*${detectedNum}\\b`, 'i').test(t.title)
+            );
+
+          if (candidateByNum) {
+            targetTopic = candidateByNum;
+          } else {
+            const { bestTopic } = findBestMatchingTopicByContent(
+              fullText,
+              specificOnly
+            );
+            targetTopic =
+              bestTopic ||
+              (activeEssayView &&
+                specificOnly.find((t) => t.id === activeEssayView.topicId)) ||
+              specificOnly[0] ||
+              activeCatalog[0];
+          }
+        }
+
+        // Guardar siempre la historia / caja mnemotécnica en la Pestaña 07
+        ensureStoryForTopic(targetTopic, fullText);
+
+        // 1. Extraer preguntas tipo test literales si el PDF las incluye (como las 20 del Cap. IX del Extenso)
+        const literalQs = extractLiteralTestQuestionsFromPdf(
+          fullText,
+          targetTopic.id
+        );
+        literalQsCount += literalQs.length;
+
+        // 2. Si no trae suficientes preguntas literales, complementar con mutación jurídica
+        const mutatedQs =
+          literalQs.length >= 10
+            ? []
+            : generateMutatedQuestionsFromText(
+                stripNonEssaySectionsFromPdf(fullText),
+                targetTopic.id,
+                10
+              );
+        generatedQsTotal = [...generatedQsTotal, ...literalQs, ...mutatedQs];
+
+        // 3. Si es el PDF de Narración (o si se subió al Módulo 04 y no hay otro), prepararlo para el Ejercicio 2 (Desarrollo 90 min)
+        const shouldSaveAsEssay =
+          isNarrativePdf || (isEssayEj2 && !isExtensoPdf) || (isEssayEj2 && files.length === 1);
+
+        const cleanedText = shouldSaveAsEssay
+          ? autoEnhanceStructureAndAnalysis(fullText, targetTopic.id)
+          : adjustTextToHandwrittenTarget(fullText);
+
+        const audit = auditDocumentTextValidity(cleanedText, targetTopic);
         const itemObj = {
-          id: `${isEssayEj2 ? 'essay' : 'doc'}-${Date.now()}-${idx}`,
+          id: `${shouldSaveAsEssay ? 'essay' : 'doc'}-${Date.now()}-${idx}`,
           topicId: targetTopic.id,
           name: file.name,
+          docRole: isNarrativePdf
+            ? '✍️ Narración 5 Actos (Ej. 2 · 90m)'
+            : isExtensoPdf
+            ? '📘 Tratado Extenso + Test (Ej. 1)'
+            : '📄 Documento Auditado',
           pages: pdfDoc.numPages,
-          text: fullText,
+          text: cleanedText,
           audit,
         };
-        processedItems.push(itemObj);
-        const newQs = generateMutatedQuestionsFromText(
-          fullText,
-          targetTopic.id,
-          12
-        );
-        generatedQsTotal = [...generatedQsTotal, ...newQs];
+
+        processedDocs.push(itemObj);
+        if (shouldSaveAsEssay) {
+          processedEssays.push(itemObj);
+        }
       } catch (e) {
         console.error('Error PDF:', e);
       }
     }
 
-    if (processedItems.length > 0) {
-      await saveToStore(STORE_DOCS, processedItems);
-      setDocumentsLibrary((prev) => [...processedItems, ...prev]);
-      if (isEssayEj2) {
-        await saveToStore(STORE_ESSAYS, processedItems);
-        setEssaysLibrary((prev) => [...processedItems, ...prev]);
-        setActiveEssayView(processedItems[0]);
-        setCalcEj2(Number(processedItems[0].audit.finalScore));
+    if (processedDocs.length > 0) {
+      await saveToStore(STORE_DOCS, processedDocs);
+      setDocumentsLibrary((prev) => [...processedDocs, ...prev]);
+
+      if (processedEssays.length > 0) {
+        const replacedTopicIds = new Set(processedEssays.map((e) => e.topicId));
+        const oldEssaysToRemove = essaysLibrary.filter((e) =>
+          replacedTopicIds.has(e.topicId)
+        );
+        for (const oldEs of oldEssaysToRemove) {
+          await deleteFromStore(STORE_ESSAYS, oldEs.id);
+        }
+        await saveToStore(STORE_ESSAYS, processedEssays);
+        setEssaysLibrary((prev) => [
+          ...processedEssays,
+          ...prev.filter((e) => !replacedTopicIds.has(e.topicId)),
+        ]);
+        setActiveEssayView(processedEssays[0]);
+        setCalcEj2(Number(processedEssays[0].audit.finalScore));
       }
+
       if (generatedQsTotal.length > 0) {
         if (activeProfile === 'colab') {
           setPeerReviewQueue((prev) => [...generatedQsTotal, ...prev]);
         } else {
-          setQuestionBank((prev) => [...generatedQsTotal, ...prev]);
+          setQuestionBank((prev) => {
+            const existingTexts = new Set(
+              prev.map((q) => q.question.trim().toLowerCase())
+            );
+            const uniqueNew = generatedQsTotal.filter(
+              (q) => !existingTexts.has(q.question.trim().toLowerCase())
+            );
+            return [...uniqueNew, ...prev];
+          });
         }
       }
+
+      const refItem = processedEssays[0] || processedDocs[0];
       setStatusBanner(
-        `✅ ${processedItems.length} PDF(s) auditados en [${processedItems[0].topicId}] y ${generatedQsTotal.length} preguntas de Mutación Jurídica extraídas.`
+        literalQsCount > 0
+          ? `✅ Doble Salida activada en [${refItem.topicId}]: Extraídas las ${literalQsCount} preguntas oficiales con solucionario al Banco de Test + Tema de Desarrollo (${refItem.audit.wordCount} pal · Nota ${refItem.audit.finalScore}/10).`
+          : `✅ ${processedDocs.length} PDF(s) procesados en [${refItem.topicId}] (${refItem.docRole} · ${refItem.audit.wordCount} palabras · Nota: ${refItem.audit.finalScore}/10).`
       );
     }
     setIsExtractingPdf(false);
     setUploadProgressText('');
-    setTimeout(() => setStatusBanner(''), 5000);
+    setTimeout(() => setStatusBanner(''), 6500);
   };
 // =========================================================================
   // MOTOR INTERACTIVO CLOZE TEST (HUECOS EN BLANCO · SPRINT 10 MINUTOS)
@@ -1425,6 +2244,29 @@ export default function App() {
       10
     ).toFixed(2);
 
+    const ordCutoff =
+      activeConvocatoria === 'ayto'
+        ? 120
+        : activeConvocatoria === 'sermas'
+        ? 100
+        : 80;
+    let firstHalfErrors = 0,
+      secondHalfErrors = 0,
+      reserveHits = 0,
+      reserveTotal = 0;
+    const halfIdx = Math.floor(examSession.questions.length / 2);
+
+    examSession.questions.forEach((q, idx) => {
+      const ans = examSession.answers[q.id];
+      const isErr = ans !== undefined && ans !== q.correctIndex;
+      if (idx < halfIdx && isErr) firstHalfErrors++;
+      if (idx >= halfIdx && isErr) secondHalfErrors++;
+      if (idx >= ordCutoff) {
+        reserveTotal++;
+        if (ans === q.correctIndex) reserveHits++;
+      }
+    });
+
     const riskReport = {
       doubtsTotal,
       doubtsAnsweredHits,
@@ -1433,6 +2275,11 @@ export default function App() {
       doubtsWhereCorrectWasInPair,
       netPointsFromDoubts,
       gradeImpactOver10,
+      firstHalfErrors,
+      secondHalfErrors,
+      reserveHits,
+      reserveTotal,
+      ordCutoff,
       penaltyLabel:
         activeConvocatoria === 'sermas' ? '-0,25 (1/4)' : '-0,33 (1/3)',
     };
@@ -1514,7 +2361,7 @@ export default function App() {
 // SEGURIDAD 100%: COPIA DE SEGURIDAD INTEGRAL Y RESTAURACIÓN COMPLETA
 const exportFullMasterBackup = () => {
   const fullBackup = {
-    version: '2026-MASTER-V5',
+    version: '2026-MASTER-V6-COMPLETE',
     timestamp: new Date().toISOString(),
     activeProfile,
     customNames,
@@ -1529,7 +2376,8 @@ const exportFullMasterBackup = () => {
     sermasBaremo,
     questionBank,
     essaysLibrary,
-    documentsLibrary
+    documentsLibrary,
+    storiesLibrary
   };
   const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1570,12 +2418,26 @@ const restoreFullMasterBackup = async (file) => {
       setDocumentsLibrary(data.documentsLibrary);
       await saveToStore(STORE_DOCS, data.documentsLibrary);
     }
-    setStatusBanner('✅ Restauración completa verificada al 100%: Todos tus temas, notas y avances han sido recuperados.');
+    if (data.storiesLibrary) {
+      setStoriesLibrary(data.storiesLibrary);
+      localStorage.setItem('cam_stories_logic_v5', JSON.stringify(data.storiesLibrary));
+    }
+    setStatusBanner('✅ Restauración completa verificada al 100%: Todos tus temas, historias lógicas, notas y avances han sido recuperados.');
   } catch {
     setStatusBanner('⚠️ El archivo de copia de seguridad no es válido.');
   }
   setTimeout(() => setStatusBanner(''), 5000);
 };
+  const correctedEj2Topics = useMemo(() => {
+    return [...essaysLibrary]
+      .filter((es) => !es.topicId?.startsWith('G'))
+      .sort((a, b) => {
+        const numA = parseInt((a.topicId || '').replace(/\D/g, ''), 10) || 999;
+        const numB = parseInt((b.topicId || '').replace(/\D/g, ''), 10) || 999;
+        return numA - numB;
+      });
+  }, [essaysLibrary]);
+
   const MODULES_NAV = [
     { id: '00', code: '00', label: 'Mi preparación y 4 Bloques' },
     { id: '01', code: '01', label: `Temario (${activeCatalog.length})` },
@@ -1585,9 +2447,19 @@ const restoreFullMasterBackup = async (file) => {
       code: '03',
       label: `Simulacros (Caja 1: ${leitnerCounts.box1})`,
     },
-    { id: '04', code: '04', label: `Temas 10/10 (${essaysLibrary.length})` },
+    { id: '04', code: '04', label: `🛠️ Taller Ej. 2 (${essaysLibrary.length})` },
+    {
+      id: '04B',
+      code: '04B',
+      label: `✅ Ej. 2 Corregidos (${correctedEj2Topics.length}/67)`,
+    },
     { id: '05', code: '05', label: '10 Supuestos (5 Dim)' },
     { id: '06', code: '06', label: `Lab PDF (${documentsLibrary.length})` },
+    {
+      id: '07',
+      code: '07',
+      label: `📖 Historias y Lógica (${storiesLibrary.length})`,
+    },
     { id: '08', code: '08', label: `Grupo (${peerReviewQueue.length})` },
   ];
 
@@ -1802,6 +2674,393 @@ const restoreFullMasterBackup = async (file) => {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DEL SIMULADOR REAL DE SORTEO DE 2 BOLAS A CIEGAS (2.º EJERCICIO · 80 MIN) */}
+      {twoBallsSim.isOpen && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-stone-900 max-w-4xl w-full rounded-2xl p-6 border shadow-2xl space-y-4 my-8">
+            <div className="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+              <div>
+                <span className="text-[11px] font-extrabold text-[#D97757] uppercase block">
+                  🎱 SIMULACRO OFICIAL A CIEGAS · SORTEO DE 2 BOLAS DEL BOMBO (2.º EJERCICIO CAM · 80 MINUTOS)
+                </span>
+                <h3 className="text-base font-bold">
+                  {twoBallsSim.chosenTopic
+                    ? `Escribiendo en Frío: [${twoBallsSim.chosenTopic.id}] ${twoBallsSim.chosenTopic.title}`
+                    : '¡Bombo Extraído! Elige 1 de las 2 bolas extraídas al azar para desarrollar:'}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                {twoBallsSim.chosenTopic && (
+                  <span className="px-3 py-1 rounded-xl bg-amber-100 text-amber-950 font-mono font-extrabold text-xs">
+                    ⏱ {Math.floor(twoBallsSim.secondsLeft / 60)}:
+                    {String(twoBallsSim.secondsLeft % 60).padStart(2, '0')}
+                  </span>
+                )}
+                <button
+                  onClick={launchTwoBallsBlindDraw}
+                  className="px-2.5 py-1 rounded-lg bg-purple-700 text-white text-xs font-bold cursor-pointer"
+                >
+                  🎲 Volver a Sacar 2 Bolas
+                </button>
+                <button
+                  onClick={() =>
+                    setTwoBallsSim((prev) => ({
+                      ...prev,
+                      isOpen: false,
+                      isRunning: false,
+                    }))
+                  }
+                  className="px-2.5 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-xs font-bold cursor-pointer"
+                >
+                  ✕ Cerrar
+                </button>
+              </div>
+            </div>
+
+            {!twoBallsSim.chosenTopic ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+                {[twoBallsSim.ball1, twoBallsSim.ball2].map(
+                  (ball, idx) =>
+                    ball && (
+                      <div
+                        key={ball.id}
+                        className="p-5 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border-2 border-[#D97757]/50 space-y-3 flex flex-col justify-between"
+                      >
+                        <div className="space-y-1.5">
+                          <span className="px-2.5 py-1 rounded-full bg-[#D97757] text-white text-xs font-extrabold">
+                            🎱 BOLA {idx + 1} · [{ball.id}]
+                          </span>
+                          <h4 className="text-sm font-bold pt-1">
+                            {ball.title}
+                          </h4>
+                          <p className="text-[11px] text-stone-500">
+                            Estado actual en tu temario:{' '}
+                            <b>{topicData[ball.id]?.status || 'Pendiente'}</b>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setTwoBallsSim((prev) => ({
+                              ...prev,
+                              chosenTopic: ball,
+                              isRunning: true,
+                              secondsLeft: 4800,
+                              userDraft: '',
+                              auditResult: null,
+                            }))
+                          }
+                          className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold cursor-pointer"
+                        >
+                          ✍️ Elegir esta Bola e Iniciar Reloj de 80 Minutos (Sin Apuntes)
+                        </button>
+                      </div>
+                    )
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-xs flex flex-wrap justify-between items-center gap-2">
+                  <span>
+                    <b>🔒 Modo Examen Real (Sin Ayuda):</b> Redacta el esquema y desarrollo sin mirar el PDF. Palabras escritas:{' '}
+                    <b>
+                      {twoBallsSim.userDraft.trim()
+                        ? twoBallsSim.userDraft.trim().split(/\s+/).length
+                        : 0}
+                    </b>{' '}
+                    / Meta 1.850 pal.
+                  </span>
+                  <button
+                    onClick={() =>
+                      setTwoBallsSim((prev) => ({
+                        ...prev,
+                        isRunning: !prev.isRunning,
+                      }))
+                    }
+                    className="px-2.5 py-1 rounded bg-amber-700 text-white font-bold text-[11px] cursor-pointer"
+                  >
+                    {twoBallsSim.isRunning ? '⏸ Pausar Reloj' : '▶ Reanudar'}
+                  </button>
+                </div>
+
+                <textarea
+                  rows={12}
+                  value={twoBallsSim.userDraft}
+                  onChange={(e) =>
+                    setTwoBallsSim((prev) => ({
+                      ...prev,
+                      userDraft: e.target.value,
+                    }))
+                  }
+                  placeholder="1. INTRODUCCIÓN Y ENCUADRE CONSTITUCIONAL... 2. DESARROLLO DE SUB-EPÍGRAFES OFICIALES... 3. LEY 12/2022 (ARTS. 16.2, 40 Y 69)... 4. CONCLUSIÓN Y EVALUACIÓN..."
+                  className="w-full p-4 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800 font-serif leading-relaxed"
+                />
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      const audit = auditDocumentTextValidity(
+                        twoBallsSim.userDraft,
+                        twoBallsSim.chosenTopic
+                      );
+                      setTwoBallsSim((prev) => ({
+                        ...prev,
+                        isRunning: false,
+                        auditResult: audit,
+                      }));
+                    }}
+                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer"
+                  >
+                    ✔ Entregar Examen en Frío y Auditar con Rúbrica Oficial (70/15/10/5)
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const t = twoBallsSim.chosenTopic;
+                      setTwoBallsSim((prev) => ({
+                        ...prev,
+                        isOpen: false,
+                        isRunning: false,
+                      }));
+                      handleGenerateMagistralTopic(t);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#D97757] text-white text-xs font-bold cursor-pointer"
+                  >
+                    📖 Abrir Solución Magistral 10/10 de [{twoBallsSim.chosenTopic.id}]
+                  </button>
+                </div>
+
+                {twoBallsSim.auditResult && (
+                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 text-xs space-y-2">
+                    <div className="font-extrabold text-sm text-emerald-900 dark:text-emerald-200">
+                      Calificación en Frío: {twoBallsSim.auditResult.finalScore} / 10 · Cobertura de Epígrafes BOCM:{' '}
+                      {twoBallsSim.auditResult.coveragePct}%
+                    </div>
+                    {twoBallsSim.auditResult.missingEpigraphs?.length > 0 && (
+                      <div className="text-rose-700">
+                        <b>Sub-epígrafes oficiales que te faltaron desarrollar:</b>{' '}
+                        {twoBallsSim.auditResult.missingEpigraphs.join(' · ')}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DEL SIMULADOR DEL DÍA DE LA LECTURA PÚBLICA ANTE EL TRIBUNAL (VOZ Y RESPIRACIÓN) */}
+      {tribunalReader.isOpen && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-stone-900 max-w-4xl w-full rounded-2xl p-6 border shadow-2xl space-y-4 my-8">
+            {(() => {
+              const words = tribunalReader.text.trim()
+                ? tribunalReader.text.trim().split(/\s+/).length
+                : 0;
+              const targetReadMinutes = Math.max(1, Math.round(words / 130));
+              const sentences = tribunalReader.text
+                .split(/(?<=[.?!])\s+/)
+                .filter((s) => s.trim().length > 0);
+              const longSentencesCount = sentences.filter(
+                (s) => s.trim().split(/\s+/).length > 45
+              ).length;
+              const currentWpm =
+                tribunalReader.elapsedSeconds > 10
+                  ? Math.round((words / tribunalReader.elapsedSeconds) * 60)
+                  : 130;
+
+              return (
+                <>
+                  <div className="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+                    <div>
+                      <span className="text-[11px] font-extrabold text-[#D97757] uppercase block">
+                        🎙️ ENTRENADOR DE LECTURA PÚBLICA ANTE EL TRIBUNAL (META: 130 PALABRAS/MIN · DICCIÓN Y PAUSAS)
+                      </span>
+                      <h3 className="text-base font-bold">
+                        {tribunalReader.title}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(() => {
+                        const remSec = Math.max(
+                          0,
+                          (tribunalReader.targetLimitSeconds ||
+                            targetReadMinutes * 60) -
+                            tribunalReader.elapsedSeconds
+                        );
+                        return (
+                          <span
+                            className={`px-3 py-1 rounded-xl font-mono font-extrabold text-xs border ${
+                              remSec <= 60 && tribunalReader.isRunning
+                                ? 'bg-rose-100 text-rose-900 border-rose-400 animate-pulse'
+                                : 'bg-amber-50 dark:bg-stone-800 text-amber-950 dark:text-amber-200 border-amber-300'
+                            }`}
+                          >
+                            ⏳ Resta:{' '}
+                            {Math.floor(remSec / 60)}:
+                            {String(remSec % 60).padStart(2, '0')} · Leído:{' '}
+                            {Math.floor(tribunalReader.elapsedSeconds / 60)}:
+                            {String(
+                              tribunalReader.elapsedSeconds % 60
+                            ).padStart(2, '0')}
+                          </span>
+                        );
+                      })()}
+                      <select
+                        value={tribunalReader.targetLimitSeconds || 900}
+                        onChange={(e) =>
+                          setTribunalReader((prev) => ({
+                            ...prev,
+                            targetLimitSeconds: Number(e.target.value),
+                            elapsedSeconds: 0,
+                          }))
+                        }
+                        className="px-2 py-1 rounded-lg border text-xs font-bold bg-[#FAF8F5] dark:bg-stone-800 cursor-pointer"
+                        title="Seleccionar tiempo del temporizador de lectura"
+                      >
+                        <option value={600}>⏱ Meta 10 min (Lectura rápida)</option>
+                        <option value={720}>⏱ Meta 12 min (1.550 pal)</option>
+                        <option value={900}>⏱ Meta 15 min (Tribunal estándar)</option>
+                        <option value={1200}>⏱ Meta 20 min (Lectura extensa)</option>
+                        <option value={2700}>⏱ Meta 45 min (Repaso profundo)</option>
+                        <option value={5400}>⏱ Meta 90 min (Simulacro escrito)</option>
+                      </select>
+                      <button
+                        onClick={() =>
+                          setTribunalReader((prev) => ({
+                            ...prev,
+                            isRunning: !prev.isRunning,
+                          }))
+                        }
+                        className="px-3 py-1 rounded-lg bg-[#D97757] text-white text-xs font-bold cursor-pointer"
+                      >
+                        {tribunalReader.isRunning ? '⏸ Pausar Lectura' : '▶ Iniciar Cronómetro Voz'}
+                      </button>
+                      <button
+                        onClick={() =>
+                          setTribunalReader((prev) => ({
+                            ...prev,
+                            elapsedSeconds: 0,
+                            isRunning: false,
+                          }))
+                        }
+                        className="px-2.5 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-xs font-bold cursor-pointer"
+                      >
+                        ↺ Reiniciar
+                      </button>
+                      <button
+                        onClick={() =>
+                          setTribunalReader((prev) => ({
+                            ...prev,
+                            isOpen: false,
+                            isRunning: false,
+                          }))
+                        }
+                        className="px-2.5 py-1 rounded-lg bg-rose-700 text-white text-xs font-bold cursor-pointer"
+                      >
+                        ✕ Cerrar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border">
+                      <span className="text-[10px] text-stone-500 block">
+                        Extensión y Tiempo de Lectura Oral
+                      </span>
+                      <b>
+                        {words} palabras · ~{targetReadMinutes} min en voz alta (a 130 pal/m)
+                      </b>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border">
+                      <span className="text-[10px] text-stone-500 block">
+                        Alerta de Ahogo Vocal (&gt;45 pal/frase)
+                      </span>
+                      <b
+                        className={
+                          longSentencesCount > 0
+                            ? 'text-amber-700'
+                            : 'text-emerald-700'
+                        }
+                      >
+                        {longSentencesCount > 0
+                          ? `⚠️ ${longSentencesCount} frases largas (marcadas en amarillo para tomar aire)`
+                          : '✔ Ritmo respiratorio óptimo'}
+                      </b>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border flex justify-between items-center">
+                      <div>
+                        <span className="text-[10px] text-stone-500 block">
+                          Tamaño Teleprompter
+                        </span>
+                        <b>Ritmo actual: ~{currentWpm} pal/min</b>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() =>
+                            setTribunalReader((p) => ({
+                              ...p,
+                              fontSize: 'text-sm',
+                            }))
+                          }
+                          className="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer"
+                        >
+                          A-
+                        </button>
+                        <button
+                          onClick={() =>
+                            setTribunalReader((p) => ({
+                              ...p,
+                              fontSize: 'text-lg',
+                            }))
+                          }
+                          className="px-2 py-1 rounded border text-[10px] font-bold cursor-pointer"
+                        >
+                          A+
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`max-h-[60vh] overflow-y-auto p-5 rounded-2xl bg-[#FAF8F5] dark:bg-stone-950 border font-serif leading-loose space-y-2 ${tribunalReader.fontSize}`}
+                  >
+                    {sentences.map((sent, i) => {
+                      const wCount = sent.trim().split(/\s+/).length;
+                      const isLong = wCount > 45;
+                      const hasLaw =
+                        /\b(Ley|Decreto|Art[ií]culo|Art\.|Constituci[oó]n|Plazo|10\s+d[ií]as|PIAS|HSUe)\b/i.test(
+                          sent
+                        );
+                      return (
+                        <span
+                          key={i}
+                          className={`inline ${
+                            isLong
+                              ? 'bg-amber-100/90 dark:bg-amber-950/60 px-1 rounded border-b border-amber-400'
+                              : ''
+                          }`}
+                        >
+                          {hasLaw ? <b>{sent}</b> : sent}{' '}
+                          {isLong && (
+                            <span
+                              className="text-[10px] font-sans font-extrabold text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded bg-amber-200/80 mx-1"
+                              title="Frase de más de 45 palabras: haz una pausa respiratoria aquí ante el Tribunal"
+                            >
+                              🫁 [RESPIRA · {wCount} pal]
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -2463,74 +3722,199 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {activeModule === '02' && (
           <div className="space-y-4">
-            <div className="bg-white dark:bg-stone-900 p-5 rounded-2xl border flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-              <div>
-                <h2 className="text-base font-bold">
-                  02 · Banco Común Verificado ({questionBank.length} Preguntas)
-                </h2>
-                <p className="text-xs text-stone-500">
-                  Incluye las 60 preguntas oficiales de alta dificultad (CAM,
-                  SERMAS y Ayuntamiento) y distractores de Mutación Jurídica.
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  const existingIds = new Set(questionBank.map((q) => q.id));
-                  const toAdd = HIGH_DIFFICULTY_60_QUESTIONS.filter(
-                    (q) => !existingIds.has(q.id)
-                  );
-                  if (toAdd.length > 0) {
-                    setQuestionBank((prev) => [...toAdd, ...prev]);
-                    setStatusBanner(
-                      `🔥 ¡${toAdd.length} preguntas de alta dificultad añadidas al Banco Común!`
-                    );
-                  } else {
-                    setStatusBanner(
-                      'ℹ️ Las 60 preguntas de alta dificultad ya están activas en tu Banco Común.'
-                    );
-                  }
-                  setTimeout(() => setStatusBanner(''), 4000);
-                }}
-                className="px-4 py-2 rounded-xl bg-[#D97757] hover:bg-[#c26446] text-white text-xs font-bold cursor-pointer shrink-0"
-              >
-                🔥 Verificar / Cargar las 60 Preguntas Trampa (2026)
-              </button>
-            </div>
-            <div className="space-y-2.5">
-              {questionBank.map((q) => (
-                <div
-                  key={q.id}
-                  className="p-4 rounded-xl bg-white dark:bg-stone-900 border text-xs space-y-1.5"
-                >
-                  <div className="flex justify-between">
-                    <span className="font-extrabold text-[#D97757]">
-                      [{q.topicId}] · {q.originType} · {q.difficulty}
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800">
-                      Caja Leitner: {leitnerBoxes[q.id] || 2}
-                    </span>
-                  </div>
-                  <p className="font-bold">{q.question}</p>
-                  <div className="space-y-1 pl-2">
-                    {q.options.map((opt, idx) => (
-                      <p
-                        key={idx}
-                        className={
-                          idx === q.correctIndex
-                            ? 'text-emerald-700 font-bold'
-                            : 'text-stone-500'
-                        }
-                      >
-                        {idx === q.correctIndex ? '✔ ' : '• '}
-                        {opt}
-                      </p>
-                    ))}
-                  </div>
-                  <p className="text-[11px] text-stone-500 pt-1 border-t">
-                    <b>Justificación jurídica:</b> {q.explanation}
+            <div className="bg-white dark:bg-stone-900 p-5 rounded-2xl border space-y-3">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
+                <div>
+                  <h2 className="text-base font-bold">
+                    02 · Banco Común Verificado ({questionBank.length} Preguntas
+                    Totales)
+                  </h2>
+                  <p className="text-xs text-stone-500">
+                    Puedes borrar cualquier pregunta individual con el botón{' '}
+                    <b>🗑️ Borrar</b>, limpiar preguntas defectuosas/BOE o borrar
+                    todas las de un tema concreto.
                   </p>
                 </div>
-              ))}
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      const before = questionBank.length;
+                      const cleaned = questionBank.filter(
+                        (q) => !isDefectiveOrAdminQuestion(q)
+                      );
+                      setQuestionBank(cleaned);
+                      setStatusBanner(
+                        `🧹 Limpieza completada: Eliminadas ${
+                          before - cleaned.length
+                        } preguntas de Ficha Técnica/BOE u opciones repetidas.`
+                      );
+                      setTimeout(() => setStatusBanner(''), 4500);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold cursor-pointer"
+                  >
+                    🧹 Purgar Preguntas BOE / Defectuosas
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const existingIds = new Set(questionBank.map((q) => q.id));
+                      const toAdd = HIGH_DIFFICULTY_60_QUESTIONS.filter(
+                        (q) =>
+                          !existingIds.has(q.id) &&
+                          !isDefectiveOrAdminQuestion(q)
+                      );
+                      if (toAdd.length > 0) {
+                        setQuestionBank((prev) => [...toAdd, ...prev]);
+                        setStatusBanner(
+                          `🔥 ¡${toAdd.length} preguntas oficiales de alta dificultad añadidas al Banco Común!`
+                        );
+                      } else {
+                        setStatusBanner(
+                          'ℹ️ Las preguntas oficiales de alta dificultad ya están activas.'
+                        );
+                      }
+                      setTimeout(() => setStatusBanner(''), 4000);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-[#D97757] hover:bg-[#c26446] text-white text-xs font-bold cursor-pointer"
+                  >
+                    🔥 Restaurar 60 Oficiales
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const baseOnly = HIGH_DIFFICULTY_60_QUESTIONS.filter(
+                        (q) => !isDefectiveOrAdminQuestion(q)
+                      );
+                      setQuestionBank(baseOnly);
+                      setStatusBanner(
+                        `🗑️ Se han borrado todas las preguntas subidas y se ha reiniciado el banco con las ${baseOnly.length} preguntas base.`
+                      );
+                      setTimeout(() => setStatusBanner(''), 4500);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold cursor-pointer"
+                  >
+                    🗑️ Reiniciar Banco (Borrar Subidas)
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+                <select
+                  value={bankFilterTopic}
+                  onChange={(e) => setBankFilterTopic(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border text-xs font-bold bg-[#FAF8F5] dark:bg-stone-800 cursor-pointer"
+                >
+                  <option value="Todos">
+                    📋 Ver Todos los Temas ({questionBank.length} pregs)
+                  </option>
+                  {Array.from(new Set(questionBank.map((q) => q.topicId)))
+                    .sort()
+                    .map((tid) => (
+                      <option key={tid} value={tid}>
+                        Tema [{tid}] (
+                        {questionBank.filter((q) => q.topicId === tid).length}{' '}
+                        pregs)
+                      </option>
+                    ))}
+                </select>
+
+                <input
+                  type="text"
+                  value={bankSearchText}
+                  onChange={(e) => setBankSearchText(e.target.value)}
+                  placeholder="Buscar texto en preguntas u opciones..."
+                  className="flex-1 min-w-[200px] px-3 py-1.5 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800"
+                />
+
+                {bankFilterTopic !== 'Todos' && (
+                  <button
+                    onClick={() => {
+                      const countTopic = questionBank.filter(
+                        (q) => q.topicId === bankFilterTopic
+                      ).length;
+                      setQuestionBank((prev) =>
+                        prev.filter((q) => q.topicId !== bankFilterTopic)
+                      );
+                      setStatusBanner(
+                        `🗑️ Eliminadas las ${countTopic} preguntas del tema [${bankFilterTopic}].`
+                      );
+                      setBankFilterTopic('Todos');
+                      setTimeout(() => setStatusBanner(''), 4000);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-600 hover:text-white text-rose-900 border border-rose-300 text-xs font-bold cursor-pointer"
+                  >
+                    🗑️ Borrar todas las de [{bankFilterTopic}]
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              {questionBank
+                .filter(
+                  (q) =>
+                    (bankFilterTopic === 'Todos' ||
+                      q.topicId === bankFilterTopic) &&
+                    (!bankSearchText.trim() ||
+                      `${q.question} ${(q.options || []).join(' ')}`
+                        .toLowerCase()
+                        .includes(bankSearchText.toLowerCase()))
+                )
+                .map((q) => (
+                  <div
+                    key={q.id}
+                    className="p-4 rounded-xl bg-white dark:bg-stone-900 border text-xs space-y-1.5"
+                  >
+                    <div className="flex flex-wrap justify-between items-center gap-2">
+                      <span className="font-extrabold text-[#D97757]">
+                        [{q.topicId}] · {q.originType} · {q.difficulty}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800">
+                          Caja Leitner: {leitnerBoxes[q.id] || 2}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setQuestionBank((prev) =>
+                              prev.filter((item) => item.id !== q.id)
+                            );
+                            setFailedQuestionIds((prev) =>
+                              prev.filter((id) => id !== q.id)
+                            );
+                            setStatusBanner(
+                              `🗑️ Pregunta eliminada permanentemente del Banco Común.`
+                            );
+                            setTimeout(() => setStatusBanner(''), 3000);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-700 hover:text-white text-rose-800 font-extrabold text-[11px] cursor-pointer transition"
+                          title="Borrar esta pregunta del banco"
+                        >
+                          🗑️ Borrar pregunta
+                        </button>
+                      </div>
+                    </div>
+                    <p className="font-bold">{q.question}</p>
+                    <div className="space-y-1 pl-2">
+                      {q.options.map((opt, idx) => (
+                        <p
+                          key={idx}
+                          className={
+                            idx === q.correctIndex
+                              ? 'text-emerald-700 font-bold'
+                              : 'text-stone-500'
+                          }
+                        >
+                          {idx === q.correctIndex ? '✔ ' : '• '}
+                          {opt}
+                        </p>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-stone-500 pt-1 border-t">
+                      <b>Justificación jurídica:</b> {q.explanation}
+                    </p>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -2597,6 +3981,193 @@ const restoreFullMasterBackup = async (file) => {
                     📦 Vaciar Caja 1 Leitner ({leitnerCounts.box1})
                   </button>
                 </div>
+
+                {/* MOTOR CLOZE TEST ACTIVO (SPRINT 10 MINUTOS DE HUECOS EN BLANCO) */}
+                <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border space-y-3 pt-4">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-purple-700 dark:text-purple-300 block">
+                        🧩 ENTRENADOR DE MEMORIA EXACTA · CLOZE TEST (HUECOS EN BLANCO · SPRINT 10 MIN)
+                      </span>
+                      <h3 className="text-sm font-bold">
+                        Oculta automáticamente plazos, leyes, baremos y autores para fijar datos puros sin pistas
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                    <button
+                      onClick={() => buildClozeCardsFromBank('all', 20)}
+                      className="py-2.5 px-3 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold cursor-pointer"
+                    >
+                      🧩 Sprint Mixto (20)
+                    </button>
+                    <button
+                      onClick={() => buildClozeCardsFromBank('plazos', 15)}
+                      className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold cursor-pointer"
+                    >
+                      ⏱️ Solo Plazos
+                    </button>
+                    <button
+                      onClick={() => buildClozeCardsFromBank('leyes', 15)}
+                      className="py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+                    >
+                      ⚖️ Leyes y Arts.
+                    </button>
+                    <button
+                      onClick={() => buildClozeCardsFromBank('escalas', 15)}
+                      className="py-2.5 px-3 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold cursor-pointer"
+                    >
+                      📊 Baremos/Cifras
+                    </button>
+                    <button
+                      onClick={() => buildClozeCardsFromBank('autores', 15)}
+                      className="py-2.5 px-3 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold cursor-pointer"
+                    >
+                      🎓 Autores/Órganos
+                    </button>
+                  </div>
+                </div>
+
+                {clozeSession && (
+                  <div className="p-5 rounded-2xl bg-purple-50/90 dark:bg-purple-950/40 border-2 border-purple-400 space-y-4 text-xs">
+                    <div className="flex flex-wrap justify-between items-center gap-2 border-b border-purple-200 pb-2">
+                      <div>
+                        <span className="font-extrabold text-purple-900 dark:text-purple-200 uppercase block">
+                          🧩 SPRINT CLOZE ACTIVO ({clozeSession.categoryFilter.toUpperCase()}) · TARJETA {clozeSession.currentIdx + 1} DE {clozeSession.cards.length}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-1 rounded bg-white dark:bg-stone-900 font-mono font-extrabold">
+                          ⏱ {Math.floor(clozeSession.timeLeft / 60)}:{String(clozeSession.timeLeft % 60).padStart(2, '0')}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setClozeSession((p) => ({
+                              ...p,
+                              strictWriteMode: !p.strictWriteMode,
+                            }))
+                          }
+                          className="px-2.5 py-1 rounded bg-purple-700 text-white font-bold cursor-pointer"
+                        >
+                          {clozeSession.strictWriteMode
+                            ? '⌨️ Modo Teclear Estricto'
+                            : '🔘 Modo Chips Rápidos'}
+                        </button>
+                        <button
+                          onClick={() => setClozeSession(null)}
+                          className="px-2.5 py-1 rounded bg-stone-200 dark:bg-stone-800 font-bold cursor-pointer"
+                        >
+                          ✕ Cerrar Cloze
+                        </button>
+                      </div>
+                    </div>
+
+                    {clozeSession.cards.length > 0 && (() => {
+                      const currentCard = clozeSession.cards[clozeSession.currentIdx];
+                      const currentRes = clozeSession.results[currentCard.id];
+                      return (
+                        <div className="space-y-3">
+                          <div className="text-[11px] font-bold text-[#D97757]">
+                            Tema [{currentCard.topicId}] · {currentCard.promptContext}
+                          </div>
+                          <div className="p-4 rounded-xl bg-white dark:bg-stone-900 border text-sm font-bold leading-relaxed">
+                            {currentCard.maskedSentence}
+                          </div>
+
+                          {!clozeSession.strictWriteMode ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                              {currentCard.choices.map((ch, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => submitClozeAnswer(ch)}
+                                  className={`p-2.5 rounded-xl border font-extrabold cursor-pointer transition ${
+                                    currentRes?.userValue === ch
+                                      ? currentRes.isCorrect
+                                        ? 'bg-emerald-700 text-white border-emerald-800'
+                                        : 'bg-rose-700 text-white border-rose-800'
+                                      : 'bg-white dark:bg-stone-900 hover:bg-purple-100'
+                                  }`}
+                                >
+                                  {ch}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={clozeSession.userInput}
+                                onChange={(e) =>
+                                  setClozeSession((p) => ({
+                                    ...p,
+                                    userInput: e.target.value,
+                                  }))
+                                }
+                                placeholder="Escribe el plazo, ley, cifra o autor exacto..."
+                                className="flex-1 p-2.5 rounded-xl border bg-white dark:bg-stone-900 font-bold"
+                              />
+                              <button
+                                onClick={() =>
+                                  submitClozeAnswer(clozeSession.userInput)
+                                }
+                                className="px-4 py-2 rounded-xl bg-purple-700 text-white font-bold cursor-pointer"
+                              >
+                                ✔ Comprobar
+                              </button>
+                            </div>
+                          )}
+
+                          {clozeSession.showSolutionCurrent && currentRes && (
+                            <div
+                              className={`p-3 rounded-xl border font-semibold ${
+                                currentRes.isCorrect
+                                  ? 'bg-emerald-100 text-emerald-950 border-emerald-300'
+                                  : 'bg-rose-100 text-rose-950 border-rose-300'
+                              }`}
+                            >
+                              {currentRes.isCorrect ? '✔ ¡Exacto! ' : '✘ Fallo registrado en Caja 1 Leitner. '}
+                              Dato oficial: <b>{currentCard.targetAnswer}</b> — {currentCard.explanation}
+                            </div>
+                          )}
+
+                          <div className="flex justify-between pt-2">
+                            <button
+                              disabled={clozeSession.currentIdx === 0}
+                              onClick={() =>
+                                setClozeSession((p) => ({
+                                  ...p,
+                                  currentIdx: p.currentIdx - 1,
+                                  showSolutionCurrent: false,
+                                  userInput: '',
+                                }))
+                              }
+                              className="px-3 py-1.5 rounded-lg bg-white dark:bg-stone-900 border font-bold cursor-pointer"
+                            >
+                              ← Anterior
+                            </button>
+                            <button
+                              disabled={
+                                clozeSession.currentIdx >=
+                                clozeSession.cards.length - 1
+                              }
+                              onClick={() =>
+                                setClozeSession((p) => ({
+                                  ...p,
+                                  currentIdx: p.currentIdx + 1,
+                                  showSolutionCurrent: false,
+                                  userInput: '',
+                                }))
+                              }
+                              className="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-bold cursor-pointer"
+                            >
+                              Siguiente Hueco →
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             ) : !examSession.isFinished ? (
               <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-4">
@@ -2713,10 +4284,22 @@ const restoreFullMasterBackup = async (file) => {
 
                       <div className="space-y-3">
                         <div className="flex flex-wrap justify-between items-center gap-2">
-                          <span className="text-[11px] font-extrabold text-[#D97757]">
-                            Tema [{currentQ.topicId}] ·{' '}
-                            {currentQ.originType || 'Oficial'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-extrabold text-[#D97757]">
+                              Tema [{currentQ.topicId}] ·{' '}
+                              {currentQ.originType || 'Oficial'}
+                            </span>
+                            {examSession.currentIdx >=
+                              (activeConvocatoria === 'ayto'
+                                ? 120
+                                : activeConvocatoria === 'sermas'
+                                ? 100
+                                : 80) && (
+                              <span className="px-2 py-0.5 rounded-md bg-purple-700 text-white text-[10px] font-extrabold animate-pulse">
+                                🛡️ PREGUNTA OFICIAL DE RESERVA (MÁXIMA CONCENTRACIÓN)
+                              </span>
+                            )}
+                          </div>
 
                           <div className="flex flex-wrap gap-2">
                             <button
@@ -2773,6 +4356,37 @@ const restoreFullMasterBackup = async (file) => {
                                 ⬜ Dejar en Blanco
                               </button>
                             )}
+                            <button
+                              onClick={() => {
+                                const qIdToDelete = currentQ.id;
+                                setQuestionBank((prev) =>
+                                  prev.filter((item) => item.id !== qIdToDelete)
+                                );
+                                setExamSession((prev) => {
+                                  if (!prev) return null;
+                                  const remainingQs = prev.questions.filter(
+                                    (item) => item.id !== qIdToDelete
+                                  );
+                                  if (remainingQs.length === 0) return null;
+                                  return {
+                                    ...prev,
+                                    questions: remainingQs,
+                                    currentIdx: Math.min(
+                                      prev.currentIdx,
+                                      remainingQs.length - 1
+                                    ),
+                                  };
+                                });
+                                setStatusBanner(
+                                  '🗑️ Pregunta eliminada definitivamente del Banco y retirada de este simulacro.'
+                                );
+                                setTimeout(() => setStatusBanner(''), 3500);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-700 hover:text-white text-rose-800 text-[11px] font-extrabold cursor-pointer"
+                              title="Si esta pregunta tiene errata o es de convocatoria, bórrala aquí mismo"
+                            >
+                              🗑️ Borrar del Banco
+                            </button>
                           </div>
                         </div>
 
@@ -3017,6 +4631,38 @@ const restoreFullMasterBackup = async (file) => {
                         </b>
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-amber-200">
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border">
+                        <span className="text-[10px] text-stone-500 block">
+                          🧠 Índice de Fatiga Cognitiva (1.ª Mitad vs 2.ª Mitad)
+                        </span>
+                        <b
+                          className={
+                            examSession.riskReport.secondHalfErrors >
+                            examSession.riskReport.firstHalfErrors
+                              ? 'text-rose-700'
+                              : 'text-emerald-700'
+                          }
+                        >
+                          1.ª Mitad: {examSession.riskReport.firstHalfErrors} fallos · 2.ª Mitad: {examSession.riskReport.secondHalfErrors} fallos{' '}
+                          {examSession.riskReport.secondHalfErrors >
+                          examSession.riskReport.firstHalfErrors
+                            ? '(⚠️ Fatiga detectada en tramo final)'
+                            : '(✔ Concentración sostenida)'}
+                        </b>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border">
+                        <span className="text-[10px] text-stone-500 block">
+                          🛡️ Rendimiento en Preguntas de Reserva (&gt;{examSession.riskReport.ordCutoff})
+                        </span>
+                        <b className="text-purple-800 dark:text-purple-300">
+                          {examSession.riskReport.reserveTotal > 0
+                            ? `${examSession.riskReport.reserveHits} / ${examSession.riskReport.reserveTotal} acertadas en el tramo de reserva`
+                            : 'Test corto sin tramo de reserva'}
+                        </b>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -3114,15 +4760,84 @@ const restoreFullMasterBackup = async (file) => {
                 </h2>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {activeEssayView && (
+                  <select
+                    value={activeEssayView.topicId || 'E1'}
+                    onChange={async (e) => {
+                      const newTopicId = e.target.value;
+                      const newAudit = auditDocumentTextValidity(
+                        activeEssayView.text,
+                        newTopicId
+                      );
+                      const updatedItem = {
+                        ...activeEssayView,
+                        topicId: newTopicId,
+                        audit: newAudit,
+                      };
+                      setActiveEssayView(updatedItem);
+                      setEssaysLibrary((prev) =>
+                        prev.map((it) =>
+                          it.id === updatedItem.id ? updatedItem : it
+                        )
+                      );
+                      setDocumentsLibrary((prev) =>
+                        prev.map((it) =>
+                          it.id === updatedItem.id ? updatedItem : it
+                        )
+                      );
+                      await saveToStore(STORE_ESSAYS, [updatedItem]);
+                      await saveToStore(STORE_DOCS, [updatedItem]);
+                      setCalcEj2(Number(newAudit.finalScore));
+                      setStatusBanner(
+                        `🏷️ Tema reasignado a [${newTopicId}] con nota ${newAudit.finalScore}/10.`
+                      );
+                      setTimeout(() => setStatusBanner(''), 4000);
+                    }}
+                    className="px-2.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-xs font-bold border cursor-pointer"
+                    title="Cambiar el epígrafe oficial asignado a este tema"
+                  >
+                    {activeCatalog
+                      .filter((t) => !t.id.startsWith('G'))
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>
+                          [{t.id}] {t.title.slice(0, 42)}...
+                        </option>
+                      ))}
+                  </select>
+                )}
+
+                <button
+                  onClick={launchTwoBallsBlindDraw}
+                  className="px-3 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold cursor-pointer"
+                  title="Extrae 2 bolas al azar del bombo y entrena el examen de desarrollo a ciegas"
+                >
+                  🎱 Sorteo 2 Bolas (80m)
+                </button>
+
+                {activeEssayView && (
+                  <button
+                    onClick={() =>
+                      openTribunalPublicReader(
+                        `[${activeEssayView.topicId}] ${activeEssayView.name}`,
+                        activeEssayView.text
+                      )
+                    }
+                    className="px-3 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold cursor-pointer"
+                    title="Abrir teleprompter de lectura en voz alta ante el Tribunal (130 palabras/min)"
+                  >
+                    🎙️ Lectura ante Tribunal
+                  </button>
+                )}
+
                 <label className="px-3.5 py-2 rounded-xl bg-[#D97757] text-white text-xs font-bold cursor-pointer">
-                  📤 Subir Tema PDF a {activeConvocatoria.toUpperCase()}
+                  📤 Subir Tema Específico PDF (2.º Ej.)
                   <input
                     type="file"
                     accept=".pdf"
                     multiple
                     onChange={(e) =>
-                      processPdfUpload(e.target.files, true, activeCatalog[0])
+                      processPdfUpload(e.target.files, true, null)
                     }
                     className="hidden"
                   />
@@ -3306,27 +5021,173 @@ const restoreFullMasterBackup = async (file) => {
             </div>
 
             {essaysLibrary.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {essaysLibrary.map((es) => (
-                  <button
-                    key={es.id}
-                    onClick={() => {
-                      const refreshedAudit = auditDocumentTextValidity(
-                        es.text,
-                        es.topicId
+              <div className="space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {essaysLibrary.map((es) => {
+                      const isSelected = activeEssayView?.id === es.id;
+                      const isCoherent = es.audit?.coherence
+                        ? es.audit.coherence.isCoherent
+                        : true;
+                      return (
+                        <div
+                          key={es.id}
+                          className={`inline-flex items-center rounded-lg text-xs font-bold border transition overflow-hidden ${
+                            isSelected
+                              ? 'bg-[#D97757] text-white border-[#D97757] shadow-xs'
+                              : !isCoherent
+                              ? 'bg-rose-50 text-rose-900 border-rose-400'
+                              : 'bg-[#FAF8F5] dark:bg-stone-800 border-stone-300 dark:border-stone-700'
+                          }`}
+                        >
+                          <button
+                            onClick={() => {
+                              const refreshedAudit = auditDocumentTextValidity(
+                                es.text,
+                                es.topicId
+                              );
+                              setActiveEssayView({
+                                ...es,
+                                audit: refreshedAudit,
+                              });
+                            }}
+                            className="px-3 py-1.5 cursor-pointer text-left"
+                          >
+                            {!isCoherent ? '⚠️ ' : ''}[{es.topicId}]{' '}
+                            {es.name.slice(0, 28)}... (
+                            {es.audit?.finalScore || '9.5'}/10)
+                          </button>
+                          <button
+                            onClick={(ev) => {
+                              ev.stopPropagation();
+                              deleteEssayById(es.id);
+                            }}
+                            title="Borrar este tema porque está mal o tienes otro mejor"
+                            className={`px-2 py-1.5 cursor-pointer font-extrabold border-l ${
+                              isSelected
+                                ? 'border-white/30 hover:bg-black/20 text-white'
+                                : 'border-stone-300 hover:bg-rose-600 hover:text-white text-rose-600'
+                            }`}
+                          >
+                            ✕
+                          </button>
+                        </div>
                       );
-                      setActiveEssayView({ ...es, audit: refreshedAudit });
-                    }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition ${
-                      activeEssayView?.id === es.id
-                        ? 'bg-[#D97757] text-white shadow-xs'
-                        : 'bg-[#FAF8F5] dark:bg-stone-800 border'
-                    }`}
+                    })}
+                  </div>
+
+                  <button
+                    onClick={clearAllSavedEssays}
+                    className="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-900 border border-rose-300 text-[11px] font-bold cursor-pointer shrink-0"
                   >
-                    [{es.topicId}] {es.name.slice(0, 32)}... (
-                    {es.audit?.finalScore || '9.5'}/10)
+                    🗑️ Borrar Todos ({essaysLibrary.length})
                   </button>
-                ))}
+                </div>
+
+                {activeEssayView && (
+                  <div className="p-3 rounded-xl bg-stone-100 dark:bg-stone-800 border flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-[#D97757] block">
+                        📌 EPÍGRAFE OFICIAL EN DATAOPOSICIONES.JS ASIGNADO A ESTE DOCUMENTO:
+                      </span>
+                      <b className="text-stone-900 dark:text-white">
+                        [{activeEssayView.topicId}]{' '}
+                        {findTopicAcrossAllCatalogs(activeEssayView.topicId)
+                          ?.title || 'Tema no encontrado en catálogo'}
+                      </b>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
+                      <label className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] cursor-pointer">
+                        🔄 Sustituir por Nuevo PDF
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          multiple
+                          onChange={(e) =>
+                            processPdfUpload(
+                              e.target.files,
+                              true,
+                              findTopicAcrossAllCatalogs(activeEssayView.topicId)
+                            )
+                          }
+                          className="hidden"
+                        />
+                      </label>
+                      <button
+                        onClick={() => deleteEssayById(activeEssayView.id)}
+                        className="px-3 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-bold text-[11px] cursor-pointer"
+                      >
+                        🗑️ Borrar Tema
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {activeEssayView?.audit?.coherence &&
+                  !activeEssayView.audit.coherence.isCoherent && (
+                    <div className="p-3.5 rounded-xl bg-rose-100 dark:bg-rose-950/70 border-2 border-rose-500 text-rose-950 dark:text-rose-100 text-xs space-y-2">
+                      <div className="font-extrabold">
+                        {activeEssayView.audit.coherence.alertMsg}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {activeEssayView.audit.coherence.suggestedTopic && (
+                          <button
+                            onClick={async () => {
+                              const suggested =
+                                activeEssayView.audit.coherence.suggestedTopic;
+                              const reEnhanced =
+                                autoEnhanceStructureAndAnalysis(
+                                  activeEssayView.text,
+                                  suggested.id
+                                );
+                              const newAudit = auditDocumentTextValidity(
+                                reEnhanced,
+                                suggested.id
+                              );
+                              const updated = {
+                                ...activeEssayView,
+                                topicId: suggested.id,
+                                text: reEnhanced,
+                                audit: newAudit,
+                              };
+                              setActiveEssayView(updated);
+                              setEssaysLibrary((prev) =>
+                                prev.map((it) =>
+                                  it.id === updated.id ? updated : it
+                                )
+                              );
+                              setDocumentsLibrary((prev) =>
+                                prev.map((it) =>
+                                  it.id === updated.id ? updated : it
+                                )
+                              );
+                              await saveToStore(STORE_ESSAYS, [updated]);
+                              await saveToStore(STORE_DOCS, [updated]);
+                              setStatusBanner(
+                                `✅ Documento reubicado en su epígrafe correcto de dataOposiciones.js: [${suggested.id}] ${suggested.title}`
+                              );
+                              setTimeout(() => setStatusBanner(''), 5000);
+                            }}
+                            className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+                          >
+                            🔀 Reubicar automáticamente en [
+                            {activeEssayView.audit.coherence.suggestedTopic.id}]{' '}
+                            {activeEssayView.audit.coherence.suggestedTopic.title.slice(
+                              0,
+                              55
+                            )}
+                            ...
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteEssayById(activeEssayView.id)}
+                          className="px-3.5 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-bold cursor-pointer"
+                        >
+                          🗑️ Eliminar este PDF erróneo
+                        </button>
+                      </div>
+                    </div>
+                  )}
               </div>
             )}
 
@@ -3411,14 +5272,13 @@ const restoreFullMasterBackup = async (file) => {
                   <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                     <div>
                       <span className="text-[10px] font-bold uppercase text-stone-500 block">
-                        ✍️ Calibración a Escritura Manuscrita Real (23
-                        palabras/min · Meta: 1.850 palabras en 80 min + 10 min
-                        Esqueleto)
+                        ✍️ Calibración de Limpieza, Estructura Numerada y
+                        Capacidad Analítica (Sin recortar contenido)
                       </span>
                       <span
                         className={`text-xs font-extrabold ${
                           activeEssayView.audit?.wordCount >= 1650 &&
-                          activeEssayView.audit?.wordCount <= 2000
+                          activeEssayView.audit?.wordCount <= 2200
                             ? 'text-emerald-700'
                             : 'text-amber-700'
                         }`}
@@ -3433,44 +5293,84 @@ const restoreFullMasterBackup = async (file) => {
                       </span>
                     </div>
 
-                    <button
-                      onClick={async () => {
-                        const adjustedText = adjustTextToHandwrittenTarget(
-                          activeEssayView.text,
-                          1850
-                        );
-                        const newAudit = auditDocumentTextValidity(
-                          adjustedText,
-                          activeEssayView.topicId
-                        );
-                        const updatedItem = {
-                          ...activeEssayView,
-                          text: adjustedText,
-                          audit: newAudit,
-                        };
-                        setActiveEssayView(updatedItem);
-                        setEssaysLibrary((prev) =>
-                          prev.map((it) =>
-                            it.id === updatedItem.id ? updatedItem : it
-                          )
-                        );
-                        setDocumentsLibrary((prev) =>
-                          prev.map((it) =>
-                            it.id === updatedItem.id ? updatedItem : it
-                          )
-                        );
-                        await saveToStore(STORE_ESSAYS, [updatedItem]);
-                        await saveToStore(STORE_DOCS, [updatedItem]);
-                        setCalcEj2(Number(newAudit.finalScore));
-                        setStatusBanner(
-                          `✂️ Tema ajustado a velocidad manuscrita real: ${newAudit.wordCount} palabras (${newAudit.handwrittenMinutes} min a bolígrafo).`
-                        );
-                        setTimeout(() => setStatusBanner(''), 4000);
-                      }}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] cursor-pointer shrink-0"
-                    >
-                      ✂️ Ajustar a 1.850 Palabras Manuscritas (80m)
-                    </button>
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
+                      <button
+                        onClick={async () => {
+                          const adjustedText = adjustTextToHandwrittenTarget(
+                            activeEssayView.text
+                          );
+                          const newAudit = auditDocumentTextValidity(
+                            adjustedText,
+                            activeEssayView.topicId
+                          );
+                          const updatedItem = {
+                            ...activeEssayView,
+                            text: adjustedText,
+                            audit: newAudit,
+                          };
+                          setActiveEssayView(updatedItem);
+                          setEssaysLibrary((prev) =>
+                            prev.map((it) =>
+                              it.id === updatedItem.id ? updatedItem : it
+                            )
+                          );
+                          setDocumentsLibrary((prev) =>
+                            prev.map((it) =>
+                              it.id === updatedItem.id ? updatedItem : it
+                            )
+                          );
+                          await saveToStore(STORE_ESSAYS, [updatedItem]);
+                          await saveToStore(STORE_DOCS, [updatedItem]);
+                          setCalcEj2(Number(newAudit.finalScore));
+                          setStatusBanner(
+                            `🧹 Cabeceras de PDF y duplicados limpiados sin recortar frases (${newAudit.wordCount} palabras).`
+                          );
+                          setTimeout(() => setStatusBanner(''), 4000);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] cursor-pointer"
+                      >
+                        🧹 Limpiar Cabeceras PDF (Sin Recortar)
+                      </button>
+
+                      <button
+                        onClick={async () => {
+                          const enhancedText = autoEnhanceStructureAndAnalysis(
+                            activeEssayView.text,
+                            activeEssayView.topicId
+                          );
+                          const newAudit = auditDocumentTextValidity(
+                            enhancedText,
+                            activeEssayView.topicId
+                          );
+                          const updatedItem = {
+                            ...activeEssayView,
+                            text: enhancedText,
+                            audit: newAudit,
+                          };
+                          setActiveEssayView(updatedItem);
+                          setEssaysLibrary((prev) =>
+                            prev.map((it) =>
+                              it.id === updatedItem.id ? updatedItem : it
+                            )
+                          );
+                          setDocumentsLibrary((prev) =>
+                            prev.map((it) =>
+                              it.id === updatedItem.id ? updatedItem : it
+                            )
+                          );
+                          await saveToStore(STORE_ESSAYS, [updatedItem]);
+                          await saveToStore(STORE_DOCS, [updatedItem]);
+                          setCalcEj2(Number(newAudit.finalScore));
+                          setStatusBanner(
+                            `✨ Estructura y Capacidad Analítica optimizadas al 100%: Nota Global ${newAudit.finalScore}/10.`
+                          );
+                          setTimeout(() => setStatusBanner(''), 4500);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-bold text-[11px] cursor-pointer"
+                      >
+                        ✨ Auto-Estructurar y Subir Analítico (10/10)
+                      </button>
+                    </div>
                   </div>
 
                   {activeEssayView.audit?.acronymAlerts?.length > 0 ? (
@@ -3790,6 +5690,66 @@ const restoreFullMasterBackup = async (file) => {
                   </div>
                 )}
 
+                {(() => {
+                  const topicObj =
+                    findTopicAcrossAllCatalogs(activeEssayView.topicId) || {
+                      id: activeEssayView.topicId,
+                      title: activeEssayView.name,
+                      lawUpdate: '',
+                    };
+                  const currentStory =
+                    storiesLibrary.find(
+                      (s) => s.topicId === activeEssayView.topicId
+                    ) ||
+                    buildNarrativeStoryForTopic(
+                      topicObj,
+                      activeEssayView.text
+                    );
+
+                  return (
+                    <div className="p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border-2 border-amber-300 dark:border-amber-700 space-y-2.5 text-xs">
+                      <div className="flex flex-wrap justify-between items-center gap-2">
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase text-amber-800 dark:text-amber-300 block">
+                            🧠 MEMORIA NARRATIVA Y LÓGICA CAUSA-EFECTO (NO VA AL PDF DE EXAMEN · SOLO PARA TU RECUERDO)
+                          </span>
+                          <h4 className="text-sm font-extrabold text-amber-950 dark:text-amber-100">
+                            {currentStory.title}
+                          </h4>
+                        </div>
+                        <button
+                          onClick={() =>
+                            setShowStoryInModule04(!showStoryInModule04)
+                          }
+                          className="px-3 py-1 rounded-lg bg-amber-700 text-white font-bold text-[11px] cursor-pointer"
+                        >
+                          {showStoryInModule04
+                            ? '🔽 Ocultar Historia Lógica'
+                            : '📖 Ver Historia / Cuento de este Tema'}
+                        </button>
+                      </div>
+
+                      {showStoryInModule04 && (
+                        <div className="space-y-2 pt-2 border-t border-amber-200 dark:border-amber-800">
+                          <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-amber-200 font-bold text-[11px] text-[#D97757]">
+                            🔗 Hilo Lógico de Epígrafes:{' '}
+                            <span className="text-stone-700 dark:text-stone-200 font-normal">
+                              {currentStory.epigraphOrder}
+                            </span>
+                          </div>
+                          <div className="whitespace-pre-line leading-relaxed text-stone-800 dark:text-stone-200 font-serif text-xs bg-white/80 dark:bg-stone-900/80 p-3.5 rounded-xl border">
+                            {currentStory.storyText}
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 text-emerald-950 dark:text-emerald-200 text-[11px]">
+                            <b>💡 Regla / Truco Rápido de Tribunal:</b>{' '}
+                            {currentStory.logicHook}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 <textarea
                   rows={18}
                   value={activeEssayView.text}
@@ -3820,6 +5780,195 @@ const restoreFullMasterBackup = async (file) => {
                   }}
                   className="w-full p-4 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800 font-serif leading-relaxed"
                 />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================================================================= */}
+        {/* MÓDULO 04B · TEMARIO DEFINITIVO EJERCICIO 2 (CORREGIDO Y LISTO)   */}
+        {/* ================================================================= */}
+        {activeModule === '04B' && (
+          <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-5 shadow-xs">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-4">
+              <div>
+                <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase">
+                  04B · ARCHIVO OFICIAL CONSOLIDADO · EXCLUSIVO TEMARIO ESPECÍFICO (E1 A E67 · DESARROLLO 90 MIN)
+                </span>
+                <h2 className="text-lg font-bold mt-0.5">
+                  Temario del Ejercicio 2 Ya Corregido y Listo para Examen (
+                  {correctedEj2Topics.length} de 67 Temas Específicos)
+                </h2>
+                <p className="text-xs text-stone-500">
+                  Aquí se guardan en orden numérico estricto (E1, E2, E3...) tus
+                  temas de desarrollo tras limpiar cabeceras y auditar su nota
+                  10/10. Nunca se mezclan con el Bloque General y puedes borrar
+                  cualquiera con <b>✕</b> o ensayar con el{' '}
+                  <b>🎙️ Temporizador de Lectura</b>.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveModule('04')}
+                  className="px-3.5 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-xs font-bold cursor-pointer"
+                >
+                  🛠️ Ir al Taller / Corrector (04)
+                </button>
+                <label className="px-3.5 py-2 rounded-xl bg-[#D97757] text-white text-xs font-bold cursor-pointer">
+                  📤 Subir Nuevo Tema Ej. 2
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    onChange={(e) =>
+                      processPdfUpload(e.target.files, true, null)
+                    }
+                    className="hidden"
+                  />
+                </label>
+                {correctedEj2Topics.length > 0 && (
+                  <button
+                    onClick={clearAllSavedEssays}
+                    className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-700 hover:text-white text-rose-900 border border-rose-300 text-xs font-bold cursor-pointer"
+                  >
+                    🗑️ Borrar Todos ({correctedEj2Topics.length})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {correctedEj2Topics.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border text-center space-y-2">
+                <p className="text-sm font-bold">
+                  Aún no tienes temas guardados en tu archivo definitivo del
+                  Ejercicio 2.
+                </p>
+                <p className="text-xs text-stone-500">
+                  Sube tu PDF de Narración arriba o edítalo en la pestaña 04
+                  (Taller) para que quede archivado aquí automáticamente.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {correctedEj2Topics.map((es) => {
+                    const currentActive =
+                      correctedEj2Topics.find(
+                        (x) => x.id === selectedCleanEj2Id
+                      ) || correctedEj2Topics[0];
+                    const isSelected = currentActive?.id === es.id;
+                    return (
+                      <div
+                        key={es.id}
+                        className={`inline-flex items-center rounded-xl text-xs font-extrabold border overflow-hidden transition ${
+                          isSelected
+                            ? 'bg-emerald-700 text-white border-emerald-800 shadow-xs'
+                            : 'bg-[#FAF8F5] dark:bg-stone-800 border-stone-300 dark:border-stone-700'
+                        }`}
+                      >
+                        <button
+                          onClick={() => setSelectedCleanEj2Id(es.id)}
+                          className="px-3 py-2 cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span>✅ [{es.topicId}]</span>
+                          <span>{es.audit?.finalScore || '10.00'}/10</span>
+                          <span className="text-[10px] opacity-80">
+                            ({es.audit?.wordCount} pal)
+                          </span>
+                        </button>
+                        <button
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            deleteEssayById(es.id);
+                          }}
+                          title="Borrar este tema corregido"
+                          className={`px-2.5 py-2 cursor-pointer font-extrabold border-l ${
+                            isSelected
+                              ? 'border-white/30 hover:bg-black/20 text-white'
+                              : 'border-stone-300 hover:bg-rose-600 hover:text-white text-rose-600'
+                          }`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {(() => {
+                  const cleanActive =
+                    correctedEj2Topics.find(
+                      (x) => x.id === selectedCleanEj2Id
+                    ) || correctedEj2Topics[0];
+                  if (!cleanActive) return null;
+                  const officialTopic = findTopicAcrossAllCatalogs(
+                    cleanActive.topicId
+                  );
+
+                  return (
+                    <div className="p-5 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border-2 border-emerald-500/40 space-y-4">
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b pb-3">
+                        <div>
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-[11px]">
+                            ✅ TEMA ESPECÍFICO CORREGIDO Y VERIFICADO · [
+                            {cleanActive.topicId}]
+                          </span>
+                          <h3 className="text-sm font-extrabold mt-1.5">
+                            {officialTopic?.title || cleanActive.name}
+                          </h3>
+                          <p className="text-[11px] text-stone-500 mt-0.5">
+                            Extensión limpia:{' '}
+                            <b>{cleanActive.audit?.wordCount} palabras</b> (~
+                            {cleanActive.audit?.handwrittenMinutes} min a mano ·
+                            ~{Math.max(1, Math.round((cleanActive.audit?.wordCount || 0) / 130))} min leído en voz alta) ·
+                            Nota Tribunal:{' '}
+                            <b className="text-emerald-700">
+                              {cleanActive.audit?.finalScore} / 10
+                            </b>{' '}
+                            · Analítico:{' '}
+                            <b>{cleanActive.audit?.analiticoScore}/1.50</b>
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 shrink-0">
+                          <button
+                            onClick={() =>
+                              openTribunalPublicReader(
+                                `[${cleanActive.topicId}] ${
+                                  officialTopic?.title || cleanActive.name
+                                }`,
+                                cleanActive.text
+                              )
+                            }
+                            className="px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold cursor-pointer"
+                          >
+                            🎙️ Temporizador de Lectura al Tribunal
+                          </button>
+                          <button
+                            onClick={() => {
+                              setActiveEssayView(cleanActive);
+                              setActiveModule('04');
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-bold cursor-pointer"
+                          >
+                            ✏️ Editar en Taller (04)
+                          </button>
+                          <button
+                            onClick={() => deleteEssayById(cleanActive.id)}
+                            className="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold cursor-pointer"
+                          >
+                            🗑️ Borrar Tema
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-6 rounded-2xl bg-white dark:bg-stone-900 border font-serif text-xs leading-loose whitespace-pre-line max-h-[65vh] overflow-y-auto shadow-inner">
+                        {cleanActive.text}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -3904,16 +6053,16 @@ const restoreFullMasterBackup = async (file) => {
                     setTimeout(() => setStatusBanner(''), 5000);
                   }}
                   className="px-3.5 py-1.5 rounded-xl bg-[#D97757] text-white text-xs font-bold cursor-pointer"
-                >
+                  >
+                    📚 Descargar los 10 Supuestos en 1 PDF
+                  </button>
                   <button
-                onClick={exportMasterCheatSheet6PagesPDF}
-                className="px-2.5 py-1.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold cursor-pointer"
-                title="Descargar en PDF de 6 páginas todas las tablas comparativas de plazos, silencios, prescripciones, baremos, escalas y autores"
-              >
-                📊 PDF 6 Págs Plazos
-              </button>
-                  📚 Descargar los 10 Supuestos en 1 PDF
-                </button>
+                    onClick={exportMasterCheatSheet6PagesPDF}
+                    className="px-2.5 py-1.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold cursor-pointer"
+                    title="Descargar en PDF de 6 páginas todas las tablas comparativas de plazos, silencios, prescripciones, baremos, escalas y autores"
+                  >
+                    📊 PDF 6 Págs Plazos
+                  </button>
                 <button
                   onClick={exportFullMasterBackup}
                   className="px-3 py-1.5 rounded-xl bg-emerald-800 text-white text-xs font-bold cursor-pointer"
@@ -4051,6 +6200,18 @@ const restoreFullMasterBackup = async (file) => {
               >
                 ✔ Auditar Supuesto con Rigor Real de Tribunal (5 Dimensiones +
                 Siglas)
+              </button>
+
+              <button
+                onClick={() =>
+                  openTribunalPublicReader(
+                    'Lectura Pública del 3.er Ejercicio (Supuesto Práctico)',
+                    practicalCaseText
+                  )
+                }
+                className="px-4 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold cursor-pointer"
+              >
+                🎙️ Ensayar Lectura Pública ante Tribunal (130 pal/m)
               </button>
 
               <button
@@ -4197,16 +6358,35 @@ const restoreFullMasterBackup = async (file) => {
                   oposiciones.
                 </p>
               </div>
-              <label className="px-4 py-2.5 rounded-xl bg-emerald-700 text-white text-xs font-bold cursor-pointer">
-                📥 Subir PDF(s)
-                <input
-                  type="file"
-                  accept=".pdf"
-                  multiple
-                  onChange={(e) => processPdfUpload(e.target.files, false)}
-                  className="hidden"
-                />
-              </label>
+              <div className="flex flex-wrap gap-2">
+                <label className="px-4 py-2.5 rounded-xl bg-emerald-700 text-white text-xs font-bold cursor-pointer">
+                  📥 Subir PDF(s)
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    onChange={(e) => processPdfUpload(e.target.files, false)}
+                    className="hidden"
+                  />
+                </label>
+                {documentsLibrary.length > 0 && (
+                  <button
+                    onClick={async () => {
+                      for (const d of documentsLibrary) {
+                        await deleteFromStore(STORE_DOCS, d.id);
+                      }
+                      setDocumentsLibrary([]);
+                      setStatusBanner(
+                        '🗑️ Todos los archivos del Laboratorio PDF han sido eliminados.'
+                      );
+                      setTimeout(() => setStatusBanner(''), 4000);
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold cursor-pointer"
+                  >
+                    🗑️ Borrar Todos ({documentsLibrary.length})
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2.5">
@@ -4256,6 +6436,200 @@ const restoreFullMasterBackup = async (file) => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================= */}
+        {/* MÓDULO 07 · HISTORIAS LÓGICAS, CUENTOS DE CASO Y MNEMOTECNIA      */}
+        {/* ================================================================= */}
+        {activeModule === '07' && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-4 shadow-xs">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-3">
+                <div>
+                  <span className="text-[11px] font-bold text-[#D97757] uppercase">
+                    07 · SISTEMA DE MEMORIA EPISÓDICA · APRENDIZAJE POR CUENTOS Y LÓGICA SECUENCIAL CAUSA-EFECTO
+                  </span>
+                  <h2 className="text-lg font-bold">
+                    Biblioteca de Historias Lógicas ({storiesLibrary.length}{' '}
+                    temas convertidos en cuento)
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    type="text"
+                    placeholder="Buscar por tema, ley o protagonista (ej. E52)..."
+                    value={storySearch}
+                    onChange={(e) => setStorySearch(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800"
+                  />
+
+                  <button
+                    onClick={() => {
+                      const allGenerated = activeCatalog.map((t) => {
+                        const existingEssay = essaysLibrary.find(
+                          (e) => e.topicId === t.id
+                        );
+                        return buildNarrativeStoryForTopic(
+                          t,
+                          existingEssay ? existingEssay.text : t.lawUpdate
+                        );
+                      });
+                      setStoriesLibrary(allGenerated);
+                      setStatusBanner(
+                        `📖 ¡Se han generado automáticamente las ${allGenerated.length} Historias Lógicas de toda la convocatoria activa!`
+                      );
+                      setTimeout(() => setStatusBanner(''), 5000);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold cursor-pointer"
+                  >
+                    ✨ Autogenerar Historias de Todos los Temas ({activeCatalog.length})
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      setStatusBanner(
+                        '⏳ Generando Libro PDF de Cuentos e Historias Lógicas...'
+                      );
+                      try {
+                        const { jsPDF } = await import(
+                          'https://esm.sh/jspdf@2.5.1'
+                        );
+                        const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+                        const pageWidth = 174;
+                        let y = 20;
+
+                        pdf.setFont('times', 'bold');
+                        pdf.setFontSize(14);
+                        pdf.text(
+                          'LIBRO DE HISTORIAS LOGICAS Y CUENTOS DE OPOSICION (2026)',
+                          18,
+                          y
+                        );
+                        y += 9;
+
+                        storiesLibrary.forEach((st, idx) => {
+                          if (idx > 0) {
+                            pdf.addPage();
+                            y = 20;
+                          }
+                          pdf.setFont('times', 'bold');
+                          pdf.setFontSize(12);
+                          const headLines = pdf.splitTextToSize(
+                            st.title,
+                            pageWidth
+                          );
+                          pdf.text(headLines, 18, y);
+                          y += headLines.length * 6 + 2;
+
+                          pdf.setFontSize(9.5);
+                          const chainLines = pdf.splitTextToSize(
+                            `Cadena Legal: ${st.lawsChain}`,
+                            pageWidth
+                          );
+                          pdf.text(chainLines, 18, y);
+                          y += chainLines.length * 5 + 3;
+
+                          pdf.setFont('times', 'normal');
+                          pdf.setFontSize(10.5);
+                          const cleanStory = st.storyText.replace(
+                            /[^\x20-\x7EÁÉÍÓÚáéíóúÑñÜü¿¡\n.,:;()/-]/g,
+                            ''
+                          );
+                          const bodyLines = pdf.splitTextToSize(
+                            `${cleanStory}\n\nREGLA CLAVE: ${st.logicHook}`,
+                            pageWidth
+                          );
+                          bodyLines.forEach((line) => {
+                            if (y > 276) {
+                              pdf.addPage();
+                              y = 20;
+                            }
+                            pdf.text(line, 18, y);
+                            y += 5;
+                          });
+                        });
+
+                        pdf.save('Libro_Historias_Logicas_TS_2026.pdf');
+                        setStatusBanner(
+                          '📚 ¡Libro PDF de Historias Lógicas descargado con éxito!'
+                        );
+                      } catch (e) {
+                        console.error(e);
+                      }
+                      setTimeout(() => setStatusBanner(''), 4000);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-[#D97757] text-white text-xs font-bold cursor-pointer"
+                  >
+                    ⬇ Descargar Libro de Cuentos (.PDF)
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {storiesLibrary
+                  .filter(
+                    (s) =>
+                      !storySearch.trim() ||
+                      s.title.toLowerCase().includes(storySearch.toLowerCase()) ||
+                      s.storyText.toLowerCase().includes(storySearch.toLowerCase())
+                  )
+                  .map((st) => (
+                    <div
+                      key={st.id}
+                      className="p-5 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border space-y-3 shadow-2xs"
+                    >
+                      <div className="flex flex-wrap justify-between items-center gap-2 border-b pb-2">
+                        <span className="text-sm font-extrabold text-[#D97757]">
+                          {st.title}
+                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-[11px]">
+                            🔗 Leyes: {st.lawsChain}
+                          </span>
+                          <button
+                            onClick={() =>
+                              openTribunalPublicReader(st.title, st.storyText)
+                            }
+                            className="px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold text-[11px] cursor-pointer"
+                            title="Abrir temporizador de lectura en voz alta para esta narración"
+                          >
+                            🎙️ Temporizador Lectura
+                          </button>
+                          <button
+                            onClick={() => {
+                              setStoriesLibrary((prev) =>
+                                prev.filter((item) => item.id !== st.id)
+                              );
+                              setStatusBanner(
+                                `🗑️ Historia de [${st.topicId}] eliminada.`
+                              );
+                              setTimeout(() => setStatusBanner(''), 3000);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-700 hover:text-white text-rose-800 font-extrabold text-[11px] cursor-pointer"
+                            title="Borrar esta historia"
+                          >
+                            🗑️ Borrar
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-stone-600 dark:text-stone-300 font-semibold">
+                        🧭 <b>Secuencia lógica del tema:</b> {st.epigraphOrder}
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-white dark:bg-stone-900 border font-serif text-xs leading-relaxed whitespace-pre-line">
+                        {st.storyText}
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 text-emerald-950 dark:text-emerald-200 text-[11px]">
+                        <b>💡 Anclaje Mnemotécnico de Examen:</b> {st.logicHook}
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
         )}
