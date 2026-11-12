@@ -185,6 +185,10 @@ function buildNarrativeStoryForTopic(topicObj, rawText = '', existingStory = nul
       actsMatch ? actsMatch[0] : rawText
     );
 
+    const { microRetos, glosario } = extractMicroRetosAndGlosarioFromPdf(
+      rawText,
+      id
+    );
     return {
       id: `story-${id}`,
       topicId: id,
@@ -199,10 +203,16 @@ function buildNarrativeStoryForTopic(topicObj, rawText = '', existingStory = nul
         : extractedRule,
       epigraphOrder:
         'Acto I ➔ Acto II ➔ Acto III ➔ Acto IV (Ley 12/2022 y Red CAM) ➔ Acto V (Bioética Brody/Payton y Cierre al Tribunal)',
+      microRetos:
+        microRetos.length > 0 ? microRetos : existingStory?.microRetos || [],
+      glosario: glosario.length > 0 ? glosario : existingStory?.glosario || [],
     };
   }
 
   // Si ya teníamos una Narración en 5 Actos guardada para este tema y ahora subimos el PDF Extenso, conservar los 5 Actos y añadirle el Acrónimo Maestro del Extenso
+  const { microRetos: extRetos, glosario: extGlos } =
+    extractMicroRetosAndGlosarioFromPdf(rawText, id);
+
   if (
     existingStory &&
     existingStory.protagonist === 'Narración Mnemotécnica Oficial en 5 Actos'
@@ -211,6 +221,9 @@ function buildNarrativeStoryForTopic(topicObj, rawText = '', existingStory = nul
       ...existingStory,
       lawsChain: lawsFound.join(' ➔ '),
       logicHook: extractedRule,
+      microRetos:
+        extRetos.length > 0 ? extRetos : existingStory.microRetos || [],
+      glosario: extGlos.length > 0 ? extGlos : existingStory.glosario || [],
     };
   }
 
@@ -257,6 +270,9 @@ Ningún caso se resuelve en una isla. En el capítulo final, conectas Atención 
     storyText,
     logicHook: extractedRule,
     epigraphOrder: epigraphs.map((e, i) => `Paso ${i + 1}: ${e}`).join(' ➔ '),
+    microRetos:
+      extRetos.length > 0 ? extRetos : existingStory?.microRetos || [],
+    glosario: extGlos.length > 0 ? extGlos : existingStory?.glosario || [],
   };
 }
 
@@ -887,6 +903,15 @@ function isDefectiveOrAdminQuestion(q) {
   if (new Set(normalizedOpts).size < normalizedOpts.length) {
     return true; // Descartar preguntas donde dos opciones sean idénticas
   }
+
+  // 4. Descartar preguntas del generador antiguo donde las opciones repiten el mismo inicio de frase (>32 caracteres iguales)
+  const prefixes = normalizedOpts
+    .filter((o) => o.length > 35)
+    .map((o) => o.slice(0, 32));
+  if (prefixes.length >= 3 && new Set(prefixes).size === 1) {
+    return true;
+  }
+
   return false;
 }
 
@@ -943,6 +968,114 @@ function extractLiteralTestQuestionsFromPdf(rawText = '', topicId = 'E1') {
   }
 
   return extracted;
+}
+
+// =========================================================================
+// EXTRACTOR AUTOMÁTICO DE MICRO-RETOS 15s, GLOSARIO Y CASO PRÁCTICO EN 5 PASOS
+// =========================================================================
+function extractMicroRetosAndGlosarioFromPdf(rawText = '', topicId = 'E1') {
+  const microRetos = [];
+  const glosario = [];
+  const clean = rawText
+    .replace(/COMUNIDAD\s+DE\s+MADRID[\s\S]{0,160}?LITERALIDAD/gi, ' ')
+    .replace(
+      /Edici[oó]n\s+Maestra\s+de\s+Alto\s+Rendimiento[\s\S]{0,120}?P[aá]gina\s+\d+/gi,
+      ' '
+    )
+    .replace(/P[aá]gina\s+\d+/gi, ' ')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .replace(/<<|>>/g, '"');
+
+  // 1. Extraer Micro-Retos de 15 segundos (Sección 9.3 / 10.3)
+  const retoRegex =
+    /Micro-Reto\s*(\d{1,2})\s*:\s*([^?]+\?)\s*Respuesta\s*:\s*([\s\S]{5,380}?)(?=\s*[^\wÁÉÍÓÚÑáéíóúñ]*Micro-Reto\s*\d|\s*CAP[IÍ]TULO|$)/gi;
+  let rMatch;
+  while ((rMatch = retoRegex.exec(clean)) !== null) {
+    microRetos.push({
+      id: `reto-${topicId}-${rMatch[1]}`,
+      topicId,
+      num: rMatch[1],
+      question: rMatch[2].replace(/\s+/g, ' ').trim(),
+      answer: rMatch[3].replace(/\s+/g, ' ').trim(),
+    });
+  }
+
+  // 2. Extraer Glosario Técnico-Jurídico (Sección 9.2 / 10.2)
+  const glosarioSectionMatch = clean.match(
+    /(?:9|10)\.2\.\s*Glosario\s+T[eé]cnico-Jur[ií]dico\s+Esencial\s*[:]?[\s\S]*?(?=(?:9|10)\.3\.|Micro-Reto\s*1|$)/i
+  );
+  if (glosarioSectionMatch) {
+    const gSec = glosarioSectionMatch[0]
+      .replace(
+        /(?:9|10)\.2\.\s*Glosario\s+T[eé]cnico-Jur[ií]dico\s+Esencial\s*[:]?/i,
+        ' '
+      )
+      .replace(
+        /T[eé]rmino\s+(?:T[eé]cnico|Dogm[aá]tico)\s+Definici[oó]n\s+(?:Doctrinal\s+y\s+Legal\s+Exacta|T[eé]cnico-Jur[ií]dica\s+Exacta\s+para\s+el\s+Tribunal)/i,
+        ' '
+      )
+      .trim();
+
+    const knownTermsRegex =
+      /\b(Derecho\s+Subjetivo\s+Social|Concierto\s+Social|Responsabilidad\s+Objetiva|Separaci[oó]n\s+de\s+Fuentes|Aporofobia|Cuidatoriado|Working\s+Poor|Historia\s+Social\s+[UÚ]nica\s*\(HSUe\)|Modelo\s+Brody\s+y\s+Payton|Desmercantilizaci[oó]n|Desfamiliarizaci[oó]n|Familismo\s+por\s+Defecto|Universalismo\s+Proporcional|[AÁ]rea\s+[UÚ]nica\s+de\s+Servicios\s+Sociales|Informe\s+Social\s*\(Art\.\s*69\))\s+([\s\S]{25,360}?)(?=\b(?:Derecho\s+Subjetivo\s+Social|Concierto\s+Social|Responsabilidad\s+Objetiva|Separaci[oó]n\s+de\s+Fuentes|Aporofobia|Cuidatoriado|Working\s+Poor|Historia\s+Social\s+[UÚ]nica|Modelo\s+Brody|Desmercantilizaci[oó]n|Desfamiliarizaci[oó]n|Familismo\s+por\s+Defecto|Universalismo\s+Proporcional|[AÁ]rea\s+[UÚ]nica|Informe\s+Social)|$)/gi;
+    let gMatch;
+    while ((gMatch = knownTermsRegex.exec(gSec)) !== null) {
+      glosario.push({
+        id: `glos-${topicId}-${glosario.length + 1}`,
+        topicId,
+        term: gMatch[1].replace(/\s+/g, ' ').trim(),
+        definition: gMatch[2].replace(/\s+/g, ' ').trim(),
+      });
+    }
+  }
+
+  return { microRetos, glosario };
+}
+
+function extractPracticalCaseFromExtensoPdf(rawText = '', topicObj = null) {
+  const topicId = topicObj?.id || 'E1';
+  const clean = rawText
+    .replace(/COMUNIDAD\s+DE\s+MADRID[\s\S]{0,160}?LITERALIDAD/gi, ' ')
+    .replace(
+      /Edici[oó]n\s+Maestra\s+de\s+Alto\s+Rendimiento[\s\S]{0,120}?P[aá]gina\s+\d+/gi,
+      ' '
+    )
+    .replace(/P[aá]gina\s+\d+/gi, ' ')
+    .replace(/\$([^$]+)\$/g, '$1')
+    .replace(/<<|>>/g, '"');
+
+  const caseMatch = clean.match(
+    /(?:CAP[IÍ]TULO\s+VIII:\s*MATRIZ\s+DE\s+RESOLUCI[OÓ]N\s+DE\s+SUPUESTOS\s+PR[AÁ]CTICOS|7\.5\.\s*Metodolog[ií]a\s+de\s+Resoluci[oó]n\s+de\s+Supuestos\s+Pr[aá]cticos\s+en\s+5\s+Pasos(?!\s+Aplicada\s+a\s+Caso\s+Real\s+P[aá]g))[\s\S]{120,3800}?(?=CAP[IÍ]TULO\s+(?:VIII|IX)\s*:\s*BATER[IÍ]A\s+OFICIAL)/i
+  );
+
+  if (!caseMatch) return null;
+  const block = caseMatch[0].replace(/\s+/g, ' ').trim();
+  const supuestoMatch = block.match(/Supuesto:\s*([\s\S]{40,650}?)(?=Paso\s+Metodol[oó]gico|PASO\s+1)/i);
+  const pasosMatch = block.match(/PASO\s+1:[\s\S]*$/i);
+
+  return {
+    id: `pdf-case-${topicId}`,
+    topicId,
+    badge: `📘 SUPUESTO OFICIAL PDF EXTENSO [${topicId}] · ${(
+      topicObj?.title || 'Caso Práctico en 5 Pasos'
+    ).slice(0, 58)}`,
+    enunciado: supuestoMatch
+      ? supuestoMatch[1].trim()
+      : `Resolución técnica en 5 pasos aplicada al epígrafe oficial [${topicId}] (${
+          topicObj?.title || ''
+        }).`,
+    claves:
+      'Matriz Oficial en 5 Pasos: 1) Encuadre Normativo CE y Ley 12/2022 · 2) Jefatura Técnica Art. 16.2 y HSUe Decreto 51/2023 · 3) Informe Social Prescriptor Art. 69 · 4) PIIS en 10 días hábiles Art. 40 · 5) Deliberación Bioética Brody y Payton.',
+    escalasEspecificas:
+      'Historia Social Única electrónica (HSUe - Decreto 51/2023), Ficha Social SIUSS, Genograma de 3 generaciones, Ecomapa y Escala de Gijón.',
+    normativaEspecifica:
+      topicObj?.lawUpdate ||
+      'Artículos 1.1, 9.2, 10.1, 39 a 50 CE; Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid (Arts. 16.2, 40 y 69); Decreto 51/2023 (HSUe) y Código Deontológico (Arts. 7 y 55).',
+    intervencionEspecifica: pasosMatch ? pasosMatch[0] : block,
+    fullResolutionText: block
+      .replace(/\s*(PASO\s+[1-5]\s*:)/gi, '\n\n$1')
+      .replace(/\s*•\s*/g, '\n- '),
+  };
 }
 
 function generateMutatedQuestionsFromText(text, topicId, count = 10) {
@@ -1058,6 +1191,95 @@ function generateMutatedQuestionsFromText(text, topicId, count = 10) {
   );
 }
 
+function buildMonographicQuestionsForTopic(topicObj, existingDocs = []) {
+  if (!topicObj) return [];
+  const topicId = topicObj.id;
+  const cleanTitle = topicObj.title.replace(
+    /^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i,
+    ''
+  );
+  const domain = getDomainSpecificKnowledgeForTopic(topicObj);
+  const epigraphs = extractSubEpigraphsFromTitle(topicObj.title);
+
+  // 1. Si hay PDFs subidos para este tema, extraer primero sus preguntas literales y doctrinales limpias
+  let fromDocs = [];
+  existingDocs
+    .filter((d) => d.topicId === topicId && d.text)
+    .forEach((d) => {
+      const lit = extractLiteralTestQuestionsFromPdf(d.text, topicId);
+      const docQs = generateMutatedQuestionsFromText(d.text, topicId, 12);
+      fromDocs = [...fromDocs, ...lit, ...docQs];
+    });
+
+  // 2. Construir preguntas específicas a partir de la Matriz Legal 2026, Dispositivos, Instrumentos y Autores del tema
+  const lawStatement = `El marco normativo específico aplicable a «${cleanTitle}» se integra por: ${
+    topicObj.lawUpdate || domain.marcoEspecifico
+  }.`;
+  const redStatement = `En el ámbito de la Comunidad de Madrid, la red de dispositivos y recursos vinculados a este epígrafe comprende: ${domain.dispositivosRed}`;
+  const instrStatement = `Para la valoración diagnóstica e intervención técnica en esta materia se emplean como instrumentos específicos: ${domain.instrumentosEspecificos}`;
+  const autorStatement = `La fundamentación teórica y epistemológica del Trabajo Social en este ámbito destaca las aportaciones de: ${domain.autoresDoctrina}`;
+  const procStatement = `Conforme a la Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid, el acceso a la Atención Social Primaria asigna como Profesional de Referencia exclusivo a un Trabajador/a Social (art. 16.2), quien formula el Plan Individual en 10 días hábiles (art. 40) y emite el Informe Social prescriptor (art. 69).`;
+
+  const ep1 = epigraphs[0] || cleanTitle;
+  const ep2 = epigraphs[1] || 'la organización y competencias del sistema';
+
+  const specificPool = [
+    {
+      stem: `[${topicId}] ¿Cuál es el marco normativo vigente en 2026 directamente aplicable al epígrafe «${cleanTitle}»?`,
+      truth: lawStatement,
+      f1: falsifyDoctrinalSentence(redStatement, 1),
+      f2: falsifyDoctrinalSentence(instrStatement, 2),
+      f3: `Este epígrafe carece de regulación autonómica en la Comunidad de Madrid, rigiéndose exclusivamente por la beneficencia municipal discrecional de 1985.`,
+    },
+    {
+      stem: `[${topicId}] En relación con la arquitectura institucional y la red de dispositivos de «${ep1}», señale la afirmación CORRECTA:`,
+      truth: redStatement,
+      f1: falsifyDoctrinalSentence(lawStatement, 2),
+      f2: `La competencia sobre estos dispositivos corresponde en exclusiva a entidades mercantiles privadas sin supervisión de la Consejería ni registro administrativo.`,
+      f3: falsifyDoctrinalSentence(procStatement, 3),
+    },
+    {
+      stem: `[${topicId}] ¿Qué instrumentos técnicos, escalas y herramientas diagnósticas resultan de aplicación específica en «${cleanTitle}»?`,
+      truth: instrStatement,
+      f1: `Se prohíbe el uso de la Historia Social Única electrónica (Decreto 51/2023) y del Informe Social, bastando una nota verbal sin firma facultativa.`,
+      f2: falsifyDoctrinalSentence(autorStatement, 1),
+      f3: falsifyDoctrinalSentence(redStatement, 3),
+    },
+    {
+      stem: `[${topicId}] Desde la perspectiva doctrinal y metodológica del Trabajo Social aplicable a «${ep2}», indique la opción VERDADERA:`,
+      truth: autorStatement,
+      f1: falsifyDoctrinalSentence(instrStatement, 1),
+      f2: `La doctrina contemporánea propugna el retorno al modelo asilar y graciable del siglo XIX, suprimiendo el enfoque de derechos subjetivos.`,
+      f3: falsifyDoctrinalSentence(procStatement, 2),
+    },
+    {
+      stem: `[${topicId}] Respecto a las garantías procedimentales y reserva legal del Trabajo Social en materia de «${cleanTitle}», es CORRECTO afirmar que:`,
+      truth: procStatement,
+      f1: `El Plan Individual de Atención Social tiene un plazo de elaboración de 90 días naturales y puede ser prescrito por cualquier auxiliar administrativo sin titulación en Trabajo Social.`,
+      f2: falsifyDoctrinalSentence(lawStatement, 3),
+      f3: falsifyDoctrinalSentence(redStatement, 2),
+    },
+  ];
+
+  const builtSpecific = specificPool.map((item, idx) => {
+    const correctIdx = (idx + topicId.charCodeAt(topicId.length - 1)) % 4;
+    const opts = [item.f1, item.f2, item.f3];
+    opts.splice(correctIdx, 0, item.truth);
+    return {
+      id: `q-mono-${topicId}-${idx}`,
+      topicId,
+      difficulty: 'Oficial Monográfico del Tema',
+      originType: '🎯 TEST MONOGRÁFICO DEL EPÍGRAFE',
+      question: item.stem,
+      options: opts.map((t, i) => `${['A', 'B', 'C', 'D'][i]}) ${t}`),
+      correctIndex: correctIdx,
+      explanation: `Respuesta verificada conforme a la matriz oficial del tema [${topicId}]: ${item.truth}`,
+    };
+  });
+
+  return [...fromDocs, ...builtSpecific];
+}
+
 function buildCaseResolutionText(c) {
   return `1. ENCUADRE METODOLÓGICO Y RECEPCIÓN DE LA DEMANDA (${c.badge.toUpperCase()})
 Ante el supuesto práctico planteado ("${
@@ -1106,6 +1328,7 @@ Todo el tratamiento documental observa el deber de secreto profesional y el Regl
 // =========================================================================
 export default function App() {
   const [activeModule, setActiveModule] = useState('00');
+  const [selectedCleanEj2Id, setSelectedCleanEj2Id] = useState(null);
   const [theme, setTheme] = useState(
     () => localStorage.getItem('cam_theme_v5') || 'light'
   );
@@ -1328,7 +1551,7 @@ export default function App() {
     );
   });
   const [storySearch, setStorySearch] = useState('');
-  const [showStoryInModule04, setShowStoryInModule04] = useState(true);
+  const [showStoryInModule04, setShowStoryInModule04] = useState(false);
 
   useEffect(() => {
     try {
@@ -1447,11 +1670,78 @@ export default function App() {
   const [practicalCaseText, setPracticalCaseText] = useState('');
   const [practicalRubricResult, setPracticalRubricResult] = useState(null);
 
+  const [revealedRetos, setRevealedRetos] = useState({});
+  const [flippedGlossary, setFlippedGlossary] = useState({});
+  const [customPracticalCases, setCustomPracticalCases] = useState(() => {
+    const saved = localStorage.getItem('cam_custom_cases_v5');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   useEffect(() => {
-    getAllFromStore(STORE_DOCS).then((docs) => setDocumentsLibrary(docs || []));
-    getAllFromStore(STORE_ESSAYS).then((essays) => {
-      setEssaysLibrary(essays || []);
-      if (essays && essays.length > 0) setActiveEssayView(essays[0]);
+    try {
+      localStorage.setItem(
+        'cam_custom_cases_v5',
+        JSON.stringify(customPracticalCases)
+      );
+    } catch (e) {
+      console.warn('Error guardando supuestos extraídos:', e);
+    }
+  }, [customPracticalCases]);
+
+  const touchTopicReviewDate = (topicId) => {
+    if (!topicId) return;
+    setTopicData((prev) => ({
+      ...prev,
+      [topicId]: {
+        ...prev[topicId],
+        lastReviewedIso: new Date().toISOString(),
+      },
+    }));
+  };
+
+  useEffect(() => {
+    const fixMisassignedGeneralTopic = (item) => {
+      if (!item || !item.topicId || !item.topicId.startsWith('G')) return item;
+      const isNarrOrSpecific =
+        /narraci[oó]n|narrativo|extenso|ejercicio\s*2|desarrollo\s+en\s+90/i.test(
+          `${item.name || ''} ${(item.text || '').slice(0, 800)}`
+        ) ||
+        /ACTO\s+I\b|1\.\s+EL\s+DESPERTAR|1\.\s+EL\s+CONCEPTO\s+DE\s+BIENESTAR/i.test(
+          (item.text || '').slice(0, 1200)
+        );
+      if (!isNarrOrSpecific) return item;
+      const num = item.topicId.replace(/^G/i, '');
+      const correctedTopicId = `E${num}`;
+      const topicObj = findTopicAcrossAllCatalogs(correctedTopicId);
+      const refreshedAudit = auditDocumentTextValidity(
+        item.text || '',
+        topicObj || correctedTopicId
+      );
+      return {
+        ...item,
+        topicId: correctedTopicId,
+        isCorrectedEj2: true,
+        audit: refreshedAudit,
+      };
+    };
+
+    getAllFromStore(STORE_DOCS).then(async (docs) => {
+      const fixedDocs = (docs || []).map(fixMisassignedGeneralTopic);
+      setDocumentsLibrary(fixedDocs);
+      await saveToStore(STORE_DOCS, fixedDocs);
+    });
+    getAllFromStore(STORE_ESSAYS).then(async (essays) => {
+      const fixedEssays = (essays || []).map((es) => ({
+        ...fixMisassignedGeneralTopic(es),
+        isCorrectedEj2:
+          es.isCorrectedEj2 !== undefined ? es.isCorrectedEj2 : true,
+      }));
+      setEssaysLibrary(fixedEssays);
+      await saveToStore(STORE_ESSAYS, fixedEssays);
+      if (fixedEssays.length > 0) {
+        setActiveEssayView(fixedEssays[0]);
+        setSelectedCleanEj2Id(fixedEssays[0].id);
+      }
     });
   }, []);
 
@@ -1538,8 +1828,15 @@ export default function App() {
 
   const filteredTopics = useMemo(() => {
     return activeCatalog.filter((t) => {
+      const isGen = /^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(t.id);
       const matchBlock =
-        selectedBlockFilter === 'Todos' || t.block === selectedBlockFilter;
+        selectedBlockFilter === 'Todos'
+          ? true
+          : selectedBlockFilter === 'Especificos'
+          ? !isGen
+          : selectedBlockFilter === 'Generales'
+          ? isGen
+          : t.block === selectedBlockFilter;
       const matchQuery =
         !searchTopicQuery.trim() ||
         t.title.toLowerCase().includes(searchTopicQuery.toLowerCase()) ||
@@ -1770,6 +2067,7 @@ export default function App() {
     setIsExtractingPdf(true);
     const processedDocs = [];
     const processedEssays = [];
+    const extractedCases = [];
     let generatedQsTotal = [];
     let literalQsCount = 0;
 
@@ -1790,39 +2088,66 @@ export default function App() {
             textContent.items.map((item) => item.str).join(' ') + '\n\n';
         }
 
+        const headerSample = fullText.slice(0, 1800);
+
         // Autodetección inteligente del tipo de PDF ("Narración Ej. 2" vs "Tratado Extenso Ej. 1")
         const isNarrativePdf =
-          /narraci[oó]n/i.test(file.name) ||
-          /NARRACI[OÓ]N\s+MNEMOT[EÉ]CNICA\s+INTEGRAL|GU[IÍ]A\s+NARRATIVA\s+VIVENCIAL\s+EN\s+5\s+ACTOS/i.test(
-            fullText.slice(0, 1200)
+          /narraci[oó]n|narrativo|cr[oó]nica/i.test(file.name) ||
+          /NARRACI[OÓ]N\s+MNEMOT[EÉ]CNICA|GU[IÍ]A\s+(?:NARRATIVA|MAESTRA\s+DE\s+DESARROLLO)|M[EÉ]TODO\s+NARRATIVO\s+INTEGRAL|Cr[oó]nica\s+Narrativa|EJERCICIO\s+2[\s·•—–-]*(?:\()?DESARROLLO|ACTO\s+I\s*:/i.test(
+            headerSample
           );
         const isExtensoPdf =
-          /extenso/i.test(file.name) ||
+          /extenso|tratado/i.test(file.name) ||
           /TRATADO\s+EXTENSO|BATER[IÍ]A\s+OFICIAL\s+DE\s+\d+\s+PREGUNTAS\s+TIPO\s+TEST/i.test(
-            fullText.slice(0, 2500)
+            fullText.slice(0, 3000)
           );
+
+        const explicitlyGeneral =
+          /\bTEMA\s+GENERAL\s+\d+\b|\bBLOQUE\s+GENERAL\b/i.test(
+            headerSample
+          ) && !isNarrativePdf;
+
+        const specificOnly = activeCatalog.filter(
+          (t) => !t.id.startsWith('G')
+        );
+        const generalOnly = activeCatalog.filter((t) => t.id.startsWith('G'));
+
+        const nameMatch = file.name.match(
+          /(?:tema|especifico|e)[\s_-]*0*(\d{1,2})\b/i
+        );
+        const textMatch = headerSample.match(
+          /TEMA\s+(?:ESPEC[IÍ]FICO\s+|GENERAL\s+)?0*(\d{1,2})\b/i
+        );
+        const detectedNum =
+          (nameMatch && nameMatch[1]) || (textMatch && textMatch[1]);
 
         let targetTopic = forcedTopicObj;
-        if (!targetTopic) {
-          const specificOnly = activeCatalog.filter(
-            (t) => !t.id.startsWith('G')
-          );
-          const nameMatch = file.name.match(
-            /(?:tema|especifico|e)[\s_-]*0*(\d{1,2})\b/i
-          );
-          const textMatch = fullText
-            .slice(0, 1200)
-            .match(/TEMA\s+(?:ESPEC[IÍ]FICO\s+)?0*(\d{1,2})\b/i);
-          const detectedNum =
-            (nameMatch && nameMatch[1]) || (textMatch && textMatch[1]);
 
+        // REGLA ANTI-CONFUSIÓN: Narración / Ejercicio 2 (y Extenso Específico) NUNCA se asigna a General (G1..G16)
+        if (targetTopic && targetTopic.id.startsWith('G') && !explicitlyGeneral) {
+          const gNum = targetTopic.id.replace(/^G/i, '');
+          const numToUse = detectedNum || gNum;
+          const mappedSpecific = specificOnly.find(
+            (t) => t.id.toUpperCase() === `E${numToUse}`
+          );
+          if (mappedSpecific) {
+            targetTopic = mappedSpecific;
+          }
+        }
+
+        if (!targetTopic) {
+          const searchPool = explicitlyGeneral ? generalOnly : specificOnly;
           const candidateByNum =
             detectedNum &&
-            specificOnly.find(
+            searchPool.find(
               (t) =>
-                t.id.toUpperCase() === `E${detectedNum}` ||
+                t.id.toUpperCase() ===
+                  `${explicitlyGeneral ? 'G' : 'E'}${detectedNum}` ||
                 t.id.endsWith(`-${detectedNum}`) ||
-                new RegExp(`\\bTema\\s+0*${detectedNum}\\b`, 'i').test(t.title)
+                new RegExp(
+                  `\\bTema\\s+(?:Espec[ií]fico\\s+|General\\s+)?0*${detectedNum}\\b`,
+                  'i'
+                ).test(t.title)
             );
 
           if (candidateByNum) {
@@ -1830,7 +2155,7 @@ export default function App() {
           } else {
             const { bestTopic } = findBestMatchingTopicByContent(
               fullText,
-              specificOnly
+              searchPool
             );
             targetTopic =
               bestTopic ||
@@ -1841,10 +2166,21 @@ export default function App() {
           }
         }
 
-        // Guardar siempre la historia / caja mnemotécnica en la Pestaña 07
+        touchTopicReviewDate(targetTopic.id);
+
+        // Guardar siempre la historia / caja mnemotécnica / micro-retos / glosario en la Pestaña 07
         ensureStoryForTopic(targetTopic, fullText);
 
-        // 1. Extraer preguntas tipo test literales si el PDF las incluye (como las 20 del Cap. IX del Extenso)
+        // Extraer Caso Práctico en 5 Pasos si viene en el PDF Extenso (para el Módulo 05)
+        const extractedCase = extractPracticalCaseFromExtensoPdf(
+          fullText,
+          targetTopic
+        );
+        if (extractedCase) {
+          extractedCases.push(extractedCase);
+        }
+
+        // 1. Extraer preguntas tipo test literales si el PDF las incluye (Cap. VIII o IX del Extenso)
         const literalQs = extractLiteralTestQuestionsFromPdf(
           fullText,
           targetTopic.id
@@ -1862,9 +2198,11 @@ export default function App() {
               );
         generatedQsTotal = [...generatedQsTotal, ...literalQs, ...mutatedQs];
 
-        // 3. Si es el PDF de Narración (o si se subió al Módulo 04 y no hay otro), prepararlo para el Ejercicio 2 (Desarrollo 90 min)
+        // 3. Si es el PDF de Narración (o si se subió al Módulo 04 y no es el Extenso), prepararlo para el Ejercicio 2 (Desarrollo 90 min)
         const shouldSaveAsEssay =
-          isNarrativePdf || (isEssayEj2 && !isExtensoPdf) || (isEssayEj2 && files.length === 1);
+          isNarrativePdf ||
+          (isEssayEj2 && !isExtensoPdf) ||
+          (isEssayEj2 && files.length === 1 && !isExtensoPdf);
 
         const cleanedText = shouldSaveAsEssay
           ? autoEnhanceStructureAndAnalysis(fullText, targetTopic.id)
@@ -1880,6 +2218,8 @@ export default function App() {
             : isExtensoPdf
             ? '📘 Tratado Extenso + Test (Ej. 1)'
             : '📄 Documento Auditado',
+          isCorrectedEj2: shouldSaveAsEssay,
+          correctedAt: new Date().toLocaleDateString('es-ES'),
           pages: pdfDoc.numPages,
           text: cleanedText,
           audit,
@@ -1892,6 +2232,16 @@ export default function App() {
       } catch (e) {
         console.error('Error PDF:', e);
       }
+    }
+
+    if (extractedCases.length > 0) {
+      setCustomPracticalCases((prev) => {
+        const replacedIds = new Set(extractedCases.map((c) => c.topicId));
+        return [
+          ...extractedCases,
+          ...prev.filter((c) => !replacedIds.has(c.topicId)),
+        ];
+      });
     }
 
     if (processedDocs.length > 0) {
@@ -1912,6 +2262,7 @@ export default function App() {
           ...prev.filter((e) => !replacedTopicIds.has(e.topicId)),
         ]);
         setActiveEssayView(processedEssays[0]);
+        setSelectedCleanEj2Id(processedEssays[0].id);
         setCalcEj2(Number(processedEssays[0].audit.finalScore));
       }
 
@@ -1924,7 +2275,9 @@ export default function App() {
               prev.map((q) => q.question.trim().toLowerCase())
             );
             const uniqueNew = generatedQsTotal.filter(
-              (q) => !existingTexts.has(q.question.trim().toLowerCase())
+              (q) =>
+                !existingTexts.has(q.question.trim().toLowerCase()) &&
+                !isDefectiveOrAdminQuestion(q)
             );
             return [...uniqueNew, ...prev];
           });
@@ -1933,14 +2286,16 @@ export default function App() {
 
       const refItem = processedEssays[0] || processedDocs[0];
       setStatusBanner(
-        literalQsCount > 0
-          ? `✅ Doble Salida activada en [${refItem.topicId}]: Extraídas las ${literalQsCount} preguntas oficiales con solucionario al Banco de Test + Tema de Desarrollo (${refItem.audit.wordCount} pal · Nota ${refItem.audit.finalScore}/10).`
-          : `✅ ${processedDocs.length} PDF(s) procesados en [${refItem.topicId}] (${refItem.docRole} · ${refItem.audit.wordCount} palabras · Nota: ${refItem.audit.finalScore}/10).`
+        processedEssays.length > 0 && literalQsCount > 0
+          ? `✅ Doble Salida en TEMA ESPECÍFICO [${refItem.topicId}]: ${literalQsCount} pregs al Banco Test + Caso Práctico en 05 + Narración en "04B · Ej. 2 Corregidos" (${refItem.audit.finalScore}/10).`
+          : processedEssays.length > 0
+          ? `✅ Narración asignada a TEMA ESPECÍFICO [${refItem.topicId}], corregida (${refItem.audit.finalScore}/10) y archivada en "04B · Ej. 2 Corregidos".`
+          : `✅ Tratado Extenso [${refItem.topicId}]: Extraídas ${literalQsCount} pregs al Banco + Glosario/Micro-Retos en 07 + Supuesto en 05.`
       );
     }
     setIsExtractingPdf(false);
     setUploadProgressText('');
-    setTimeout(() => setStatusBanner(''), 6500);
+    setTimeout(() => setStatusBanner(''), 7000);
   };
 // =========================================================================
   // MOTOR INTERACTIVO CLOZE TEST (HUECOS EN BLANCO · SPRINT 10 MINUTOS)
@@ -2086,19 +2441,42 @@ export default function App() {
       ? 120
       : 85;
 
-    let pool = [...questionBank];
+    const cleanBank = questionBank.filter((q) => !isDefectiveOrAdminQuestion(q));
+    if (cleanBank.length !== questionBank.length) {
+      setQuestionBank(cleanBank);
+    }
+
+    let pool = [...cleanBank];
     if (onlyLeitnerBox1) {
-      pool = questionBank.filter(
+      pool = cleanBank.filter(
         (q) =>
           (leitnerBoxes[q.id] || 2) === 1 || failedQuestionIds.includes(q.id)
       );
     } else if (topicFilterId) {
-      pool = questionBank.filter((q) => q.topicId === topicFilterId);
+      const topicSpecificQs = cleanBank.filter(
+        (q) => q.topicId === topicFilterId
+      );
+      if (topicSpecificQs.length >= 8) {
+        pool = topicSpecificQs;
+      } else {
+        const topicObj = findTopicAcrossAllCatalogs(topicFilterId);
+        const generatedMono = buildMonographicQuestionsForTopic(topicObj, [
+          ...documentsLibrary,
+          ...essaysLibrary,
+        ]);
+        const existingQTexts = new Set(
+          topicSpecificQs.map((q) => q.question.trim().toLowerCase())
+        );
+        const uniqueMono = generatedMono.filter(
+          (q) => !existingQTexts.has(q.question.trim().toLowerCase())
+        );
+        pool = [...topicSpecificQs, ...uniqueMono];
+      }
     } else {
-      const genPool = questionBank.filter((q) =>
+      const genPool = cleanBank.filter((q) =>
         /^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(q.topicId)
       );
-      const espPool = questionBank.filter(
+      const espPool = cleanBank.filter(
         (q) => !/^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(q.topicId)
       );
       const targetGen = Math.max(1, Math.round(fullCount * 0.2));
@@ -2107,7 +2485,7 @@ export default function App() {
         ...espPool.slice(0, fullCount - targetGen),
       ];
     }
-    if (pool.length === 0) pool = [...questionBank];
+    if (pool.length === 0) pool = [...cleanBank];
 
     const adaptedPool = pool.map((q) => {
       if (!isAyto || q.options.length <= 3) return q;
@@ -2429,8 +2807,15 @@ const restoreFullMasterBackup = async (file) => {
   setTimeout(() => setStatusBanner(''), 5000);
 };
   const correctedEj2Topics = useMemo(() => {
-    return [...essaysLibrary]
-      .filter((es) => !es.topicId?.startsWith('G'))
+    return [...(essaysLibrary || [])]
+      .filter(Boolean)
+      .map((es) => {
+        const rawId = String(es.topicId || 'E1');
+        const normalizedId = rawId.startsWith('G')
+          ? `E${rawId.replace(/^G/i, '')}`
+          : rawId;
+        return { ...es, topicId: normalizedId };
+      })
       .sort((a, b) => {
         const numA = parseInt((a.topicId || '').replace(/\D/g, ''), 10) || 999;
         const numB = parseInt((b.topicId || '').replace(/\D/g, ''), 10) || 999;
@@ -2563,15 +2948,15 @@ const restoreFullMasterBackup = async (file) => {
             </div>
           </div>
 
-          <nav className="flex flex-wrap gap-1.5 pt-1 border-t border-stone-100 dark:border-stone-800">
+          <nav className="flex overflow-x-auto md:flex-wrap gap-1.5 pt-1.5 pb-1 border-t border-stone-100 dark:border-stone-800 no-scrollbar">
             {MODULES_NAV.map((m) => (
               <button
                 key={m.id}
                 onClick={() => setActiveModule(m.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
                   activeModule === m.id
-                    ? 'bg-[#D97757] text-white shadow-xs'
-                    : 'bg-[#FAF8F5] dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200/70'
+                    ? 'bg-[#D97757] text-white shadow-sm ring-2 ring-[#D97757]/30'
+                    : 'bg-[#FAF8F5] dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200/70 border border-stone-200/70 dark:border-stone-700'
                 }`}
               >
                 <span className="opacity-75 font-mono text-[10px]">
@@ -3591,27 +3976,65 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {activeModule === '01' && (
           <div className="space-y-4">
-            <div className="bg-white dark:bg-stone-900 p-5 rounded-2xl border flex flex-col md:flex-row justify-between items-center gap-3">
-              <div>
-                <h2 className="text-base font-bold">
-                  01 · Temario Oficial Completo ({activeCatalog.length} Temas ·
-                  Paridad 100% CAM / SERMAS / Ayuntamiento)
-                </h2>
-                <p className="text-xs text-stone-500">
-                  Cada tema de las 3 oposiciones permite:{' '}
-                  <b>Generar Tema Magistral 10/10 (1.850 pal)</b>,{' '}
-                  <b>Entrenar Esqueleto en 7 min</b>, <b>Subir y Auditar PDF</b>{' '}
-                  y <b>Hacer Test Monográfico</b>.
-                </p>
+            <div className="bg-white dark:bg-stone-900 p-5 rounded-2xl border space-y-3 shadow-xs">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
+                <div>
+                  <h2 className="text-base font-bold">
+                    01 · Temario Oficial Completo ({activeCatalog.length} Temas
+                    · Paridad 100% CAM / SERMAS / Ayuntamiento)
+                  </h2>
+                  <p className="text-xs text-stone-500">
+                    Filtra entre <b>Temario Específico (Ej. 1, 2 y 3)</b> y{' '}
+                    <b>Bloque General (Solo Test Ej. 1)</b>. Incluye semáforo
+                    automático de Curva del Olvido.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    type="text"
+                    placeholder="Buscar por título, código (ej. E1) o ley..."
+                    value={searchTopicQuery}
+                    onChange={(e) => setSearchTopicQuery(e.target.value)}
+                    className="px-3.5 py-1.5 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800 min-w-[230px]"
+                  />
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <input
-                  type="text"
-                  placeholder="Buscar por título o ley..."
-                  value={searchTopicQuery}
-                  onChange={(e) => setSearchTopicQuery(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800"
-                />
+
+              <div className="flex flex-wrap gap-2 pt-2 border-t">
+                {[
+                  {
+                    id: 'Especificos',
+                    label: `✍️ Solo Temario Específico (${
+                      activeCatalog.filter(
+                        (t) => !/^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(t.id)
+                      ).length
+                    } · Entra en Ej. 1, 2 y 3)`,
+                  },
+                  {
+                    id: 'Generales',
+                    label: `🏛️ Solo Bloque General (${
+                      activeCatalog.filter((t) =>
+                        /^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(t.id)
+                      ).length
+                    } · Solo Test Ej. 1)`,
+                  },
+                  {
+                    id: 'Todos',
+                    label: `📋 Ver Todos (${activeCatalog.length})`,
+                  },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setSelectedBlockFilter(f.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                      selectedBlockFilter === f.id
+                        ? 'bg-[#D97757] text-white shadow-xs'
+                        : 'bg-[#FAF8F5] dark:bg-stone-800 border text-stone-700 dark:text-stone-300'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -3619,6 +4042,9 @@ const restoreFullMasterBackup = async (file) => {
               {filteredTopics.map((t) => {
                 const td = topicData[t.id] || {};
                 const status = td.status || 'Pendiente';
+                const isGenTopic = /^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(
+                  t.id
+                );
                 const topicDocsCount = documentsLibrary.filter(
                   (d) => d.topicId === t.id
                 ).length;
@@ -3626,16 +4052,70 @@ const restoreFullMasterBackup = async (file) => {
                   (q) => q.topicId === t.id
                 ).length;
 
+                const daysSinceReview = td.lastReviewedIso
+                  ? Math.floor(
+                      (Date.now() - new Date(td.lastReviewedIso).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  : null;
+                const forgettingBadge =
+                  daysSinceReview === null
+                    ? status !== 'Pendiente'
+                      ? {
+                          label: '🟡 Sin fecha repaso',
+                          cls: 'bg-amber-50 text-amber-800 border-amber-300',
+                        }
+                      : null
+                    : daysSinceReview <= 7
+                    ? {
+                        label: `🟢 Fresco (${
+                          daysSinceReview === 0
+                            ? 'hoy'
+                            : `hace ${daysSinceReview}d`
+                        })`,
+                        cls: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+                      }
+                    : daysSinceReview <= 14
+                    ? {
+                        label: `🟡 Repasar (${daysSinceReview}d)`,
+                        cls: 'bg-amber-100 text-amber-900 border-amber-400',
+                      }
+                    : {
+                        label: `🔴 Oxidado (${daysSinceReview}d sin tocar)`,
+                        cls: 'bg-rose-100 text-rose-900 border-rose-400 animate-pulse',
+                      };
+
                 return (
                   <div
                     key={t.id}
-                    className="bg-white dark:bg-stone-900 p-4 rounded-2xl border space-y-3 shadow-xs flex flex-col justify-between"
+                    className={`bg-white dark:bg-stone-900 p-4 rounded-2xl border space-y-3 shadow-xs flex flex-col justify-between transition hover:shadow-md ${
+                      isGenTopic
+                        ? 'border-l-4 border-l-sky-600'
+                        : 'border-l-4 border-l-[#D97757]'
+                    }`}
                   >
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center gap-2">
-                        <span className="text-xs font-extrabold text-[#D97757]">
-                          [{t.id}] · {t.block}
-                        </span>
+                      <div className="flex flex-wrap justify-between items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold text-white ${
+                              isGenTopic ? 'bg-sky-700' : 'bg-[#D97757]'
+                            }`}
+                          >
+                            {isGenTopic
+                              ? `🏛️ GENERAL [${t.id}]`
+                              : `✍️ ESPECÍFICO [${t.id}]`}
+                          </span>
+                          {forgettingBadge && (
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${forgettingBadge.cls}`}
+                              title="Semáforo de Curva del Olvido (Ebbinghaus)"
+                            >
+                              {forgettingBadge.label}
+                            </span>
+                          )}
+                        </div>
+
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 font-bold">
                             📄 {topicDocsCount} PDF · ❓ {topicQsCount} pregs
@@ -3648,6 +4128,7 @@ const restoreFullMasterBackup = async (file) => {
                                 [t.id]: {
                                   ...prev[t.id],
                                   status: e.target.value,
+                                  lastReviewedIso: new Date().toISOString(),
                                 },
                               }))
                             }
@@ -3677,14 +4158,20 @@ const restoreFullMasterBackup = async (file) => {
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-2 border-t">
                       <button
-                        onClick={() => handleGenerateMagistralTopic(t)}
+                        onClick={() => {
+                          touchTopicReviewDate(t.id);
+                          handleGenerateMagistralTopic(t);
+                        }}
                         className="px-2 py-1.5 rounded-lg bg-[#D97757] hover:bg-[#c46546] text-white text-[10px] font-bold cursor-pointer"
                       >
                         ✍️ Crear Tema 10/10
                       </button>
 
                       <button
-                        onClick={() => openSkeletonTrainerForTopic(t)}
+                        onClick={() => {
+                          touchTopicReviewDate(t.id);
+                          openSkeletonTrainerForTopic(t);
+                        }}
                         className="px-2 py-1.5 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white text-[10px] font-bold cursor-pointer"
                       >
                         🧠 Esqueleto 7m
@@ -3704,7 +4191,10 @@ const restoreFullMasterBackup = async (file) => {
                       </label>
 
                       <button
-                        onClick={() => launchStrategicSimulator(t.id)}
+                        onClick={() => {
+                          touchTopicReviewDate(t.id);
+                          launchStrategicSimulator(t.id);
+                        }}
                         className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-bold cursor-pointer"
                       >
                         🎯 Test Tema
@@ -5492,15 +5982,29 @@ const restoreFullMasterBackup = async (file) => {
                 <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border">
                   <button
                     onClick={async () => {
+                      const step1 = adjustTextToHandwrittenTarget(
+                        activeEssayView.text
+                      );
+                      const step2 = autoEnhanceStructureAndAnalysis(
+                        step1,
+                        activeEssayView.topicId
+                      );
+                      const { updated: step3 } =
+                        autoExpandFirstMentionAcronyms(step2);
+                      const { updated: step4 } = autoFixObsoleteLawsInText(step3);
                       const updatedAudit = auditDocumentTextValidity(
-                        activeEssayView.text,
+                        step4,
                         activeEssayView.topicId
                       );
                       const updatedItem = {
                         ...activeEssayView,
+                        text: step4,
+                        isCorrectedEj2: true,
+                        correctedAt: new Date().toLocaleDateString('es-ES'),
                         audit: updatedAudit,
                       };
                       setActiveEssayView(updatedItem);
+                      setSelectedCleanEj2Id(updatedItem.id);
                       setEssaysLibrary((prev) =>
                         prev.map((item) =>
                           item.id === updatedItem.id ? updatedItem : item
@@ -5515,13 +6019,23 @@ const restoreFullMasterBackup = async (file) => {
                       await saveToStore(STORE_DOCS, [updatedItem]);
                       setCalcEj2(Number(updatedAudit.finalScore));
                       setStatusBanner(
-                        `🔄 Calidad re-evaluada [${updatedItem.topicId}]: Nota Desarrollo ${updatedAudit.finalScore}/10 · Aptitud Test ${updatedAudit.ej1TestQualityScore}/10 · Cobertura ${updatedAudit.coveragePct}%.`
+                        `⚡ Optimización 1-Clic completada en [${updatedItem.topicId}]: Cabeceras limpias, 5 Actos numerados, siglas desplegadas y Nota ${updatedAudit.finalScore}/10 archivada en Pestaña 04B.`
                       );
                       setTimeout(() => setStatusBanner(''), 5000);
                     }}
-                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold cursor-pointer shadow-xs"
                   >
-                    🔄 Re-evaluar Calidad 10/10 y Guardar Modificaciones
+                    ⚡ Optimizar Todo en 1 Clic (Limpiar + 5 Actos + Siglas + Guardar 10/10)
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedCleanEj2Id(activeEssayView.id);
+                      setActiveModule('04B');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-bold cursor-pointer"
+                  >
+                    ✅ Ver en Archivo Limpio (04B)
                   </button>
 
                   <button
@@ -5963,6 +6477,33 @@ const restoreFullMasterBackup = async (file) => {
                         </div>
                       </div>
 
+                      {(() => {
+                        const detectedHeadings = (
+                          cleanActive.text.match(
+                            /^\s*(?:\d+\.|ACTO\s+[IVX]+:)\s+[^\n]{5,130}/gm
+                          ) || []
+                        ).map((h) => h.trim());
+                        return (
+                          detectedHeadings.length > 0 && (
+                            <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-300 space-y-1.5 text-xs">
+                              <span className="text-[10px] font-extrabold text-emerald-900 dark:text-emerald-300 uppercase block">
+                                🧭 ESQUELETO DE ESTRUCTURA (LOS {detectedHeadings.length} BLOQUES / ACTOS DE TU EXAMEN DE 90 MIN)
+                              </span>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                {detectedHeadings.map((hd, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-stone-900 border border-emerald-200 font-bold text-[11px] text-slate-800 dark:text-stone-200"
+                                  >
+                                    {hd}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        );
+                      })()}
+
                       <div className="p-6 rounded-2xl bg-white dark:bg-stone-900 border font-serif text-xs leading-loose whitespace-pre-line max-h-[65vh] overflow-y-auto shadow-inner">
                         {cleanActive.text}
                       </div>
@@ -6084,37 +6625,62 @@ const restoreFullMasterBackup = async (file) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs max-h-[440px] overflow-y-auto pr-1">
-              {OFFICIAL_10_PRACTICAL_CASES.map((c) => (
-                <div
-                  key={c.id}
-                  className="p-3.5 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border space-y-2 flex flex-col justify-between shadow-2xs"
-                >
-                  <div>
-                    <span className="font-extrabold text-[#D97757] block">
-                      {c.badge}
-                    </span>
-                    <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
-                      {c.enunciado}
-                    </p>
-                    <p className="text-[10px] text-emerald-800 dark:text-emerald-300 mt-1.5">
-                      <b>Claves de Tribunal:</b> {c.claves}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const customModelResolution = buildCaseResolutionText(c);
-                      setPracticalCaseText(customModelResolution);
-                      setStatusBanner(
-                        `✍️ Cargada la Resolución Magistral 10/10 específica de "${c.badge}". Pulsa el botón verde de abajo para auditarla.`
-                      );
-                      setTimeout(() => setStatusBanner(''), 4000);
-                    }}
-                    className="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] cursor-pointer mt-2"
-                  >
-                    📥 Cargar Resolución 10/10 de este Supuesto
-                  </button>
-                </div>
-              ))}
+              {[...customPracticalCases, ...OFFICIAL_10_PRACTICAL_CASES].map(
+                (c) => {
+                  const isFromPdf = String(c.id).startsWith('pdf-case-');
+                  return (
+                    <div
+                      key={c.id}
+                      className={`p-3.5 rounded-xl border space-y-2 flex flex-col justify-between shadow-2xs ${
+                        isFromPdf
+                          ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-400'
+                          : 'bg-[#FAF8F5] dark:bg-stone-800'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex justify-between items-start gap-1">
+                          <span className="font-extrabold text-[#D97757] block">
+                            {c.badge}
+                          </span>
+                          {isFromPdf && (
+                            <button
+                              onClick={() =>
+                                setCustomPracticalCases((prev) =>
+                                  prev.filter((item) => item.id !== c.id)
+                                )
+                              }
+                              className="px-1.5 py-0.5 rounded bg-rose-100 hover:bg-rose-700 hover:text-white text-rose-800 font-bold text-[10px] cursor-pointer shrink-0"
+                              title="Borrar este supuesto extraído"
+                            >
+                              🗑️
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
+                          {c.enunciado}
+                        </p>
+                        <p className="text-[10px] text-emerald-800 dark:text-emerald-300 mt-1.5">
+                          <b>Claves de Tribunal:</b> {c.claves}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const customModelResolution =
+                            c.fullResolutionText || buildCaseResolutionText(c);
+                          setPracticalCaseText(customModelResolution);
+                          setStatusBanner(
+                            `✍️ Cargada la Resolución en 5 Pasos de "${c.badge}". Pulsa el botón verde de abajo para auditarla.`
+                          );
+                          setTimeout(() => setStatusBanner(''), 4000);
+                        }}
+                        className="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] cursor-pointer mt-2"
+                      >
+                        📥 Cargar Resolución 10/10 de este Supuesto
+                      </button>
+                    </div>
+                  );
+                }
+              )}
             </div>
 
             <textarea
@@ -6624,9 +7190,92 @@ const restoreFullMasterBackup = async (file) => {
                         {st.storyText}
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 text-emerald-950 dark:text-emerald-200 text-[11px]">
-                        <b>💡 Anclaje Mnemotécnico de Examen:</b> {st.logicHook}
+                      <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 text-emerald-950 dark:text-emerald-200 text-[11px]">
+                        <b>💡 Acrónimo / Anclaje Mnemotécnico de Examen:</b>{' '}
+                        {st.logicHook}
                       </div>
+
+                      {st.microRetos && st.microRetos.length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-300 space-y-2">
+                          <span className="text-[11px] font-extrabold text-indigo-900 dark:text-indigo-200 uppercase block">
+                            ⚡ MICRO-RETOS DE REPASO RÁPIDO EN 15 SEGUNDOS (FREE RECALL SIN OPCIONES · PULSA PARA REVELAR)
+                          </span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {st.microRetos.map((mr) => {
+                              const isRev = !!revealedRetos[mr.id];
+                              return (
+                                <div
+                                  key={mr.id}
+                                  onClick={() =>
+                                    setRevealedRetos((prev) => ({
+                                      ...prev,
+                                      [mr.id]: !prev[mr.id],
+                                    }))
+                                  }
+                                  className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-indigo-200 cursor-pointer transition hover:border-indigo-500 text-xs space-y-1"
+                                >
+                                  <div className="flex justify-between items-start gap-2">
+                                    <b className="text-indigo-950 dark:text-indigo-200">
+                                      ❓ Reto {mr.num}: {mr.question}
+                                    </b>
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 font-bold shrink-0">
+                                      {isRev ? '🙈 Ocultar' : '👁️ Ver'}
+                                    </span>
+                                  </div>
+                                  {isRev && (
+                                    <p className="text-emerald-800 dark:text-emerald-300 font-semibold pt-1 border-t border-indigo-100">
+                                      ✔ {mr.answer}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {st.glosario && st.glosario.length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-300 space-y-2">
+                          <span className="text-[11px] font-extrabold text-amber-900 dark:text-amber-200 uppercase block">
+                            🗂️ TARJETAS FLASH · GLOSARIO TÉCNICO-JURÍDICO EXACTO PARA EL TRIBUNAL (TOCA CADA CONCEPTO PARA GIRAR)
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {st.glosario.map((g) => {
+                              const isFlipped = !!flippedGlossary[g.id];
+                              return (
+                                <div
+                                  key={g.id}
+                                  onClick={() =>
+                                    setFlippedGlossary((prev) => ({
+                                      ...prev,
+                                      [g.id]: !prev[g.id],
+                                    }))
+                                  }
+                                  className={`p-3 rounded-xl border cursor-pointer transition text-xs flex flex-col justify-between ${
+                                    isFlipped
+                                      ? 'bg-emerald-900 text-white border-emerald-700 shadow-xs'
+                                      : 'bg-white dark:bg-stone-900 border-amber-300 hover:border-[#D97757]'
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-center gap-1">
+                                    <span className="font-extrabold">
+                                      📌 {g.term}
+                                    </span>
+                                    <span className="text-[10px] opacity-75">
+                                      {isFlipped ? '↺ Definición' : '👆 Girar'}
+                                    </span>
+                                  </div>
+                                  {isFlipped && (
+                                    <p className="text-[11px] leading-relaxed mt-1.5 pt-1.5 border-t border-white/20">
+                                      {g.definition}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
