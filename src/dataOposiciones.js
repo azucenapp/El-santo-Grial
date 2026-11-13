@@ -1,149 +1,1097 @@
 // ============================================================================
 // ARCHIVO 1: src/dataOposiciones.js
-// Contiene los 223 Temas (CAM, SERMAS, Ayto), Diccionarios, 10 Casos y 60 Preguntas
+// PROGRAMA OFICIAL LITERAL ORDEN 1049/2026 (BOCM N.º 100) Y ORDEN 1472/2026 (399 PLAZAS)
+// Contiene los 223 Temas Oficiales (83 CAM + 50 SERMAS + 90 Ayto), Diccionarios, 10 Casos y 120 Preguntas
 // ============================================================================
 
 export const CAM_GENERAL_TITLES = [
-  'La Constitución Española de 1978: Características y estructura. Derechos fundamentales y libertades públicas. Garantías.',
-  'La distribución de competencias entre las Administraciones Públicas. Principio de autonomía local.',
-  'La Comunidad de Madrid (I): El Estatuto de Autonomía y competencias autonómicas.',
-  'La Comunidad de Madrid (II): La Asamblea, el Presidente y el Gobierno de la Comunidad de Madrid.',
-  'La Administración Autonómica de la Comunidad de Madrid: organización, estructura y Administración Institucional.',
-  'Los servicios de información administrativa, sugerencias, quejas y transparencia en la Comunidad de Madrid (Ley 10/2019).',
-  'Las Instituciones de la Unión Europea: Parlamento, Consejo Europeo, Consejo, Comisión y Tribunal de Justicia.',
-  'Las fuentes del Derecho Comunitario Europeo: Derecho originario y derivado. Aplicación en las Comunidades Autónomas.',
-  'El principio de legalidad y la jerarquía normativa. La Ley, disposiciones con fuerza de ley y el Reglamento.',
-  'La Hacienda Pública de la Comunidad de Madrid y el Presupuesto general autonómico (Ley 9/1990).',
-  'Ley 39/2015 del Procedimiento Administrativo Común y Ley 40/2015 de Régimen Jurídico del Sector Público.',
-  'La responsabilidad patrimonial de las Administraciones Públicas y de las autoridades y personal a su servicio.',
-  'Los contratos del sector público (Ley 9/2017 LCSP): tipología, expediente, adjudicación y ejecución.',
-  'El personal empleado público: RDL 5/2015 (TREBEP), Ley 1/1986 Función Pública CAM y teletrabajo (Decreto 79/2020).',
-  'Protección de datos personales (RGPD y LO 3/2018 LOPDGDD) y Esquema Nacional de Seguridad (RD 311/2022).',
-  'Igualdad efectiva (LO 3/2007), Violencia de Género (LO 1/2004 y Ley 5/2005 CAM) y normativa LGTBI (Leyes 2/2016 y 3/2016 CAM).',
+  "La Constitución Española de 1978: Características y estructura. Derechos fundamentales y libertades públicas: Su garantía y suspensión.",
+  "La distribución de competencias entre las Administraciones Públicas. Competencias exclusivas, compartidas, concurrentes, de desarrollo y ejecución. La interpretación del Tribunal Constitucional. Principio constitucional de autonomía local.",
+  "La Comunidad de Madrid (I): El Estatuto de Autonomía: estructura. Las competencias de la Comunidad de Madrid: Potestad legislativa, potestad reglamentaria y función ejecutiva.",
+  "La Comunidad de Madrid (II): La Asamblea Legislativa: Composición, funciones y potestades. El Presidente de la Comunidad y el Gobierno: Composición, designación y remoción. Funciones y potestades.",
+  "La Comunidad de Madrid (III): La Administración Autonómica: organización y estructura básica de las Consejerías. La Administración Institucional de la Comunidad de Madrid: Tipología y regulación.",
+  "La organización de los servicios de información y atención al ciudadano de la Comunidad de Madrid. Sistema de sugerencias, quejas y reclamaciones. El tratamiento del acceso a la información pública en la Ley 19/2013, de 9 de diciembre, de Transparencia, Acceso a la Información Pública y Buen Gobierno. Especial referencia a la Comunidad de Madrid: Ley 10/2019, de 10 de abril, de Transparencia y de Participación de la Comunidad de Madrid.",
+  "Las Instituciones de la Unión Europea. El Consejo Europeo, el Consejo, la Comisión Europea, el Parlamento Europeo, el Tribunal de Justicia y Tribunal de Cuentas de la Unión Europea y otros Órganos.",
+  "Las fuentes del Derecho Comunitario Europeo. Las relaciones entre el Derecho comunitario y el ordenamiento jurídico de los Estados miembros. Las funciones de los Estados miembros en la aplicación del Derecho Comunitario. La participación de las Comunidades Autónomas en la aplicación del Derecho Comunitario.",
+  "El principio de legalidad y la jerarquía normativa. Las fuentes del Derecho Administrativo. La Ley. Disposiciones del ejecutivo con fuerza de ley. El Reglamento.",
+  "La Hacienda Pública de la Comunidad de Madrid. La Ley de Hacienda de la Comunidad de Madrid: Estructura, contenido y principios generales. El Presupuesto de la Comunidad de Madrid: concepto y regulación jurídica. El ciclo presupuestario. Elaboración, examen, enmienda y aprobación del presupuesto.",
+  "La Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas: objeto y ámbito de aplicación. Los interesados. Derechos de los ciudadanos en sus relaciones con las Administraciones Públicas. El procedimiento administrativo común: concepto, principios generales y fases del procedimiento. Especialidades del procedimiento administrativo común. La Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público: disposiciones generales, principios de actuación y funcionamiento del Sector Público. Funcionamiento electrónico del Sector Público.",
+  "La responsabilidad patrimonial de la Administración. El régimen jurídico en el sistema español. Responsabilidad de autoridades y funcionarios. Responsabilidad de la Administración por actos de sus concesionarios y contratistas.",
+  "Los contratos administrativos. Clases. El expediente de contratación y su tramitación. Procedimientos y criterios de adjudicación. Ejecución y modificación de los contratos. Pago del precio. Extinción de los contratos: Cumplimiento y resolución.",
+  "El texto refundido de la Ley del Estatuto Básico del Empleado Público. Adquisición y pérdida de la condición de funcionario. Situaciones administrativas. Derechos, deberes e incompatibilidades. Régimen disciplinario. Especial referencia a la Ley de la Función Pública de la Comunidad de Madrid. Decreto por el que se regula la modalidad de prestación de servicios en régimen de teletrabajo en la Administración de la Comunidad de Madrid. La Ley de la Función Pública de la Comunidad de Madrid.",
+  "La protección de datos. Régimen jurídico. Principios y derechos de los ciudadanos. La Seguridad de la Información: principios básicos y requisitos mínimos en el Esquema Nacional de Seguridad.",
+  "El principio de igualdad entre mujeres y hombres. La tutela contra la discriminación. El marco normativo de la igualdad de género, la protección integral contra la violencia de género y no discriminación de las personas LGTBI. Especial referencia a la Comunidad de Madrid."
 ];
 
 export const CAM_SPECIFIC_TITLES = [
-  'Historia y evolución de los sistemas de protección social en España. Pobreza, exclusión y tasa AROPE.',
-  'Política social y Estado del Bienestar: orígenes, modelos de Esping-Andersen y retos actuales.',
-  'Política social en la Unión Europea: Pilar Europeo de Derechos Sociales y Fondo Social Europeo Plus (FSE+).',
-  'El Sistema Público de Servicios Sociales en España: marco constitucional, leyes autonómicas y Plan Concertado.',
-  'Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid: objeto, principios y derechos.',
-  'Organización funcional y territorial en la Ley 12/2022 CAM: Atención Social Primaria y Atención Social Especializada.',
-  'La Historia Social Única, el Profesional de Referencia y el Plan Individual de Atención Social (PIAS) en la Ley 12/2022.',
-  'Cartera de Servicios Sociales de la Comunidad de Madrid: prestaciones garantizadas y condicionadas, de servicio y económicas.',
-  'Calidad, inspección, autorización, acreditación y registro de centros de servicios sociales en la Comunidad de Madrid.',
-  'Participación ciudadana, Consejo de Servicios Sociales de la CAM e iniciativa social y mercantil.',
-  'Financiación de los Servicios Sociales en la Comunidad de Madrid: convenios, conciertos sociales y contratos.',
-  'Ética pública, bioética y deontología profesional en los Servicios Sociales de la Comunidad de Madrid.',
-  'El Sistema de la Seguridad Social en España (RDL 8/2015 LGSS): modalidades contributiva y no contributiva.',
-  'Pensiones no contributivas de jubilación e invalidez: requisitos, gestión y cuantías en la Comunidad de Madrid.',
-  'Garantía de ingresos mínimos: Renta Mínima de Inserción (Ley 15/2001 CAM) e Ingreso Mínimo Vital (Ley 19/2021).',
-  'Intervención social individualizada (Casework): fases metodológicas, relación de ayuda y acompañamiento social.',
-  'Intervención social familiar: tipologías familiares, ciclo vital, mediación familiar (Ley 1/2001 CAM) y apoyo parental.',
-  'Exclusión social y emergencias sociales: sinhogarismo, tipología ETHOS y atención a urgencias sociales.',
-  'Trabajo Social Comunitario, voluntariado (Ley 45/2015 y Ley 1/2015 CAM) y desarrollo local participativo.',
-  'Vivienda e inclusión residencial en la Comunidad de Madrid: vulnerabilidad habitacional y recursos.',
-  'Ley 39/2006 de Promoción de la Autonomía Personal y Atención a las personas en situación de Dependencia (LAPAD).',
-  'Valoración de la situación de dependencia: Baremo de Valoración (BVD) y Escala de Valoración Específica (EVE) RD 174/2011.',
-  'Procedimiento de reconocimiento de la dependencia y elaboración del PIA en la Comunidad de Madrid (Decreto 54/2015).',
-  'Demografía del envejecimiento en la Comunidad de Madrid. Envejecimiento activo y prevención de la soledad no deseada.',
-  'Recursos de Atención Social a Personas Mayores en la CAM: SAD, Teleasistencia, Centros de Día, Pisos y Residencias (AMAS).',
-  'Salud mental y atención psicosocial en la Comunidad de Madrid: organización, estigma y recuperación.',
-  'Red Pública de Atención Social a Personas con Enfermedad Mental Grave y Duradera de la CAM (CRPS, CRL, EASC, Mini-residencias).',
-  'Discapacidad: RDL 1/2013, Estrategia Española y nuevo baremo de valoración del grado de discapacidad (Real Decreto 888/2022).',
-  'Atención Temprana en la Comunidad de Madrid (Decreto 46/2015 y CRECOVI) y Centros Base de Valoración.',
-  'Capacidad jurídica y medidas de apoyo a personas adultas con discapacidad: Ley 8/2021 y Agencia AMAPAD (Ley 1/2023 CAM).',
-  'Inmigración en España y en la Comunidad de Madrid: LO 4/2000 y nuevo Reglamento de Extranjería (Real Decreto 1155/2024).',
-  'Protección internacional, asilo, refugio (Ley 12/2009) y atención a menores extranjeros no acompañados.',
-  'Instituciones penitenciarias (LOGP 1/1979), medidas alternativas y reinserción social de personas reclusas.',
-  'Minorías étnicas e inclusión social del Pueblo Gitano en la Comunidad de Madrid.',
-  'Violencia de género: LO 1/2004, Ley 5/2005 integral de la Comunidad de Madrid y Red de Atención Integral (PMORVG).',
-  'Violencias sexuales (LO 10/2022), trata de seres humanos con fines de explotación y recursos especializados en la CAM.',
-  'Marco normativo de protección a la infancia y adolescencia: LO 1/1996, LO 8/2021 (LOPIVI) y Ley 4/2023 de la Comunidad de Madrid.',
-  'Situaciones de riesgo y desamparo infantil: valoración, comisión de tutela del menor, guarda y tutela administrativa.',
-  'Acogimiento familiar y residencial en la Comunidad de Madrid: modalidades, estatuto del acogedor y red de centros.',
-  'Adopción nacional e internacional: requisitos de idoneidad, procedimiento y seguimiento postadoptivo en la CAM.',
-  'Responsabilidad penal de los menores (LO 5/2000) y Agencia para la Reinserción y Reeducación del Menor Infractor (Ley 3/2004 ARRMI).',
-  'Familias numerosas (Ley 40/2003), familias monoparentales y medidas de apoyo a la maternidad y conciliación en la CAM.',
-  'Juventud en dificultad social: programas de autonomía y transición a la vida adulta para jóvenes extutelados.',
-  'Diversidad sexual y de género: atención social a personas LGTBI en la Comunidad de Madrid (Leyes 2/2016 y 3/2016).',
-  'Sistema educativo y equidad: prevención del absentismo escolar, acoso escolar y Equipos de Orientación (EOEP).',
-  'Políticas activas de empleo e inserción sociolaboral de colectivos vulnerables (RDL 3/2015, Centros Especiales de Empleo y Empresas de Inserción).',
-  'Derecho a la protección de la salud: Ley 14/1986 General de Sanidad, Ley 16/2003 de Cohesión y Ley 41/2002 de Autonomía del Paciente.',
-  'Ordenación sanitaria en la Comunidad de Madrid: Ley 12/2001 (LOSCAM) y estructura del Servicio Madrileño de Salud (Decreto 246/2023).',
-  'Coordinación sociosanitaria en la Comunidad de Madrid: continuidad asistencial, cuidados paliativos (Ley 4/2017) y pacientes crónicos.',
-  'Salud Pública y determinantes sociales de la salud: desigualdades en salud, promoción y educación para la salud.',
-  'El Trabajo Social en el ámbito sanitario: funciones en Atención Primaria y Atención Hospitalaria del SERMAS.',
-  'Adicciones y drogodependencias: Ley 5/2002 de la Comunidad de Madrid, prevención y Red de atención CAID.',
-  'Conductas adictivas sin sustancia (juego patológico y adicciones tecnológicas): prevención e intervención psicosocial.',
-  'Concepto, epistemología e historia del Trabajo Social en España y a nivel internacional.',
-  'Modelos teóricos de intervención en Trabajo Social: psicodinámico, sistémico-ecológico, centrado en la tarea, crisis y humanista.',
-  'El método científico en Trabajo Social: estudio-investigación, diagnóstico social, planificación, ejecución y evaluación.',
-  'La investigación social aplicada al Trabajo Social: paradigmas cuantitativo y cualitativo, técnicas e indicadores.',
-  'Planificación y evaluación de políticas y proyectos sociales: nivel estratégico, táctico y operativo. Enfoque del Marco Lógico.',
-  'Técnicas e instrumentos específicos del Trabajo Social: entrevista, visita domiciliaria, Ficha Social, Historia Social, Informe Social, Genograma y Ecomapa.',
-  'Código Deontológico del Trabajo Social, secreto profesional, dilemas éticos y Comités de Ética en Intervención Social.',
-  'El trabajo en equipo interdisciplinar, trabajo en red, supervisión profesional y prevención del síndrome de burnout.',
-  'Habilidades de comunicación, escucha activa, gestión de conflictos y negociación en la intervención social.',
-  'Perspectiva de género e interseccionalidad aplicada al diagnóstico y la intervención del Trabajo Social.',
-  'Accesibilidad universal, diseño para todas las personas y apoyos tecnológicos para la autonomía personal.',
-  'Sistemas de información en Servicios Sociales, transformación digital, interoperabilidad y brecha digital.',
-  'Participación comunitaria, mapeo de activos en salud y bienestar, y metodologías participativas (IAP).',
-  'Gestión de la calidad en los Servicios Sociales: Cartas de Servicios (Decreto 27/1997 CAM), evaluación y mejora continua.',
+  "Historia y evolución de los sistemas de protección social en España. Estratificación, clases sociales y su evolución. Consecuencias sociales. Pobreza y desigualdad.",
+  "La Política social y el Estado del Bienestar: tipologías de política social, modelos del Estado del Bienestar y planteamientos actuales. Los servicios sociales en los modelos actuales de bienestar social.",
+  "La política social en el marco de la Unión Europea. Sistema de servicios sociales en los países de la Unión Europea, comparación con los servicios sociales en España. Concepto, ejes y medidas financiadas por el Fondo Social Europeo Plus (FSE+).",
+  "Marco legislativo e institucional de los Servicios Sociales con referencia a la Administración Central, Autonómica y Local. El ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
+  "La Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid: disposiciones generales. El Sistema Público de Servicios Sociales: concepto y principios rectores. Competencias. Organización funcional y territorial del Sistema público de servicios sociales: Atención Social Primaria y Atención Social Especializada. Funciones.",
+  "La organización de los servicios sociales en la Comunidad de Madrid. La Consejería competente en materia de servicios sociales: estructura y competencias. La Agencia Madrileña de Atención Social: estructura y competencias. Los centros de Servicios Sociales.",
+  "La Agencia Madrileña de Atención Social: organización y competencias. Recursos, centros y servicios. Marco normativo.",
+  "Prestaciones del sistema público de servicios sociales. El Catálogo de prestaciones de servicios sociales: prestaciones garantizadas y condicionadas. Prestaciones de servicio y económicas.",
+  "Calidad en la prestación. Inspección de los centros y servicios. Sistema de información. Registro de Entidades, Centros, Servicios y de Directores de Centros de Atención Social.",
+  "Provisión de los servicios sociales: gestión directa e indirecta, convenios y subvenciones. El concierto social.",
+  "El Ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
+  "La Seguridad Social en España. Principales características. Dimensión, financiación y evolución. Problemas actuales y líneas de reforma.",
+  "Políticas Públicas de Empleo. Protección por desempleo. Prestaciones de nivel contributivo y de nivel asistencial. Régimen de las prestaciones.",
+  "Pensiones no contributivas. Pensión de invalidez. Pensión de jubilación. Otras prestaciones.",
+  "Renta mínima o salario social. La renta mínima de inserción en la Comunidad de Madrid: requisitos, cuantía, solicitud y programas de inserción. El Ingreso Mínimo Vital. Estrategia de prevención y lucha contra la pobreza y la exclusión social. Estrategia contra la pobreza energética.",
+  "Programa de trabajo social de zona. Información, orientación y valoración. El método y la intervención en trabajo social. Niveles de intervención y técnicas e instrumentos utilizados.",
+  "Programa de familia y convivencia. Apoyo a la familia en dificultad social. La familia como espacio de intervención social. La intervención profesional del asistente social en la familia. Los Centros de Apoyo y Encuentro Familiar. La mediación familiar. Los puntos de encuentro familiar. Estrategia de protección a la maternidad y paternidad y de fomento de la natalidad y conciliación de la Comunidad de Madrid.",
+  "Programa de prevención de la marginación, inserción y promoción social. Ámbito y fases de actuación desde el trabajo social. Prestaciones e intervenciones sociales para la prevención social.",
+  "La promoción de la iniciativa social. Las Organizaciones no gubernamentales y su papel en la acción social. El voluntariado social. Concepto. Marco legislativo. Función del voluntariado en el Sistema de Servicios Sociales. Las necesidades sociales: concepto, características y tipología. Asociacionismo y participación ciudadana.",
+  "La cooperación internacional para el desarrollo en las Administraciones Públicas. Legislación estatal y autonómica. La cooperación para el desarrollo en la Comunidad de Madrid.",
+  "Sistema para la Autonomía y Atención a la Dependencia: objeto, finalidad, órganos, niveles de protección del Sistema, catálogo de servicios de atención y prestaciones económicas. La Ley 39/2006 de 14 de diciembre de Promoción de la Autonomía Personal y Atención a las personas en situación de dependencia y normativa de desarrollo. Sistema de información, evaluación y financiación del Sistema para la Autonomía y Atención a la Dependencia.",
+  "La situación de dependencia y su valoración. Normativa reguladora del procedimiento de reconocimiento de la situación de dependencia. Grados de dependencia. Baremo de valoración y Escala de valoración específica para menores (EVE). Revisión de la situación de dependencia.",
+  "La atención a las personas en situación de dependencia en la Comunidad de Madrid. Normativa reguladora del procedimiento para acceso a las prestaciones del sistema para la autonomía y atención a la dependencia en la Comunidad de Madrid. El Programa Individual de Atención y su revisión. Catálogo de servicios de atención y prestaciones económicas: definiciones, intensidad de los servicios, finalidad de las prestaciones económicas y régimen de compatibilidad entre prestaciones.",
+  "Las personas mayores. Concepto y características. Aspectos físicos, psicológicos y sociales de la vejez. Consecuencias del envejecimiento. Principal problemática social.",
+  "La intervención social con personas mayores. Programas y prestaciones para personas mayores. Envejecimiento activo y prevención de la dependencia en las personas mayores.",
+  "La salud mental en la Comunidad de Madrid. La atención a los pacientes en los Servicios de salud mental. Organización, estructura y funciones. El trabajo social en salud mental.",
+  "Red Pública de Atención Social a personas con enfermedad mental grave y duradera de la Comunidad de Madrid.",
+  "Discapacidad. Concepto y evolución. Marco jurídico. Personas con discapacidad física, intelectual, sensorial y por enfermedad mental. Aspectos físicos, psíquicos, sociales y legales. Estrategia Española de Discapacidad 2022-2030. Estrategia Madrileña de Atención a las Personas con Discapacidad Horizonte 2028. Procedimiento para el reconocimiento del grado de discapacidad (R.D. 888/2022 del 18 octubre).",
+  "La intervención con personas con discapacidad. Reconocimiento del grado de discapacidad. Prestaciones para personas con discapacidad. Recursos y Programas de Atención. Red Pública de atención a personas con discapacidad. Empleo y personas con discapacidad. Estrategia Española sobre discapacidad 2022-2030: ejes, objetivos y líneas de actuación. Centros Base y CRECOVI. Prestaciones, recursos y programas para personas con discapacidad. Red pública de atención a personas con discapacidad. Empleo y personas con discapacidad.",
+  "La Agencia Madrileña para el Apoyo a las Personas Adultas con Discapacidad. Marco jurídico. Organización y competencias. Promoción de la autonomía y asistencia a las personas con discapacidad en el ejercicio de su capacidad jurídica. Curatela, defensa judicial y medidas de apoyo. Guarda de hecho. Medidas voluntarias de apoyo. Comité de Ética en la AMAPAD.",
+  "La inmigración en España. Teorías explicativas. Marco jurídico en materia de extranjería. Derechos y libertades de los extranjeros en España. Autorización de residencia y trabajo. Entrada y salida del territorio español. La reagrupación familiar.",
+  "Políticas de integración e intervención social con la población inmigrante y refugiados. Especial referencia a la Comunidad de Madrid. Menores e inmigración. Marco jurídico específico en la materia.",
+  "Población penitenciaria. Aspectos legales y de inserción social. Servicios sociales penitenciarios.",
+  "Las personas sin hogar. Características y programas de atención a nivel regional y local. Prestaciones dirigidas a personas sin hogar. Recursos y actuaciones a personas sin hogar en la Comunidad de Madrid.",
+  "Mujeres en situación de dificultad social. Legislación aplicable: Ley Orgánica 1/2004, de Medidas de Protección Integral contra la Violencia de Género; Ley Orgánica 10/2022, de Garantía Integral de la Libertad Sexual; Ley 3/2018, de 22 de junio, de modificación de la Ley 5/2005, de 20 de diciembre, Integral contra la Violencia de Género de la Comunidad de Madrid. Programas, medidas y prestaciones de atención a las víctimas de violencia de género. Especial referencia a la Comunidad de Madrid.",
+  "Políticas de igualdad entre mujeres y hombres. Normativa reguladora. Actuaciones en materia de igualdad y estrategias contra la Trata de Seres Humanos con fines de explotación sexual.",
+  "Convención sobre los Derechos del Niño de 20 de noviembre de 1989; Ley Orgánica 1/1996, de 15 de enero, de Protección Jurídica del Menor (modificada por la Ley Orgánica 8/2015 y la Ley 26/2015); Ley Orgánica 8/2021, de 4 de junio, de protección integral a la infancia y la adolescencia frente a la violencia; Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid. La Estrategia de la Unión Europea sobre los Derechos del Niño y la Garantía Infantil Europea. Los Consejos de Derechos de la Infancia y Adolescencia de la Comunidad de Madrid.",
+  "El sistema de protección de menores: distribución de competencias y niveles de intervención. Riesgo, desamparo y medidas de protección: Tutela y guarda. Protección a la infancia y la adolescencia frente a la violencia: deber general de comunicación y deber cualificado de los profesionales; medidas preventivas, protocolos de prevención y detección y entornos seguros; el coordinador y el delegado de protección; registros de situaciones de violencia. Prestaciones del Sistema recogidas en la Cartera de Servicios Sociales de la Comunidad de Madrid.",
+  "Formas de ejercicio de las medidas de protección de menores: acogimiento familiar, acogimiento residencial y adopción. Aspectos legales y procesos del acogimiento. Preparación de la familia de origen y del menor. Seguimiento y apoyo a las familias de acogida. Cese del acogimiento familiar. Prestaciones del Sistema. Procesos de intervención. Organismos acreditados de adopción internacional.",
+  "Aspectos legales de la protección a la infancia y adolescencia. Comisión de protección a la infancia y adolescencia de la Comunidad de Madrid: competencias y funciones.",
+  "Menores en conflicto con la ley: intervención socioeducativa y medidas de prevención en la Ley Orgánica 8/2021, de 4 de junio, de protección integral a la infancia y la adolescencia frente a la violencia y la Ley 4/2023, de 22 de marzo de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid. Menores infractores: la Ley Orgánica 5/2000, de 12 de enero, reguladora de la responsabilidad penal de los menores y su reglamento de desarrollo; Juzgados y Fiscalía de Menores; medidas judiciales privativas y no privativas de libertad; conciliación y reparación con la víctima; equipos técnicos y ejecución de medidas en la Comunidad de Madrid.",
+  "La ejecución de las medidas judiciales impuestas a menores infractores. Ley de creación de la Agencia de la Comunidad de Madrid para la Reeducación y Reinserción del Menor Infractor. Organización y competencias. Principales ejes y programas de intervención dirigidos a los menores infractores atendidos.",
+  "Adolescencia y juventud. Aspectos psicológicos y sociales. Programas de atención a la juventud.",
+  "Políticas LGTBI. Normativa y contexto internacional y en la Comunidad de Madrid. Intervención con las personas LGTBI.",
+  "La intervención de los Servicios Sociales en situaciones de urgencia y emergencia social.",
+  "Políticas Públicas de Vivienda Social en la Comunidad de Madrid. La Agencia de Vivienda Social de la Comunidad de Madrid.",
+  "El derecho a la protección de la salud en la Constitución y en la Ley General de Sanidad. La Ley de Cohesión y Calidad del Sistema Nacional de Salud: principios generales, titulares, derechos de los ciudadanos y prestaciones. La Ley de Ordenación de las Profesiones Sanitarias: principios generales del ejercicio de las profesiones sanitarias. La Ley básica reguladora de la autonomía del paciente y de derechos y obligaciones en materia de información y documentación clínica.",
+  "La salud en la Comunidad de Madrid. Principales características. La Consejería de Sanidad: competencias. La Ley de Ordenación Sanitaria de la Comunidad de Madrid: el Sistema Sanitario. La Ley de libertad de elección en la Sanidad de la Comunidad de Madrid.",
+  "La organización de los Servicios Sanitarios en la Comunidad de Madrid. Niveles asistenciales. La coordinación interprofesional intra y extra hospitalaria con los servicios primarios de salud y con los servicios sociales generales y especializados.",
+  "Organización de los servicios de Salud Pública en la Comunidad de Madrid. Legislación. Competencias. Estructura. El trabajo social en los programas de salud pública, prevención y promoción de la salud. Principales programas y actuaciones.",
+  "El trabajo social en Atención Primaria de Salud y en Atención Especializada. Intervención social en los programas de control y seguimiento del VIH/SIDA.",
+  "Drogodependencias. Plan Nacional sobre Drogas. Los Centros de Atención Integral a Drogodependientes (CAID) de la Comunidad de Madrid. El Centro Regional de Documentación de Educación Sanitaria y Adicciones de la Comunidad de Madrid. Estrategias de prevención. Programas de reducción del daño. La disminución de los riesgos y la reducción de los daños en consumidores de drogas.",
+  "Alcoholismo. Aspectos etiológicos y clínicos. Evaluación, diagnóstico y tratamiento. El trabajo social en los programas de prevención y seguimiento del alcoholismo.",
+  "El trabajo social en la Administración Educativa. Funciones del trabajador social y los Equipos de Orientación Educativa y Psicopedagógica y Servicios de Orientación. Programa de escolarización en casos de urgencia social.",
+  "La ética en la práctica del Trabajo Social: principios, código deontológico, secreto profesional. La bioética y el trabajo social. Dilemas éticos y modelos de resolución.",
+  "El método científico. Evolución metodológica en Trabajo Social. El método en Trabajo Social. El Trabajo Social con casos, grupos y comunidades.",
+  "La planificación e intervención social. El proceso de planificación en Trabajo Social. Tipologías de planificación. Niveles e instrumentos de la planificación e intervención social.",
+  "Evaluación de programas y proyectos de servicios sociales. Objetivos, métodos, técnicas e indicadores.",
+  "Las técnicas en Trabajo Social. Concepto y definición dentro del proceso metodológico. Tipologías. Utilidad y finalidad en el proceso metodológico. Las técnicas e instrumentos en Trabajo Social. Nuevas tecnologías de la información aplicadas al trabajo social.",
+  "Los modelos de intervención en Trabajo Social. Concepto, definición y características en los modelos en Trabajo Social.",
+  "El Equipo interdisciplinar. Técnicas de trabajo en Equipo. Trabajo social y otras profesiones relacionadas con la atención social: salud, educación, justicia y/o servicios sociales. Trabajo en red.",
+  "Estructura de la Administración de Justicia, Órganos Judiciales. Administración y Apoyo Funcional. Instituto de Medicina Legal y Ciencias Forenses en la Comunidad de Madrid: funciones de los equipos psicosociales en el servicio de especialidades.",
+  "El Trabajo Social Forense: concepto, funciones y ámbito competencial. Tribunal de instancia y Audiencia Provincial de la Comunidad de Madrid. Ámbito de intervención.",
+  "Metodología pericial en Trabajo Social: técnicas, fases y criterios de intervención.",
+  "Elaboración del informe social forense: estructura, lenguaje técnico, objetividad, trazabilidad de la información e indicadores de evaluación. Defensa del informe en sede judicial.",
+  "El Trabajador Social en las Oficinas de Asistencia a Víctimas de Delito en los Juzgados. Marco jurídico. Estructura, servicios y actuaciones.",
+  "Calidad en los Servicios Públicos: las Cartas de Servicios como instrumentos de mejora de la calidad en el ámbito de la intervención social de la Comunidad de Madrid."
 ];
 
 export const OFFICIAL_CAM_TOPICS = [
-  ...CAM_GENERAL_TITLES.map((title, idx) => ({
-    id: `G${idx + 1}`,
-    block: 'General CAM',
-    subArea: 'general',
-    number: idx + 1,
-    prob: idx < 6 || idx >= 10 ? 'Alta' : 'Media',
-    equivalentIds:
-      idx === 0
-        ? ['S-1', 'AY-1']
-        : idx === 10
-        ? ['S-6', 'AY-12', 'AY-13', 'AY-14']
-        : idx === 13
-        ? ['S-6', 'AY-11']
-        : idx === 15
-        ? ['S-8', 'AY-20']
-        : [],
-    title: `Tema General ${idx + 1}. ${title}`,
-    lawUpdate:
-      'Constitución 1978, Ley 39/2015, Ley 40/2015, TREBEP y Normativa Autonómica CAM 2026.',
-  })),
-  ...CAM_SPECIFIC_TITLES.map((title, idx) => ({
-    id: `E${idx + 1}`,
-    block: 'Específico CAM',
-    subArea:
-      idx < 20
-        ? 'area1_ss'
-        : idx < 30
-        ? 'area2_dep'
-        : idx < 46
-        ? 'area3_inf'
-        : 'area4_san_met',
-    number: idx + 1,
-    prob: 'Alta',
-    equivalentIds:
-      idx === 4
-        ? ['S-11', 'AY-22']
-        : idx === 20
-        ? ['S-43', 'AY-24']
-        : idx === 27
-        ? ['S-10', 'AY-76']
-        : idx === 34
-        ? ['S-8', 'S-34', 'AY-78']
-        : idx === 36
-        ? ['S-30', 'S-31', 'AY-26', 'AY-72']
-        : idx === 47
-        ? ['S-2', 'S-3']
-        : [],
-    title: `Tema Específico ${idx + 1}. ${title}`,
-    lawUpdate:
-      'Ley 12/2022 Servicios Sociales CAM, Decreto 54/2015, RD 888/2022, Ley 4/2023 Infancia, Ley 1/2023 AMAPAD y RD 1155/2024.',
-  })),
+  {
+    "id": "G1",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 1,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-1",
+      "AY-1"
+    ],
+    "title": "Tema General 1. La Constitución Española de 1978: Características y estructura. Derechos fundamentales y libertades públicas: Su garantía y suspensión.",
+    "lawUpdate": "Constitución Española de 1978 (arts. 1.1, 9.2, 10.1, 14, 15 a 55 y reforma del art. 49 de 15 de febrero de 2024); Ley Orgánica 2/1979 del Tribunal Constitucional; Ley Orgánica 3/1981 del Defensor del Pueblo."
+  },
+  {
+    "id": "G2",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 2,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-2",
+      "AY-2"
+    ],
+    "title": "Tema General 2. La distribución de competencias entre las Administraciones Públicas. Competencias exclusivas, compartidas, concurrentes, de desarrollo y ejecución. La interpretación del Tribunal Constitucional. Principio constitucional de autonomía local.",
+    "lawUpdate": "Título VIII de la Constitución Española (arts. 137 a 158); Ley 7/1985 Reguladora de las Bases del Régimen Local (LRBRL, arts. 25, 26 y 27); Carta Europea de Autonomía Local y jurisprudencia del Tribunal Constitucional."
+  },
+  {
+    "id": "G3",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 3,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-3",
+      "AY-3"
+    ],
+    "title": "Tema General 3. La Comunidad de Madrid (I): El Estatuto de Autonomía: estructura. Las competencias de la Comunidad de Madrid: Potestad legislativa, potestad reglamentaria y función ejecutiva.",
+    "lawUpdate": "Ley Orgánica 3/1983, de 25 de febrero, de Estatuto de Autonomía de la Comunidad de Madrid (Título II, arts. 26 a 33; competencia exclusiva en asistencia social y servicios sociales en el art. 26.1.23)."
+  },
+  {
+    "id": "G4",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 4,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-4"
+    ],
+    "title": "Tema General 4. La Comunidad de Madrid (II): La Asamblea Legislativa: Composición, funciones y potestades. El Presidente de la Comunidad y el Gobierno: Composición, designación y remoción. Funciones y potestades.",
+    "lawUpdate": "Ley Orgánica 3/1983 (Título I, arts. 8 a 25); Ley 1/1983, de 13 de diciembre, de Gobierno y Administración de la Comunidad de Madrid; Reglamento de la Asamblea de Madrid."
+  },
+  {
+    "id": "G5",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 5,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-5"
+    ],
+    "title": "Tema General 5. La Comunidad de Madrid (III): La Administración Autonómica: organización y estructura básica de las Consejerías. La Administración Institucional de la Comunidad de Madrid: Tipología y regulación.",
+    "lawUpdate": "Ley 1/1983 de Gobierno y Administración de la CAM; Ley 1/1984, de 19 de enero, reguladora de la Administración Institucional de la Comunidad de Madrid; Decretos de estructura orgánica de las Consejerías."
+  },
+  {
+    "id": "G6",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 6,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-6"
+    ],
+    "title": "Tema General 6. La organización de los servicios de información y atención al ciudadano de la Comunidad de Madrid. Sistema de sugerencias, quejas y reclamaciones. El tratamiento del acceso a la información pública en la Ley 19/2013, de 9 de diciembre, de Transparencia, Acceso a la Información Pública y Buen Gobierno. Especial referencia a la Comunidad de Madrid: Ley 10/2019, de 10 de abril, de Transparencia y de Participación de la Comunidad de Madrid.",
+    "lawUpdate": "Decreto 21/2002 de Atención al Ciudadano en la CAM; Decreto 85/2002; Ley 19/2013 estatal de Transparencia; Ley 10/2019, de 10 de abril, de Transparencia y de Participación de la Comunidad de Madrid."
+  },
+  {
+    "id": "G7",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 7,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-7"
+    ],
+    "title": "Tema General 7. Las Instituciones de la Unión Europea. El Consejo Europeo, el Consejo, la Comisión Europea, el Parlamento Europeo, el Tribunal de Justicia y Tribunal de Cuentas de la Unión Europea y otros Órganos.",
+    "lawUpdate": "Tratado de la Unión Europea (TUE, art. 13) y Tratado de Funcionamiento de la Unión Europea (TFUE, arts. 223 a 309); Comité Económico y Social Europeo y Comité de las Regiones."
+  },
+  {
+    "id": "G8",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 8,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-8"
+    ],
+    "title": "Tema General 8. Las fuentes del Derecho Comunitario Europeo. Las relaciones entre el Derecho comunitario y el ordenamiento jurídico de los Estados miembros. Las funciones de los Estados miembros en la aplicación del Derecho Comunitario. La participación de las Comunidades Autónomas en la aplicación del Derecho Comunitario.",
+    "lawUpdate": "Art. 288 TFUE (Reglamentos, Directivas, Decisiones, Recomendaciones y Dictámenes); principios de efecto directo (Van Gend en Loos), primacía (Costa vs ENEL) y autonomía institucional."
+  },
+  {
+    "id": "G9",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 9,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-9"
+    ],
+    "title": "Tema General 9. El principio de legalidad y la jerarquía normativa. Las fuentes del Derecho Administrativo. La Ley. Disposiciones del ejecutivo con fuerza de ley. El Reglamento.",
+    "lawUpdate": "Arts. 9.3, 81 a 86 y 97 de la Constitución Española; art. 1 del Código Civil; Ley 39/2015 (Título VI de la iniciativa legislativa y de la potestad para dictar reglamentos, arts. 127 a 133)."
+  },
+  {
+    "id": "G10",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 10,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-10"
+    ],
+    "title": "Tema General 10. La Hacienda Pública de la Comunidad de Madrid. La Ley de Hacienda de la Comunidad de Madrid: Estructura, contenido y principios generales. El Presupuesto de la Comunidad de Madrid: concepto y regulación jurídica. El ciclo presupuestario. Elaboración, examen, enmienda y aprobación del presupuesto.",
+    "lawUpdate": "Título VI del Estatuto de Autonomía (LO 3/1983); Ley 9/1990, de 8 de noviembre, Reguladora de la Hacienda de la Comunidad de Madrid; Ley Orgánica 2/2012 de Estabilidad Presupuestaria."
+  },
+  {
+    "id": "G11",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 11,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-6",
+      "AY-11"
+    ],
+    "title": "Tema General 11. La Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas: objeto y ámbito de aplicación. Los interesados. Derechos de los ciudadanos en sus relaciones con las Administraciones Públicas. El procedimiento administrativo común: concepto, principios generales y fases del procedimiento. Especialidades del procedimiento administrativo común. La Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público: disposiciones generales, principios de actuación y funcionamiento del Sector Público. Funcionamiento electrónico del Sector Público.",
+    "lawUpdate": "Ley 39/2015 (LPAC: arts. 1 a 126, silencio administrativo arts. 24-25, recursos arts. 112-126); Ley 40/2015 (LRJSP: arts. 1 a 53 y funcionamiento electrónico arts. 38-46 bis); RD 203/2021."
+  },
+  {
+    "id": "G12",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 12,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-12"
+    ],
+    "title": "Tema General 12. La responsabilidad patrimonial de la Administración. El régimen jurídico en el sistema español. Responsabilidad de autoridades y funcionarios. Responsabilidad de la Administración por actos de sus concesionarios y contratistas.",
+    "lawUpdate": "Art. 106.2 de la Constitución Española; Ley 40/2015 (LRJSP, Capítulo IV del Título Preliminar, arts. 32 a 37: responsabilidad patrimonial, acción de regreso art. 36); Ley 39/2015 (arts. 65, 67, 81, 91 y 96.4)."
+  },
+  {
+    "id": "G13",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 13,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-13"
+    ],
+    "title": "Tema General 13. Los contratos administrativos. Clases. El expediente de contratación y su tramitación. Procedimientos y criterios de adjudicación. Ejecución y modificación de los contratos. Pago del precio. Extinción de los contratos: Cumplimiento y resolución.",
+    "lawUpdate": "Ley 9/2017, de 8 de noviembre, de Contratos del Sector Público (LCSP: contratos de obras, concesión, suministros y servicios; tramitación ordinaria, urgente y de emergencia; contrato menor art. 118)."
+  },
+  {
+    "id": "G14",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 14,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-7",
+      "AY-14"
+    ],
+    "title": "Tema General 14. El texto refundido de la Ley del Estatuto Básico del Empleado Público. Adquisición y pérdida de la condición de funcionario. Situaciones administrativas. Derechos, deberes e incompatibilidades. Régimen disciplinario. Especial referencia a la Ley de la Función Pública de la Comunidad de Madrid. Decreto por el que se regula la modalidad de prestación de servicios en régimen de teletrabajo en la Administración de la Comunidad de Madrid. La Ley de la Función Pública de la Comunidad de Madrid.",
+    "lawUpdate": "Real Decreto Legislativo 5/2015, de 30 de octubre (TREBEP); Ley 1/1986, de 10 de abril, de la Función Pública de la Comunidad de Madrid; Decreto 79/2020, de 16 de septiembre, de teletrabajo en la CAM; Ley 53/1984 de Incompatibilidades."
+  },
+  {
+    "id": "G15",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 15,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-15"
+    ],
+    "title": "Tema General 15. La protección de datos. Régimen jurídico. Principios y derechos de los ciudadanos. La Seguridad de la Información: principios básicos y requisitos mínimos en el Esquema Nacional de Seguridad.",
+    "lawUpdate": "Reglamento (UE) 2016/679 (RGPD); Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD: derechos ARSULIPO arts. 12-18); Real Decreto 311/2022 del Esquema Nacional de Seguridad (ENS)."
+  },
+  {
+    "id": "G16",
+    "block": "Bloque General",
+    "subArea": "general",
+    "number": 16,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-16"
+    ],
+    "title": "Tema General 16. El principio de igualdad entre mujeres y hombres. La tutela contra la discriminación. El marco normativo de la igualdad de género, la protección integral contra la violencia de género y no discriminación de las personas LGTBI. Especial referencia a la Comunidad de Madrid.",
+    "lawUpdate": "Ley Orgánica 3/2007 de Igualdad Efectiva; Ley Orgánica 1/2004 y Ley 5/2005 de la CAM contra la Violencia de Género; Ley 15/2022 integral para la igualdad de trato; Ley 4/2023 estatal y Leyes 2/2016 y 3/2016 de la CAM en materia LGTBI."
+  },
+  {
+    "id": "E1",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 1,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-8",
+      "AY-21"
+    ],
+    "title": "Tema Específico 1. Historia y evolución de los sistemas de protección social en España. Estratificación, clases sociales y su evolución. Consecuencias sociales. Pobreza y desigualdad.",
+    "lawUpdate": "De la Ley General de Beneficencia de 1849 y Comisión de Reformas Sociales (1883) al Estado Social de la Constitución de 1978 (arts. 1.1, 9.2, 39-50); indicador AROPE, índice de Gini y Encuesta de Condiciones de Vida (INE)."
+  },
+  {
+    "id": "E2",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 2,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-9",
+      "AY-22"
+    ],
+    "title": "Tema Específico 2. La Política social y el Estado del Bienestar: tipologías de política social, modelos del Estado del Bienestar y planteamientos actuales. Los servicios sociales en los modelos actuales de bienestar social.",
+    "lawUpdate": "Modelos de Bismarck (contributivo) y Beveridge (universal); tipologías de Richard Titmuss y Gøsta Esping-Andersen (liberal, corporativo, socialdemócrata y mediterráneo de Ferrera); ciudadanía social de T.H. Marshall y sexto pilar del bienestar."
+  },
+  {
+    "id": "E3",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 3,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-23"
+    ],
+    "title": "Tema Específico 3. La política social en el marco de la Unión Europea. Sistema de servicios sociales en los países de la Unión Europea, comparación con los servicios sociales en España. Concepto, ejes y medidas financiadas por el Fondo Social Europeo Plus (FSE+).",
+    "lawUpdate": "Pilar Europeo de Derechos Sociales (20 principios, Cumbre de Gotemburgo 2017 y Plan de Acción 2030); Reglamento (UE) 2021/1057 por el que se establece el Fondo Social Europeo Plus (FSE+ 2021-2027) y Garantía Infantil Europea."
+  },
+  {
+    "id": "E4",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 4,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-24"
+    ],
+    "title": "Tema Específico 4. Marco legislativo e institucional de los Servicios Sociales con referencia a la Administración Central, Autonómica y Local. El ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
+    "lawUpdate": "Arts. 148.1.20 y 149.1.1 CE; Plan Concertado de Prestaciones Básicas (1988) y Catálogo de Referencia de Servicios Sociales (2013); Ministerio de Derechos Sociales, Consumo y Agenda 2030 (RD 209/2024) e IMSERSO."
+  },
+  {
+    "id": "E5",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 5,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-10",
+      "AY-25"
+    ],
+    "title": "Tema Específico 5. La Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid: disposiciones generales. El Sistema Público de Servicios Sociales: concepto y principios rectores. Competencias. Organización funcional y territorial del Sistema público de servicios sociales: Atención Social Primaria y Atención Social Especializada. Funciones.",
+    "lawUpdate": "Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid (arts. 1 a 34; profesional de referencia exclusivo Trabajador/a Social en ASP art. 16.2; PIIS en 10 días hábiles art. 40; Informe Social art. 69; Decreto 51/2023 HSUe)."
+  },
+  {
+    "id": "E6",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 6,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-26"
+    ],
+    "title": "Tema Específico 6. La organización de los servicios sociales en la Comunidad de Madrid. La Consejería competente en materia de servicios sociales: estructura y competencias. La Agencia Madrileña de Atención Social: estructura y competencias. Los centros de Servicios Sociales.",
+    "lawUpdate": "Decreto 241/2023 de estructura orgánica de la Consejería de Familia, Juventud y Asuntos Sociales; Decreto 230/2015 de la Agencia Madrileña de Atención Social (AMAS); Decreto 88/2002 de Centros de Servicios Sociales."
+  },
+  {
+    "id": "E7",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 7,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 7. La Agencia Madrileña de Atención Social: organización y competencias. Recursos, centros y servicios. Marco normativo.",
+    "lawUpdate": "Ley 9/2015 y Decreto 230/2015, de 20 de octubre, por el que se establece la estructura orgánica de la Agencia Madrileña de Atención Social (AMAS: residencias de mayores, centros de día, centros ocupacionales y de discapacidad intelectual)."
+  },
+  {
+    "id": "E8",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 8,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-27"
+    ],
+    "title": "Tema Específico 8. Prestaciones del sistema público de servicios sociales. El Catálogo de prestaciones de servicios sociales: prestaciones garantizadas y condicionadas. Prestaciones de servicio y económicas.",
+    "lawUpdate": "Título II de la Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid (arts. 35 a 45): Cartera y Catálogo de Prestaciones; distinción jurídica entre prestaciones garantizadas (derecho subjetivo exigible) y condicionadas."
+  },
+  {
+    "id": "E9",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 9,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-28"
+    ],
+    "title": "Tema Específico 9. Calidad en la prestación. Inspección de los centros y servicios. Sistema de información. Registro de Entidades, Centros, Servicios y de Directores de Centros de Atención Social.",
+    "lawUpdate": "Título VI de la Ley 12/2022 (arts. 77 a 98); Ley 11/2002, de 18 de diciembre, de Ordenación de la Actividad de los Centros y Servicios de Acción Social y de Mejora de la Calidad en la CAM; Decreto 51/2023 (HSUe)."
+  },
+  {
+    "id": "E10",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 10,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-29"
+    ],
+    "title": "Tema Específico 10. Provisión de los servicios sociales: gestión directa e indirecta, convenios y subvenciones. El concierto social.",
+    "lawUpdate": "Título IV de la Ley 12/2022 de Servicios Sociales de la CAM (arts. 54 a 67: acción concertada y concierto social con entidades de iniciativa social sin ánimo de lucro); Ley 38/2003 General de Subvenciones y Ley 2/1995 de Subvenciones de la CAM."
+  },
+  {
+    "id": "E11",
+    "block": "Bloque Específico I",
+    "subArea": "area1_ss",
+    "number": 11,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 11. El Ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
+    "lawUpdate": "Real Decreto 209/2024 de estructura orgánica básica del Ministerio de Derechos Sociales, Consumo y Agenda 2030; Secretaría de Estado de Derechos Sociales; Real Decreto 1226/2005 regulador del IMSERSO y Consejo Territorial."
+  },
+  {
+    "id": "E12",
+    "block": "Bloque Específico II",
+    "subArea": "area1_ss",
+    "number": 12,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-11",
+      "AY-30"
+    ],
+    "title": "Tema Específico 12. La Seguridad Social en España. Principales características. Dimensión, financiación y evolución. Problemas actuales y líneas de reforma.",
+    "lawUpdate": "Art. 41 de la Constitución Española; Real Decreto Legislativo 8/2015, de 30 de octubre, por el que se aprueba el Texto Refundido de la Ley General de la Seguridad Social (TRLGSS); Pacto de Toledo y reformas Ley 21/2021 y RDL 2/2023."
+  },
+  {
+    "id": "E13",
+    "block": "Bloque Específico II",
+    "subArea": "area1_ss",
+    "number": 13,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-31"
+    ],
+    "title": "Tema Específico 13. Políticas Públicas de Empleo. Protección por desempleo. Prestaciones de nivel contributivo y de nivel asistencial. Régimen de las prestaciones.",
+    "lawUpdate": "Ley 3/2023, de 28 de febrero, de Empleo (Agencia Española de Empleo); Título III del TRLGSS (RDL 8/2015) reformado por el Real Decreto-ley 2/2024, de 21 de mayo, de simplificación y mejora del nivel asistencial por desempleo."
+  },
+  {
+    "id": "E14",
+    "block": "Bloque Específico II",
+    "subArea": "area1_ss",
+    "number": 14,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-12",
+      "AY-32"
+    ],
+    "title": "Tema Específico 14. Pensiones no contributivas. Pensión de invalidez. Pensión de jubilación. Otras prestaciones.",
+    "lawUpdate": "Título VI del TRLGSS (RDL 8/2015, arts. 363 a 373) y Real Decreto 357/1991: Pensión No Contributiva de Invalidez (grado >= 65% y complemento de tercera persona >= 75%) y de Jubilación (>= 65 años y 10 años de residencia)."
+  },
+  {
+    "id": "E15",
+    "block": "Bloque Específico II",
+    "subArea": "area1_ss",
+    "number": 15,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-13",
+      "AY-33"
+    ],
+    "title": "Tema Específico 15. Renta mínima o salario social. La renta mínima de inserción en la Comunidad de Madrid: requisitos, cuantía, solicitud y programas de inserción. El Ingreso Mínimo Vital. Estrategia de prevención y lucha contra la pobreza y la exclusión social. Estrategia contra la pobreza energética.",
+    "lawUpdate": "Ley 15/2001, de 27 de diciembre, de Renta Mínima de Inserción en la CAM y Decreto 126/2014 (subsidiaria del IMV, resolución en 3 meses); Ley 19/2021, de 20 de diciembre, por la que se establece el Ingreso Mínimo Vital (IMV, resolución en 6 meses) y Bono Social Eléctrico."
+  },
+  {
+    "id": "E16",
+    "block": "Bloque Específico III",
+    "subArea": "area1_ss",
+    "number": 16,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-34"
+    ],
+    "title": "Tema Específico 16. Programa de trabajo social de zona. Información, orientación y valoración. El método y la intervención en trabajo social. Niveles de intervención y técnicas e instrumentos utilizados.",
+    "lawUpdate": "Ley 12/2022 de Servicios Sociales de la CAM (Atención Social Primaria arts. 15-21; Profesional de Referencia exclusivo TS art. 16.2; PIIS en 10 días hábiles art. 40; Informe Social art. 69); Decreto 51/2023 (HSUe) y SIUSS."
+  },
+  {
+    "id": "E17",
+    "block": "Bloque Específico III",
+    "subArea": "area3_inf",
+    "number": 17,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-35"
+    ],
+    "title": "Tema Específico 17. Programa de familia y convivencia. Apoyo a la familia en dificultad social. La familia como espacio de intervención social. La intervención profesional del asistente social en la familia. Los Centros de Apoyo y Encuentro Familiar. La mediación familiar. Los puntos de encuentro familiar. Estrategia de protección a la maternidad y paternidad y de fomento de la natalidad y conciliación de la Comunidad de Madrid.",
+    "lawUpdate": "Ley 40/2003 de Protección a las Familias Numerosas; Ley 1/2007, de 21 de febrero, de Mediación Familiar de la Comunidad de Madrid; Centros de Apoyo y Encuentro Familiar (CAEF) de la CAM y Estrategia de Protección a la Maternidad y Paternidad 2022-2026."
+  },
+  {
+    "id": "E18",
+    "block": "Bloque Específico III",
+    "subArea": "area1_ss",
+    "number": 18,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-36"
+    ],
+    "title": "Tema Específico 18. Programa de prevención de la marginación, inserción y promoción social. Ámbito y fases de actuación desde el trabajo social. Prestaciones e intervenciones sociales para la prevención social.",
+    "lawUpdate": "Ley 12/2022 de Servicios Sociales de la CAM (principio de prevención art. 5, funciones de inserción e inclusión en Atención Social Primaria art. 17); Estrategia Nacional de Prevención y Lucha contra la Pobreza y la Exclusión Social 2024-2030."
+  },
+  {
+    "id": "E19",
+    "block": "Bloque Específico III",
+    "subArea": "area1_ss",
+    "number": 19,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-37"
+    ],
+    "title": "Tema Específico 19. La promoción de la iniciativa social. Las Organizaciones no gubernamentales y su papel en la acción social. El voluntariado social. Concepto. Marco legislativo. Función del voluntariado en el Sistema de Servicios Sociales. Las necesidades sociales: concepto, características y tipología. Asociacionismo y participación ciudadana.",
+    "lawUpdate": "Ley 43/2015 del Tercer Sector de Acción Social; Ley 45/2015 de Voluntariado estatal; Ley 1/2015, de 24 de febrero, del Voluntariado en la Comunidad de Madrid; taxonomía de necesidades sociales de Jonathan Bradshaw, Maslow y Max-Neef."
+  },
+  {
+    "id": "E20",
+    "block": "Bloque Específico III",
+    "subArea": "area1_ss",
+    "number": 20,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 20. La cooperación internacional para el desarrollo en las Administraciones Públicas. Legislación estatal y autonómica. La cooperación para el desarrollo en la Comunidad de Madrid.",
+    "lawUpdate": "Ley 1/2023, de 20 de febrero, de Cooperación para el Desarrollo Sostenible y la Solidaridad Global (reforma de la AECID y meta del 0,7% RNB); Ley 13/1999, de 29 de abril, de Cooperación para el Desarrollo de la Comunidad de Madrid y Agenda 2030 (17 ODS)."
+  },
+  {
+    "id": "E21",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 21,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-14",
+      "AY-38"
+    ],
+    "title": "Tema Específico 21. Sistema para la Autonomía y Atención a la Dependencia: objeto, finalidad, órganos, niveles de protección del Sistema, catálogo de servicios de atención y prestaciones económicas. La Ley 39/2006 de 14 de diciembre de Promoción de la Autonomía Personal y Atención a las personas en situación de dependencia y normativa de desarrollo. Sistema de información, evaluación y financiación del Sistema para la Autonomía y Atención a la Dependencia.",
+    "lawUpdate": "Ley 39/2006, de 14 de diciembre (LAPAD: niveles mínimo, acordado y adicional arts. 7-10; catálogo de servicios art. 15 y prestaciones económicas PECEF, PEAP y PEVS arts. 17-20); Real Decreto 1051/2013 reformado por RD 675/2023."
+  },
+  {
+    "id": "E22",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 22,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-15",
+      "AY-39"
+    ],
+    "title": "Tema Específico 22. La situación de dependencia y su valoración. Normativa reguladora del procedimiento de reconocimiento de la situación de dependencia. Grados de dependencia. Baremo de valoración y Escala de valoración específica para menores (EVE). Revisión de la situación de dependencia.",
+    "lawUpdate": "Art. 26 de la Ley 39/2006 (Grado I: 25-49 ptos, Grado II: 50-74 ptos, Grado III: 75-100 ptos); Real Decreto 174/2011, de 11 de febrero, por el que se aprueba el Baremo de Valoración de la Dependencia (BVD) y la Escala de Valoración Específica (EVE) para menores de 3 años."
+  },
+  {
+    "id": "E23",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 23,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-16",
+      "AY-40"
+    ],
+    "title": "Tema Específico 23. La atención a las personas en situación de dependencia en la Comunidad de Madrid. Normativa reguladora del procedimiento para acceso a las prestaciones del sistema para la autonomía y atención a la dependencia en la Comunidad de Madrid. El Programa Individual de Atención y su revisión. Catálogo de servicios de atención y prestaciones económicas: definiciones, intensidad de los servicios, finalidad de las prestaciones económicas y régimen de compatibilidad entre prestaciones.",
+    "lawUpdate": "Decreto 54/2015, de 21 de mayo (modificado por Decreto 46/2022), por el que se regula el procedimiento para reconocer la situación de dependencia y el derecho a las prestaciones del SAAD en la Comunidad de Madrid (plazo máximo 6 meses, silencio negativo y régimen de compatibilidades)."
+  },
+  {
+    "id": "E24",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 24,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-41"
+    ],
+    "title": "Tema Específico 24. Las personas mayores. Concepto y características. Aspectos físicos, psicológicos y sociales de la vejez. Consecuencias del envejecimiento. Principal problemática social.",
+    "lawUpdate": "Art. 50 de la Constitución Española; teorías sociológicas del envejecimiento, fragilidad biopsicosocial, soledad no deseada, brecha digital y maltrato al mayor; escalas de valoración geriátrica integral (Barthel, Lawton-Brody, Pfeiffer, Gijón y Zarit)."
+  },
+  {
+    "id": "E25",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 25,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-42"
+    ],
+    "title": "Tema Específico 25. La intervención social con personas mayores. Programas y prestaciones para personas mayores. Envejecimiento activo y prevención de la dependencia en las personas mayores.",
+    "lawUpdate": "Modelo de Atención Integral y Centrada en la Persona (AICP); Red de Atención a Mayores de la CAM y AMAS (Teleasistencia Avanzada, SAD, Centros de Mayores, Centros de Día, Pisos Tutelados y Residencias); Red de Atención a la Soledad No Deseada."
+  },
+  {
+    "id": "E26",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 26,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-17"
+    ],
+    "title": "Tema Específico 26. La salud mental en la Comunidad de Madrid. La atención a los pacientes en los Servicios de salud mental. Organización, estructura y funciones. El trabajo social en salud mental.",
+    "lawUpdate": "Ley 14/1986 General de Sanidad (art. 20); Plan Estratégico de Salud Mental y Adicciones de la Comunidad de Madrid; Centros de Salud Mental (CSM), Hospitales de Día, Unidades de Hospitalización Breve y Programa de Continuidad de Cuidados (PCC)."
+  },
+  {
+    "id": "E27",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 27,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-18"
+    ],
+    "title": "Tema Específico 27. Red Pública de Atención Social a personas con enfermedad mental grave y duradera de la Comunidad de Madrid.",
+    "lawUpdate": "Decreto 122/1997 de la Red Pública de Atención Social a personas con enfermedad mental grave y duradera de la CAM: Centros de Rehabilitación Psicosocial (CRPS), Centros de Rehabilitación Laboral (CRL), Centros de Día, Mini-residencias, Pisos Supervisados y Equipos de Apoyo Social Comunitario (EASC)."
+  },
+  {
+    "id": "E28",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 28,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-19",
+      "AY-43"
+    ],
+    "title": "Tema Específico 28. Discapacidad. Concepto y evolución. Marco jurídico. Personas con discapacidad física, intelectual, sensorial y por enfermedad mental. Aspectos físicos, psíquicos, sociales y legales. Estrategia Española de Discapacidad 2022-2030. Estrategia Madrileña de Atención a las Personas con Discapacidad Horizonte 2028. Procedimiento para el reconocimiento del grado de discapacidad (R.D. 888/2022 del 18 octubre).",
+    "lawUpdate": "Art. 49 CE (reformado en 2024); Convención ONU de 2006; RDL 1/2013; Real Decreto 888/2022, de 18 de octubre (4 baremos: BLA, BDGP, BFCA y BRP; Clases 0 a 4; trámite de urgencia); Estrategia Española 2022-2030 y Estrategia Madrileña Horizonte 2028."
+  },
+  {
+    "id": "E29",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 29,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-44"
+    ],
+    "title": "Tema Específico 29. La intervención con personas con discapacidad. Reconocimiento del grado de discapacidad. Prestaciones para personas con discapacidad. Recursos y Programas de Atención. Red Pública de atención a personas con discapacidad. Empleo y personas con discapacidad. Estrategia Española sobre discapacidad 2022-2030: ejes, objetivos y líneas de actuación. Centros Base y CRECOVI. Prestaciones, recursos y programas para personas con discapacidad. Red pública de atención a personas con discapacidad. Empleo y personas con discapacidad.",
+    "lawUpdate": "Red de Centros Base de Valoración y Orientación a personas con discapacidad de la CAM y CRECOVI (Centro Regional de Coordinación y Valoración Infantil); Atención Temprana (Decreto 46/2015); Centros Especiales de Empleo (CEE), Empleo con Apoyo y cuota de reserva (2% empresas >=50 trab. y 7% empleo público)."
+  },
+  {
+    "id": "E30",
+    "block": "Bloque Específico IV",
+    "subArea": "area2_dep",
+    "number": 30,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-20"
+    ],
+    "title": "Tema Específico 30. La Agencia Madrileña para el Apoyo a las Personas Adultas con Discapacidad. Marco jurídico. Organización y competencias. Promoción de la autonomía y asistencia a las personas con discapacidad en el ejercicio de su capacidad jurídica. Curatela, defensa judicial y medidas de apoyo. Guarda de hecho. Medidas voluntarias de apoyo. Comité de Ética en la AMAPAD.",
+    "lawUpdate": "Ley 8/2021, de 2 de junio, por la que se reforma la legislación civil y procesal para el apoyo a las personas con discapacidad en el ejercicio de su capacidad jurídica (supresión de la incapacitación y tutela de adultos; prioridad a medidas voluntarias, guarda de hecho, curatela asistencial/representativa y defensor judicial); Ley 1/2023, de 15 de febrero, de creación de la AMAPAD."
+  },
+  {
+    "id": "E31",
+    "block": "Bloque Específico V",
+    "subArea": "area3_inf",
+    "number": 31,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-45"
+    ],
+    "title": "Tema Específico 31. La inmigración en España. Teorías explicativas. Marco jurídico en materia de extranjería. Derechos y libertades de los extranjeros en España. Autorización de residencia y trabajo. Entrada y salida del territorio español. La reagrupación familiar.",
+    "lawUpdate": "Art. 13 CE; Ley Orgánica 4/2000, de 11 de enero (LOEX) y nuevo Reglamento de Extranjería aprobado por Real Decreto 1155/2024, de 19 de noviembre (informes sociales de arraigo social, sociolaboral, socioformativo, de segunda oportunidad y de adecuación de vivienda para reagrupación familiar)."
+  },
+  {
+    "id": "E32",
+    "block": "Bloque Específico V",
+    "subArea": "area3_inf",
+    "number": 32,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-46"
+    ],
+    "title": "Tema Específico 32. Políticas de integración e intervención social con la población inmigrante y refugiados. Especial referencia a la Comunidad de Madrid. Menores e inmigración. Marco jurídico específico en la materia.",
+    "lawUpdate": "Ley 12/2009 reguladora del Derecho de Asilo y de la Protección Subsidiaria; Real Decreto 220/2022 del Sistema de Acogida de Protección Internacional (SAPI); Red de 8 Centros de Participación e Integración de Inmigrantes (CEPI) de la CAM; art. 35 LOEX sobre menores extranjeros no acompañados."
+  },
+  {
+    "id": "E33",
+    "block": "Bloque Específico V",
+    "subArea": "area3_inf",
+    "number": 33,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 33. Población penitenciaria. Aspectos legales y de inserción social. Servicios sociales penitenciarios.",
+    "lawUpdate": "Art. 25.2 de la Constitución Española; Ley Orgánica 1/1979 General Penitenciaria y Reglamento Penitenciario (RD 190/1996); Real Decreto 782/2001 y Real Decreto 840/2011 regulador de los Servicios de Gestión de Penas y Medidas Alternativas (SGPMA), tercer grado, libertad condicional y subsidio de excarcelación."
+  },
+  {
+    "id": "E34",
+    "block": "Bloque Específico V",
+    "subArea": "area3_inf",
+    "number": 34,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-47"
+    ],
+    "title": "Tema Específico 34. Las personas sin hogar. Características y programas de atención a nivel regional y local. Prestaciones dirigidas a personas sin hogar. Recursos y actuaciones a personas sin hogar en la Comunidad de Madrid.",
+    "lawUpdate": "Tipología europea ETHOS (FEANTSA); Estrategia Nacional para la Lucha contra el Sinhogarismo en España 2023-2030; modelo Housing First (Sam Tsemberis); Red de Atención a Personas Sin Hogar de la CAM y del Ayuntamiento de Madrid (SAMUR Social, Puerta Abierta, San Isidro, Juan Luis Vives y Campaña del Frío)."
+  },
+  {
+    "id": "E35",
+    "block": "Bloque Específico V",
+    "subArea": "area3_inf",
+    "number": 35,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-21",
+      "AY-48"
+    ],
+    "title": "Tema Específico 35. Mujeres en situación de dificultad social. Legislación aplicable: Ley Orgánica 1/2004, de Medidas de Protección Integral contra la Violencia de Género; Ley Orgánica 10/2022, de Garantía Integral de la Libertad Sexual; Ley 3/2018, de 22 de junio, de modificación de la Ley 5/2005, de 20 de diciembre, Integral contra la Violencia de Género de la Comunidad de Madrid. Programas, medidas y prestaciones de atención a las víctimas de violencia de género. Especial referencia a la Comunidad de Madrid.",
+    "lawUpdate": "Ley Orgánica 1/2004 (acreditación administrativa por Servicios Sociales art. 23, RAI y pago único art. 27); Ley Orgánica 10/2022; Ley 5/2005 de la CAM modificada por Ley 3/2018 (título habilitante autonómico art. 31); Red de Puntos Municipales del Observatorio Regional (PMORVG), Centros de Emergencia, Acogida y Centros de Crisis 24h."
+  },
+  {
+    "id": "E36",
+    "block": "Bloque Específico V",
+    "subArea": "area3_inf",
+    "number": 36,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-49"
+    ],
+    "title": "Tema Específico 36. Políticas de igualdad entre mujeres y hombres. Normativa reguladora. Actuaciones en materia de igualdad y estrategias contra la Trata de Seres Humanos con fines de explotación sexual.",
+    "lawUpdate": "Ley Orgánica 3/2007 para la Igualdad Efectiva de Mujeres y Hombres; Real Decreto-ley 6/2019; Convenio de Varsovia y Convenio de Estambul; Estrategia Madrileña contra la Trata de Seres Humanos con Fines de Explotación Sexual y red de recursos especializados para mujeres víctimas de trata."
+  },
+  {
+    "id": "E37",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 37,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-22",
+      "AY-50"
+    ],
+    "title": "Tema Específico 37. Convención sobre los Derechos del Niño de 20 de noviembre de 1989; Ley Orgánica 1/1996, de 15 de enero, de Protección Jurídica del Menor (modificada por la Ley Orgánica 8/2015 y la Ley 26/2015); Ley Orgánica 8/2021, de 4 de junio, de protección integral a la infancia y la adolescencia frente a la violencia; Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid. La Estrategia de la Unión Europea sobre los Derechos del Niño y la Garantía Infantil Europea. Los Consejos de Derechos de la Infancia y Adolescencia de la Comunidad de Madrid.",
+    "lawUpdate": "Convención ONU de 1989; Ley Orgánica 1/1996 (interés superior del menor art. 2); Ley Orgánica 8/2021 (LOPIVI); Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid (Consejos Locales y Consejo Autonómico de Derechos de la Infancia)."
+  },
+  {
+    "id": "E38",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 38,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-51"
+    ],
+    "title": "Tema Específico 38. El sistema de protección de menores: distribución de competencias y niveles de intervención. Riesgo, desamparo y medidas de protección: Tutela y guarda. Protección a la infancia y la adolescencia frente a la violencia: deber general de comunicación y deber cualificado de los profesionales; medidas preventivas, protocolos de prevención y detección y entornos seguros; el coordinador y el delegado de protección; registros de situaciones de violencia. Prestaciones del Sistema recogidas en la Cartera de Servicios Sociales de la Comunidad de Madrid.",
+    "lawUpdate": "Arts. 17 y 18 de la LO 1/1996; arts. 13 a 20 de la LO 8/2021 (deber de comunicación cualificado de Servicios Sociales y Sanidad, Coordinador de Bienestar en educación y Delegado de Protección en ocio, RUMA); Ley 4/2023 de la CAM (declaración de riesgo municipal vs desamparo autonómico arts. 172 y 174 del Código Civil; instrumento VALÓRAME)."
+  },
+  {
+    "id": "E39",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 39,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-52"
+    ],
+    "title": "Tema Específico 39. Formas de ejercicio de las medidas de protección de menores: acogimiento familiar, acogimiento residencial y adopción. Aspectos legales y procesos del acogimiento. Preparación de la familia de origen y del menor. Seguimiento y apoyo a las familias de acogida. Cese del acogimiento familiar. Prestaciones del Sistema. Procesos de intervención. Organismos acreditados de adopción internacional.",
+    "lawUpdate": "Arts. 20 y 21 de la LO 1/1996 y arts. 172 a 180 del Código Civil (prioridad del acogimiento familiar sobre el residencial, prohibición de acogimiento residencial para menores de 3 años salvo imposibilidad y límite de 3 meses para menores de 6 años; modalidades de urgencia, temporal max. 2 años y permanente); Ley 54/2007 de Adopción Internacional (OAAI)."
+  },
+  {
+    "id": "E40",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 40,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 40. Aspectos legales de la protección a la infancia y adolescencia. Comisión de protección a la infancia y adolescencia de la Comunidad de Madrid: competencias y funciones.",
+    "lawUpdate": "Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid (Título IV: Comisión de Protección a la Infancia y la Adolescencia de la CAM, que sustituye a la antigua Comisión de Tutela del Menor como órgano colegiado competente para asumir tutelas por desamparo, guardas y propuestas de adopción)."
+  },
+  {
+    "id": "E41",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 41,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-53"
+    ],
+    "title": "Tema Específico 41. Menores en conflicto con la ley: intervención socioeducativa y medidas de prevención en la Ley Orgánica 8/2021, de 4 de junio, de protección integral a la infancia y la adolescencia frente a la violencia y la Ley 4/2023, de 22 de marzo de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid. Menores infractores: la Ley Orgánica 5/2000, de 12 de enero, reguladora de la responsabilidad penal de los menores y su reglamento de desarrollo; Juzgados y Fiscalía de Menores; medidas judiciales privativas y no privativas de libertad; conciliación y reparación con la víctima; equipos técnicos y ejecución de medidas en la Comunidad de Madrid.",
+    "lawUpdate": "Ley Orgánica 5/2000 reguladora de la Responsabilidad Penal de los Menores (14 a 18 años; menores de 14 años exentos penalmente y derivados a protección art. 3) y su Reglamento RD 1774/2004; Equipos Técnicos de Fiscalía y Juzgados de Menores (art. 27), conciliación/reparación (art. 19) y catálogo de medidas (art. 7)."
+  },
+  {
+    "id": "E42",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 42,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 42. La ejecución de las medidas judiciales impuestas a menores infractores. Ley de creación de la Agencia de la Comunidad de Madrid para la Reeducación y Reinserción del Menor Infractor. Organización y competencias. Principales ejes y programas de intervención dirigidos a los menores infractores atendidos.",
+    "lawUpdate": "Ley 3/2004, de 10 de diciembre, de creación de la Agencia de la Comunidad de Madrid para la Reeducación y Reinserción del Menor Infractor (ARRMI); Centros de Ejecución de Medidas Judiciales (CEMJ: régimen cerrado, semiabierto, abierto y terapéutico) y programas de medio abierto."
+  },
+  {
+    "id": "E43",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 43,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-54"
+    ],
+    "title": "Tema Específico 43. Adolescencia y juventud. Aspectos psicológicos y sociales. Programas de atención a la juventud.",
+    "lawUpdate": "Ley 8/2002, de 27 de noviembre, de Juventud de la Comunidad de Madrid; Dirección General de Juventud de la CAM, Centros de Información Juvenil, Garantía Juvenil Europea (FSE+), programas de emancipación residencial y prevención de adicciones comportamentales."
+  },
+  {
+    "id": "E44",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 44,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-55"
+    ],
+    "title": "Tema Específico 44. Políticas LGTBI. Normativa y contexto internacional y en la Comunidad de Madrid. Intervención con las personas LGTBI.",
+    "lawUpdate": "Principios de Yogyakarta; Ley 4/2023, de 28 de febrero, para la igualdad real y efectiva de las personas trans y para la garantía de los derechos de las personas LGTBI; Leyes 2/2016 y 3/2016 de la Comunidad de Madrid (reformadas por Ley 17/2023 y Ley 18/2023) y Programa Madrileño de Información y Atención LGTBI."
+  },
+  {
+    "id": "E45",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 45,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-56"
+    ],
+    "title": "Tema Específico 45. La intervención de los Servicios Sociales en situaciones de urgencia y emergencia social.",
+    "lawUpdate": "Ley 12/2022 de Servicios Sociales de la CAM (atención de urgencia y emergencia social sin requisitos previos de empadronamiento art. 41); Ley 17/2015 del Sistema Nacional de Protección Civil; Plan Territorial de Protección Civil de la CAM (PLATERCAM), Unidades Móviles de Emergencia Social y SAMUR Social."
+  },
+  {
+    "id": "E46",
+    "block": "Bloque Específico VI",
+    "subArea": "area3_inf",
+    "number": 46,
+    "prob": "Alta",
+    "equivalentIds": [
+      "AY-57"
+    ],
+    "title": "Tema Específico 46. Políticas Públicas de Vivienda Social en la Comunidad de Madrid. La Agencia de Vivienda Social de la Comunidad de Madrid.",
+    "lawUpdate": "Art. 47 de la Constitución Española; Ley 12/2023 por el Derecho a la Vivienda; Decreto 244/2015 de la Agencia de Vivienda Social de la Comunidad de Madrid (AVS, antiguo IVIMA); Decreto 52/2016 de adjudicación de viviendas por especial necesidad social y protocolo de coordinación con Juzgados ante lanzamientos (Ley 1/2000 LEC art. 441.5)."
+  },
+  {
+    "id": "E47",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 47,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-23"
+    ],
+    "title": "Tema Específico 47. El derecho a la protección de la salud en la Constitución y en la Ley General de Sanidad. La Ley de Cohesión y Calidad del Sistema Nacional de Salud: principios generales, titulares, derechos de los ciudadanos y prestaciones. La Ley de Ordenación de las Profesiones Sanitarias: principios generales del ejercicio de las profesiones sanitarias. La Ley básica reguladora de la autonomía del paciente y de derechos y obligaciones en materia de información y documentación clínica.",
+    "lawUpdate": "Art. 43 CE; Ley 14/1986, de 25 de abril, General de Sanidad; Ley 16/2003, de 28 de mayo, de Cohesión y Calidad del Sistema Nacional de Salud (RDL 7/2018 de universalidad); Ley 44/2003 de Ordenación de las Profesiones Sanitarias (LOPS); Ley 41/2002, de 14 de noviembre, básica reguladora de la autonomía del paciente (consentimiento informado e instrucciones previas)."
+  },
+  {
+    "id": "E48",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 48,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-24"
+    ],
+    "title": "Tema Específico 48. La salud en la Comunidad de Madrid. Principales características. La Consejería de Sanidad: competencias. La Ley de Ordenación Sanitaria de la Comunidad de Madrid: el Sistema Sanitario. La Ley de libertad de elección en la Sanidad de la Comunidad de Madrid.",
+    "lawUpdate": "Ley 12/2001, de 21 de diciembre, de Ordenación Sanitaria de la Comunidad de Madrid (LOSCAM); Ley 6/2009, de 16 de noviembre, de Libertad de Elección en la Sanidad de la Comunidad de Madrid (Área Única Sanitaria); Ley 3/2005 de Instrucciones Previas de la CAM y Decretos 245/2023 y 246/2023 del SERMAS."
+  },
+  {
+    "id": "E49",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 49,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-25"
+    ],
+    "title": "Tema Específico 49. La organización de los Servicios Sanitarios en la Comunidad de Madrid. Niveles asistenciales. La coordinación interprofesional intra y extra hospitalaria con los servicios primarios de salud y con los servicios sociales generales y especializados.",
+    "lawUpdate": "Decreto 52/2010 de estructuras básicas de salud; Atención Primaria (Zonas Básicas de Salud y Centros de Salud) y Atención Hospitalaria; Unidades de Trabajo Social Sanitario (UTSS), planificación precoz del alta hospitalaria y coordinación sociosanitaria mediante la Historia Social Única (Decreto 51/2023) y Visor Horus."
+  },
+  {
+    "id": "E50",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 50,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-26"
+    ],
+    "title": "Tema Específico 50. Organización de los servicios de Salud Pública en la Comunidad de Madrid. Legislación. Competencias. Estructura. El trabajo social en los programas de salud pública, prevención y promoción de la salud. Principales programas y actuaciones.",
+    "lawUpdate": "Ley 33/2011, de 4 de octubre, General de Salud Pública; Dirección General de Salud Pública de la Consejería de Sanidad de la CAM; determinantes sociales de la salud (Lalonde, Dahlgren y Whitehead, Comisión OMS de Marmot), salutogénesis de Antonovsky y Trabajo Social Comunitario en salud."
+  },
+  {
+    "id": "E51",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 51,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-27"
+    ],
+    "title": "Tema Específico 51. El trabajo social en Atención Primaria de Salud y en Atención Especializada. Intervención social en los programas de control y seguimiento del VIH/SIDA.",
+    "lawUpdate": "Cartera de Servicios Estandarizados de Atención Primaria del SERMAS (protocolos de Trabajo Social Sanitario en anciano frágil, inmovilizados, cuidados paliativos, maltrato infantil y violencia de género); Pacto Social por la No Discriminación y la Igualdad de Trato asociada al VIH y adherencia al TAR."
+  },
+  {
+    "id": "E52",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 52,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-28",
+      "AY-58"
+    ],
+    "title": "Tema Específico 52. Drogodependencias. Plan Nacional sobre Drogas. Los Centros de Atención Integral a Drogodependientes (CAID) de la Comunidad de Madrid. El Centro Regional de Documentación de Educación Sanitaria y Adicciones de la Comunidad de Madrid. Estrategias de prevención. Programas de reducción del daño. La disminución de los riesgos y la reducción de los daños en consumidores de drogas.",
+    "lawUpdate": "Ley 5/2002, de 27 de junio, sobre Drogodependencias y otros Trastornos Adictivos de la Comunidad de Madrid; Estrategia Nacional sobre Adicciones; Red de Centros de Atención Integral a Drogodependientes (CAID de la CAM) y CAD de Madrid Salud; modelo transteórico de Prochaska y DiClemente, EuropASI y reducción del daño."
+  },
+  {
+    "id": "E53",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 53,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-29"
+    ],
+    "title": "Tema Específico 53. Alcoholismo. Aspectos etiológicos y clínicos. Evaluación, diagnóstico y tratamiento. El trabajo social en los programas de prevención y seguimiento del alcoholismo.",
+    "lawUpdate": "Ley 5/2002 de la CAM; cuestionarios de cribado y valoración diagnóstica (AUDIT de la OMS, CAGE, MALT y Unidades de Bebida Estándar UBE); síndrome de abstinencia, patología dual, intervención familiar sistémica y coordinación con Unidades de Desintoxicación Hospitalaria y grupos de ayuda mutua."
+  },
+  {
+    "id": "E54",
+    "block": "Bloque Específico VII",
+    "subArea": "area4_san_met",
+    "number": 54,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 54. El trabajo social en la Administración Educativa. Funciones del trabajador social y los Equipos de Orientación Educativa y Psicopedagógica y Servicios de Orientación. Programa de escolarización en casos de urgencia social.",
+    "lawUpdate": "Ley Orgánica 2/2006 de Educación (LOE) modificada por la LOMLOE (LO 3/2020); Decreto 23/2023, de 22 de marzo, de atención educativa a las diferencias individuales del alumnado en la Comunidad de Madrid; Profesores Técnicos de Servicios a la Comunidad (PTSC) en EOEP, EAT y Departamentos de Orientación, Mesas Locales de Absentismo y escolarización extraordinaria."
+  },
+  {
+    "id": "E55",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 55,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-30",
+      "AY-59"
+    ],
+    "title": "Tema Específico 55. La ética en la práctica del Trabajo Social: principios, código deontológico, secreto profesional. La bioética y el trabajo social. Dilemas éticos y modelos de resolución.",
+    "lawUpdate": "Código Deontológico de Trabajo Social (CGTS, 2012: principios básicos art. 7 y secreto profesional arts. 48 a 55); principios de la Bioética de Beauchamp y Childress (beneficencia, no maleficencia, autonomía y justicia); jerarquía de niveles de Diego Gracia y modelos de resolución de dilemas éticos de Howard Brody, Rita Payton, Frederic Reamer y Sarah Banks."
+  },
+  {
+    "id": "E56",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 56,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-31",
+      "AY-60"
+    ],
+    "title": "Tema Específico 56. El método científico. Evolución metodológica en Trabajo Social. El método en Trabajo Social. El Trabajo Social con casos, grupos y comunidades.",
+    "lawUpdate": "Fases del método básico en Trabajo Social (estudio-investigación, diagnóstico social, planificación, ejecución y evaluación); evolución desde Mary Richmond (Social Diagnosis, 1917), Gordon Hamilton, Gisela Konopka (TS de grupos) y Murray Ross / Marco Marchioni / Jack Rothman (TS comunitario: desarrollo de la localidad, planificación social y acción social)."
+  },
+  {
+    "id": "E57",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 57,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-32",
+      "AY-61"
+    ],
+    "title": "Tema Específico 57. La planificación e intervención social. El proceso de planificación en Trabajo Social. Tipologías de planificación. Niveles e instrumentos de la planificación e intervención social.",
+    "lawUpdate": "Niveles operativos de la planificación según Ezequiel Ander-Egg y Aguilar Idáñez: Plan (nivel estratégico/largo plazo, se desglosa en programas), Programa (nivel táctico/medio plazo, se desglosa en proyectos) y Proyecto (nivel operativo/corto plazo, unidad mínima de asignación de recursos integrada por actividades y tareas); Enfoque del Marco Lógico (EML) y análisis DAFO."
+  },
+  {
+    "id": "E58",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 58,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-33",
+      "AY-62"
+    ],
+    "title": "Tema Específico 58. Evaluación de programas y proyectos de servicios sociales. Objetivos, métodos, técnicas e indicadores.",
+    "lawUpdate": "Tipologías de evaluación (ex ante/viabilidad, continua/procesual/monitoreo, final/resultados y ex post/impacto); modelo clásico de Avedis Donabedian (Estructura, Proceso y Resultado); triangulación metodológica de Denzin y diseño de indicadores cuantitativos y cualitativos (eficacia, eficiencia, efectividad, cobertura, accesibilidad y calidad percibida)."
+  },
+  {
+    "id": "E59",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 59,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-34",
+      "AY-63"
+    ],
+    "title": "Tema Específico 59. Las técnicas en Trabajo Social. Concepto y definición dentro del proceso metodológico. Tipologías. Utilidad y finalidad en el proceso metodológico. Las técnicas e instrumentos en Trabajo Social. Nuevas tecnologías de la información aplicadas al trabajo social.",
+    "lawUpdate": "Técnicas (entrevista social según Teresa Rossell y Kadushin, visita domiciliaria, observación participante) e Instrumentos documentales exclusivos: Historia Social Única Electrónica (Decreto 51/2023 de la CAM), Ficha Social SIUSS, Informe Social prescriptor (art. 69 Ley 12/2022), Plan Individual (PIAS/PIIS en 10 días hábiles art. 40), Genograma (McGoldrick y Gerson) y Ecomapa (Ann Hartman)."
+  },
+  {
+    "id": "E60",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 60,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-35",
+      "AY-64"
+    ],
+    "title": "Tema Específico 60. Los modelos de intervención en Trabajo Social. Concepto, definición y características en los modelos en Trabajo Social.",
+    "lawUpdate": "Clasificación de Malcolm Payne y Viscarret: modelo Psicosocial/Diagnóstico (Hamilton, Hollis), Funcional (Virginia Robinson), Resolución de Problemas (Helen H. Perlman), Centrado en la Tarea (Reid y Epstein), Intervención en Crisis (Caplan, Golan), Sistémico-Ecológico (Bronfenbrenner, Germain y Gitterman), Conductual-Cognitivo y Crítico-Radical / Antiopresivo (Dominelli, Paulo Freire)."
+  },
+  {
+    "id": "E61",
+    "block": "Bloque Específico VIII",
+    "subArea": "area4_san_met",
+    "number": 61,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-36",
+      "AY-65"
+    ],
+    "title": "Tema Específico 61. El Equipo interdisciplinar. Técnicas de trabajo en Equipo. Trabajo social y otras profesiones relacionadas con la atención social: salud, educación, justicia y/o servicios sociales. Trabajo en red.",
+    "lawUpdate": "Distinción conceptual entre multidisciplinariedad, interdisciplinariedad y transdisciplinariedad; prevención del síndrome de Burnout (Maslach y Jackson) y supervisión profesional; metodología del Trabajo en Red comunitario e interinstitucional (Elkaïm, Dabas, Rovere) bajo la coordinación del Profesional de Referencia (art. 16.2 Ley 12/2022)."
+  },
+  {
+    "id": "E62",
+    "block": "Bloque Específico IX",
+    "subArea": "area4_san_met",
+    "number": 62,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 62. Estructura de la Administración de Justicia, Órganos Judiciales. Administración y Apoyo Funcional. Instituto de Medicina Legal y Ciencias Forenses en la Comunidad de Madrid: funciones de los equipos psicosociales en el servicio de especialidades.",
+    "lawUpdate": "Título VI de la Constitución Española; Ley Orgánica 6/1985 del Poder Judicial (LOPJ, art. 479 sobre Institutos de Medicina Legal y Ciencias Forenses); Decreto 37/2006 de creación del Instituto de Medicina Legal y Ciencias Forenses (IMLCF) de la Comunidad de Madrid y funciones de los Equipos Técnicos Psicosociales (Psicólogo y Trabajador Social Forense)."
+  },
+  {
+    "id": "E63",
+    "block": "Bloque Específico IX",
+    "subArea": "area4_san_met",
+    "number": 63,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 63. El Trabajo Social Forense: concepto, funciones y ámbito competencial. Tribunal de instancia y Audiencia Provincial de la Comunidad de Madrid. Ámbito de intervención.",
+    "lawUpdate": "Ley Orgánica 6/1985 del Poder Judicial (reformada por Ley Orgánica 1/2025 de eficiencia del Servicio Público de Justicia y Tribunales de Instancia); intervención del Trabajador Social Forense en los órdenes jurisdiccionales Civil (familia, guarda y custodia, provisión de apoyos Ley 8/2021), Penal, Violencia sobre la Mujer y Audiencia Provincial de Madrid."
+  },
+  {
+    "id": "E64",
+    "block": "Bloque Específico IX",
+    "subArea": "area4_san_met",
+    "number": 64,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 64. Metodología pericial en Trabajo Social: técnicas, fases y criterios de intervención.",
+    "lawUpdate": "Ley 1/2000 de Enjuiciamiento Civil (LEC, arts. 335 a 352 sobre el dictamen de peritos, juramento o promesa de objetividad art. 335.2, abstención y recusación); fases de la pericia social (oficio judicial, estudio de autos, entrevistas periciales forenses, visita domiciliaria, coordinación colateral, triangulación y emisión del dictamen)."
+  },
+  {
+    "id": "E65",
+    "block": "Bloque Específico IX",
+    "subArea": "area4_san_met",
+    "number": 65,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 65. Elaboración del informe social forense: estructura, lenguaje técnico, objetividad, trazabilidad de la información e indicadores de evaluación. Defensa del informe en sede judicial.",
+    "lawUpdate": "Guía de Buenas Prácticas para la elaboración de Informes Periciales Sociales; estructura normalizada del dictamen pericial social (encabezamiento y objeto de la pericia, metodología, antecedentes, resultados de la exploración, valoración técnico-pericial y conclusiones orientadoras al Juez) y ratificación oral en el acto de la vista o juicio (art. 347 LEC)."
+  },
+  {
+    "id": "E66",
+    "block": "Bloque Específico IX",
+    "subArea": "area4_san_met",
+    "number": 66,
+    "prob": "Alta",
+    "equivalentIds": [],
+    "title": "Tema Específico 66. El Trabajador Social en las Oficinas de Asistencia a Víctimas de Delito en los Juzgados. Marco jurídico. Estructura, servicios y actuaciones.",
+    "lawUpdate": "Ley 4/2015, de 27 de abril, del Estatuto de la víctima del delito; Real Decreto 1109/2015, de 11 de diciembre, por el que se desarrollan las Oficinas de Asistencia a las Víctimas del Delito (OAVD: fases de acogida-orientación, información, intervención social/psicológica, evaluación individualizada para prevenir la victimización secundaria y planes de apoyo)."
+  },
+  {
+    "id": "E67",
+    "block": "Bloque Específico IX",
+    "subArea": "area4_san_met",
+    "number": 67,
+    "prob": "Alta",
+    "equivalentIds": [
+      "S-37",
+      "AY-66"
+    ],
+    "title": "Tema Específico 67. Calidad en los Servicios Públicos: las Cartas de Servicios como instrumentos de mejora de la calidad en el ámbito de la intervención social de la Comunidad de Madrid.",
+    "lawUpdate": "Decreto 27/1997, de 6 de marzo, por el que se regulan las Cartas de Servicios en la Comunidad de Madrid y los premios anuales a la excelencia y calidad del servicio público; Título VI de la Ley 12/2022 de Servicios Sociales de la CAM (compromisos de calidad, indicadores de seguimiento, medidas de subsanación y evaluación continua)."
+  }
 ];
 
 export const SERMAS_TITLES = [
@@ -697,7 +1645,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-02',
-    topicId: 'E7',
+    topicId: 'E5',
     difficulty: 'Alta (Instrumentos Técnicos)',
     originType: '🏛️ OFICIAL BOCM · LEY 12/2022',
     question:
@@ -748,7 +1696,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-05',
-    topicId: 'E10',
+    topicId: 'E5',
     difficulty: 'Alta (Órganos Consultivos)',
     originType: '🏛️ OFICIAL BOCM · LEY 12/2022',
     question:
@@ -2169,7 +3117,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-86',
-    topicId: 'E11',
+    topicId: 'E10',
     difficulty:
       'Alta (Concierto Social vs. Contrato Mercantil LCSP y Ley 12/2022)',
     originType: '🏛️ OFICIAL BOCM / BOE · LEY 9/2017 Y LEY 12/2022 CAM',
@@ -2265,7 +3213,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   // =========================================================================
   {
     id: 'q-hd-91',
-    topicId: 'E54',
+    topicId: 'E56',
     difficulty: 'Alta (Obras Clásicas Mary Richmond y Gordon Hamilton)',
     originType: '🏛️ OFICIAL CAM / SERMAS / AYTO · EPISTEMOLOGÍA TS',
     question:
@@ -2282,7 +3230,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-92',
-    topicId: 'E55',
+    topicId: 'E60',
     difficulty: 'Alta (Escuela Diagnóstica vs. Escuela Funcional)',
     originType: '🏛️ OFICIAL CAM / SERMAS · MODELOS CLÁSICOS',
     question:
@@ -2299,7 +3247,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-93',
-    topicId: 'E55',
+    topicId: 'E60',
     difficulty: 'Alta (Clasificación de las 6 Técnicas de Florence Hollis)',
     originType: '🏥 OFICIAL SERMAS / CAM · MODELO PSICOSOCIAL',
     question:
@@ -2316,7 +3264,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-94',
-    topicId: 'E55',
+    topicId: 'E60',
     difficulty: 'Alta (Modelo Centrado en la Tarea: Reid y Epstein 1972)',
     originType: '🏛️ OFICIAL CAM / SERMAS / AYTO · MODELO TAREA',
     question:
@@ -2333,7 +3281,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-95',
-    topicId: 'E55',
+    topicId: 'E60',
     difficulty:
       'Alta (Modelo de Intervención en Crisis: Caplan, Rapoport y Golan)',
     originType: '🏢 OFICIAL AYTO / SERMAS / CAM · MODELO CRISIS',
@@ -2351,7 +3299,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-96',
-    topicId: 'E55',
+    topicId: 'E60',
     difficulty:
       'Alta (Modelo Ecológico "Life Model" y Niveles de Bronfenbrenner)',
     originType: '🏛️ OFICIAL CAM / SERMAS / AYTO · MODELO SISTÉMICO-ECOLÓGICO',
@@ -2391,7 +3339,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   // =========================================================================
   {
     id: 'q-hd-98',
-    topicId: 'E56',
+    topicId: 'E57',
     difficulty:
       'Alta (Las 9 Cuestiones de Planificación de Ander-Egg y Niveles)',
     originType: '🏢 OFICIAL AYTO / CAM · PLANIFICACIÓN SOCIAL',
@@ -2444,7 +3392,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-101',
-    topicId: 'E57',
+    topicId: 'E19',
     difficulty:
       'Alta (Tipología de Necesidades Sociales de Jonathan Bradshaw 1972)',
     originType: '🏢 OFICIAL AYTO / SERMAS / CAM · NECESIDADES SOCIALES',
@@ -2462,7 +3410,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-102',
-    topicId: 'E57',
+    topicId: 'E58',
     difficulty:
       'Alta (Investigación Cualitativa vs. Cuantitativa y Triangulación)',
     originType: '🏢 OFICIAL AYTO (TEMAS 45-48) / CAM / SERMAS',
@@ -2629,7 +3577,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   // =========================================================================
   {
     id: 'q-hd-111',
-    topicId: 'E60',
+    topicId: 'E55',
     difficulty:
       'Alta (Código Deontológico del Trabajo Social 2012: Estructura y Principios)',
     originType: '🏛️ OFICIAL CAM / SERMAS / AYTO · CÓDIGO DEONTOLÓGICO',
@@ -2647,7 +3595,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-112',
-    topicId: 'E60',
+    topicId: 'E55',
     difficulty:
       'Alta (Excepciones al Secreto Profesional Art. 53 Código Deontológico)',
     originType: '🏛️ OFICIAL CAM / SERMAS / AYTO · SECRETO PROFESIONAL',
@@ -2665,7 +3613,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-113',
-    topicId: 'E12',
+    topicId: 'E55',
     difficulty:
       'Alta (Los 4 Principios de la Bioética de Beauchamp y Childress y Diego Gracia)',
     originType: '🏥 OFICIAL SERMAS / CAM · BIOÉTICA Y ÉTICA APLICADA',
@@ -2718,7 +3666,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-116',
-    topicId: 'E62',
+    topicId: 'E59',
     difficulty:
       'Alta (Axiomas de la Comunicación Humana de Watzlawick y Estilos de Thomas-Kilmann)',
     originType: '🏢 OFICIAL AYTO (TEMAS 28 Y 35) / CAM (E62) / SERMAS',
@@ -2740,7 +3688,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   // =========================================================================
   {
     id: 'q-hd-117',
-    topicId: 'E63',
+    topicId: 'E36',
     difficulty:
       'Alta (Interseccionalidad de Kimberlé Crenshaw y Mainstreaming de Género)',
     originType: '🏛️ OFICIAL CAM (E63) / AYTO (TEMA 77) / SERMAS',
@@ -2758,7 +3706,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-118',
-    topicId: 'E64',
+    topicId: 'E28',
     difficulty:
       'Alta (Accesibilidad Universal, Diseño para Todos y Ajustes Razonables RDL 1/2013)',
     originType: '🏛️ OFICIAL CAM (E64) / AYTO (TEMA 87) · RDL 1/2013',
@@ -2776,7 +3724,7 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
   },
   {
     id: 'q-hd-119',
-    topicId: 'E66',
+    topicId: 'E50',
     difficulty:
       'Alta (Metodologías Participativas: IAP, Salutogénesis y Mapeo de Activos)',
     originType: '🏥 OFICIAL SERMAS / CAM (E66) / AYTO · COMUNIDAD Y ACTIVOS',
