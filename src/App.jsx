@@ -888,11 +888,35 @@ const ADMIN_CALL_FORBIDDEN_REGEX =
   /\b(convocatoria\s+y\s+plazas|cuerpo\s+y\s+escala|sistema\s+selectivo|sistema\s+de\s+selecci[oó]n|titulaci[oó]n\s+exigida|titulaci[oó]n\s+habilitante|nota\s+de\s+corte|reglas\s+metodol[oó]gicas|materia\s+[uú]nica|doble\s+salida|[ií]ndice\s+sistem[aá]tico|br[uú]jula\s+del\s+opositor|estrategia\s+de\s+examen\s+manual|par[aá]metro\s+selectivo|presentaci[oó]n\s+del\s+manual|plazas?\s+libres|plazas?\s+ofertadas|cupo\s+de\s+discapacidad|399\s+plazas|380\s+plazas|173\s+plazas|bolsa\s+de\s+interinos|orden\s+1472\/2026|bocm\s+n\.?[º°]\s*100|tasas?\s+de\s+examen|derechos\s+de\s+examen|presentaci[oó]n\s+de\s+instancias|oferta\s+de\s+empleo\s+p[uú]blico|ficha\s+t[eé]cnica\s+oficial|tres\s+ejercicios\s+eliminatorios)\b/i;
 
 function isDefectiveOrAdminQuestion(q) {
-  if (!q) return true;
-  const fullTxt = `${q.question || ''} ${(q.options || []).join(' ')} ${
-    q.explanation || ''
-  }`;
+  if (!q || !Array.isArray(q.options) || q.options.length < 3) return true;
+  const optsJoined = (q.options || []).join(' ');
+  const fullTxt = `${q.question || ''} ${optsJoined} ${q.explanation || ''}`;
   if (ADMIN_CALL_FORBIDDEN_REGEX.test(fullTxt)) return true;
+
+  if (
+    /\b(CAP[IÍ]TULO\s+[IVXLCDM\d]+|ACTO\s+[IVXLCDM\d]+|EP[IÍ]LOGO|P[aá]gs?\.|P[aá]g,|SUB-EP[IÍ]GRAFE\s+OFICIAL|TEMA\s+MAGISTRAL\s+OFICIAL)\b/i.test(
+      `${q.question || ''} ${optsJoined}`
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    /suspensi[oó]n\s+discrecional\s+en\s+el\s+plazo\s+de\s+diez\s+d[ií]as\s+naturales|autorizaci[oó]n\s+judicial\s+previa\s+de\s+la\s+Fiscal[ií]a\s+Superior\s+en\s+el\s+t[eé]rmino\s+improrrogable|En\s+ning[uú]n\s+caso\s+resultar[aá]\s+aplicable\s+\d/i.test(
+      optsJoined
+    )
+  ) {
+    return true;
+  }
+
+  for (const opt of q.options) {
+    const body = opt.replace(/^[A-Da-d][).]\s*/, '').trim();
+    if (/^(?:\d+[).ªº]|[,;:])/.test(body)) return true;
+    if (/\((?:Arts?|P[aá]gs?|Decreto|Ley)[.,]?\s*$/i.test(body)) return true;
+    if (/(?:\b[A-ZÁÉÍÓÚÑ]{3,}\b\s+){3,}\b[A-ZÁÉÍÓÚÑ]{3,}\b/.test(body)) {
+      return true;
+    }
+  }
   const normalizedOpts = (q.options || []).map((o) =>
     o
       .replace(/^[A-Da-d][).]\s*/, '')
@@ -973,7 +997,90 @@ function extractLiteralTestQuestionsFromPdf(rawText = '', topicId = 'E1') {
 // =========================================================================
 // EXTRACTOR AUTOMÁTICO DE MICRO-RETOS 15s, GLOSARIO Y CASO PRÁCTICO EN 5 PASOS
 // =========================================================================
-function extractMicroRetosAndGlosarioFromPdf(rawText = '', topicId = 'E1') {
+function buildDefaultRetosAndGlosarioForTopic(topicObj) {
+  const id = topicObj?.id || 'E1';
+  const cleanTitle = (topicObj?.title || 'Servicios Sociales en la Comunidad de Madrid').replace(
+    /^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i,
+    ''
+  );
+  const domain = getDomainSpecificKnowledgeForTopic(
+    topicObj || { id, title: cleanTitle, lawUpdate: '' }
+  );
+
+  const defaultRetos = [
+    {
+      id: `reto-def-${id}-1`,
+      topicId: id,
+      num: '1',
+      question: `¿Cuál es la reserva legal exclusiva del Artículo 16.2 de la Ley 12/2022 CM aplicable a «${cleanTitle.slice(
+        0,
+        48
+      )}»?`,
+      answer:
+        'En Atención Social Primaria, el profesional de referencia de acceso al sistema será exclusivamente un Trabajador/a Social.',
+    },
+    {
+      id: `reto-def-${id}-2`,
+      topicId: id,
+      num: '2',
+      question:
+        '¿Qué plazo máximo e improrrogable fija el Artículo 40 de la Ley 12/2022 CM para elaborar el PIAS / PIIS?',
+      answer:
+        '10 días hábiles contados desde la finalización de la valoración diagnóstica.',
+    },
+    {
+      id: `reto-def-${id}-3`,
+      topicId: id,
+      num: '3',
+      question: `¿Qué instrumentos diagnósticos y escalas técnicas son clave en este epígrafe [${id}]?`,
+      answer: domain.instrumentosEspecificos,
+    },
+    {
+      id: `reto-def-${id}-4`,
+      topicId: id,
+      num: '4',
+      question: `¿Qué autores y modelos doctrinales fundamentan la intervención en [${id}]?`,
+      answer: domain.autoresDoctrina,
+    },
+  ];
+
+  const defaultGlosario = [
+    {
+      id: `glos-def-${id}-1`,
+      topicId: id,
+      term: `Marco Normativo [${id}]`,
+      definition: topicObj?.lawUpdate || domain.marcoEspecifico,
+    },
+    {
+      id: `glos-def-${id}-2`,
+      topicId: id,
+      term: `Red de Dispositivos [${id}]`,
+      definition: domain.dispositivosRed,
+    },
+    {
+      id: `glos-def-${id}-3`,
+      topicId: id,
+      term: 'Informe Social (Art. 69 Ley 12/2022)',
+      definition:
+        'Dictamen técnico exclusivo, probatorio e inalienable del Trabajador/a Social para la prescripción de prestaciones del Catálogo.',
+    },
+    {
+      id: `glos-def-${id}-4`,
+      topicId: id,
+      term: 'Historia Social Única (Decreto 51/2023)',
+      definition:
+        'Expediente digital único e interoperable de la Comunidad de Madrid conectado con Sanidad (SERMAS), Empleo y Justicia.',
+    },
+  ];
+
+  return { defaultRetos, defaultGlosario };
+}
+
+function extractMicroRetosAndGlosarioFromPdf(
+  rawText = '',
+  topicId = 'E1',
+  topicObj = null
+) {
   const microRetos = [];
   const glosario = [];
   const clean = rawText
@@ -986,7 +1093,7 @@ function extractMicroRetosAndGlosarioFromPdf(rawText = '', topicId = 'E1') {
     .replace(/\$([^$]+)\$/g, '$1')
     .replace(/<<|>>/g, '"');
 
-  // 1. Extraer Micro-Retos de 15 segundos (Sección 9.3 / 10.3)
+  // 1. Extraer Micro-Retos de 15 segundos de cualquier tema (Sección 9.3 / 10.3 / 8.3)
   const retoRegex =
     /Micro-Reto\s*(\d{1,2})\s*:\s*([^?]+\?)\s*Respuesta\s*:\s*([\s\S]{5,380}?)(?=\s*[^\wÁÉÍÓÚÑáéíóúñ]*Micro-Reto\s*\d|\s*CAP[IÍ]TULO|$)/gi;
   let rMatch;
@@ -1000,36 +1107,80 @@ function extractMicroRetosAndGlosarioFromPdf(rawText = '', topicId = 'E1') {
     });
   }
 
-  // 2. Extraer Glosario Técnico-Jurídico (Sección 9.2 / 10.2)
+  // 2. Extractor Universal de Glosario Técnico-Jurídico para cualquiera de los 67 temas
   const glosarioSectionMatch = clean.match(
-    /(?:9|10)\.2\.\s*Glosario\s+T[eé]cnico-Jur[ií]dico\s+Esencial\s*[:]?[\s\S]*?(?=(?:9|10)\.3\.|Micro-Reto\s*1|$)/i
+    /(?:(?:8|9|10)\.2\.\s*)?Glosario\s+T[eé]cnico-Jur[ií]dico\s+Esencial\s*[:]?[\s\S]*?(?=(?:(?:8|9|10)\.3\.|Micro-Reto\s*1|CAP[IÍ]TULO\s+[IXV]+|$))/i
   );
   if (glosarioSectionMatch) {
     const gSec = glosarioSectionMatch[0]
       .replace(
-        /(?:9|10)\.2\.\s*Glosario\s+T[eé]cnico-Jur[ií]dico\s+Esencial\s*[:]?/i,
+        /^(?:(?:8|9|10)\.2\.\s*)?Glosario\s+T[eé]cnico-Jur[ií]dico\s+Esencial\s*[:]?/i,
         ' '
       )
       .replace(
-        /T[eé]rmino\s+(?:T[eé]cnico|Dogm[aá]tico)\s+Definici[oó]n\s+(?:Doctrinal\s+y\s+Legal\s+Exacta|T[eé]cnico-Jur[ií]dica\s+Exacta\s+para\s+el\s+Tribunal)/i,
+        /T[eé]rmino\s+(?:T[eé]cnico|Dogm[aá]tico)\s+Definici[oó]n\s+(?:Doctrinal\s+y\s+Legal\s+Exacta|T[eé]cnico-Jur[ií]dica\s+Exacta(?:\s+para\s+el\s+Tribunal)?)/i,
         ' '
       )
       .trim();
 
-    const knownTermsRegex =
-      /\b(Derecho\s+Subjetivo\s+Social|Concierto\s+Social|Responsabilidad\s+Objetiva|Separaci[oó]n\s+de\s+Fuentes|Aporofobia|Cuidatoriado|Working\s+Poor|Historia\s+Social\s+[UÚ]nica\s*\(HSUe\)|Modelo\s+Brody\s+y\s+Payton|Desmercantilizaci[oó]n|Desfamiliarizaci[oó]n|Familismo\s+por\s+Defecto|Universalismo\s+Proporcional|[AÁ]rea\s+[UÚ]nica\s+de\s+Servicios\s+Sociales|Informe\s+Social\s*\(Art\.\s*69\))\s+([\s\S]{25,360}?)(?=\b(?:Derecho\s+Subjetivo\s+Social|Concierto\s+Social|Responsabilidad\s+Objetiva|Separaci[oó]n\s+de\s+Fuentes|Aporofobia|Cuidatoriado|Working\s+Poor|Historia\s+Social\s+[UÚ]nica|Modelo\s+Brody|Desmercantilizaci[oó]n|Desfamiliarizaci[oó]n|Familismo\s+por\s+Defecto|Universalismo\s+Proporcional|[AÁ]rea\s+[UÚ]nica|Informe\s+Social)|$)/gi;
-    let gMatch;
-    while ((gMatch = knownTermsRegex.exec(gSec)) !== null) {
-      glosario.push({
-        id: `glos-${topicId}-${glosario.length + 1}`,
-        topicId,
-        term: gMatch[1].replace(/\s+/g, ' ').trim(),
-        definition: gMatch[2].replace(/\s+/g, ' ').trim(),
-      });
-    }
+    // Proteger abreviaturas ("Art.", "Arts.", "n.º", "s.") antes de separar cada fila por su punto final
+    const prot = gSec.replace(
+      /\b(Arts?|N\.?[º°]|n\.?[º°]|s|D|Dña|RD|RDL)\.\s*/g,
+      '$1__DOT__ '
+    );
+    const rawEntries = prot
+      .split(/(?<=\.)\s+(?=[A-ZÁÉÍÓÚÑ])/)
+      .map((e) => e.replace(/__DOT__/g, '.').replace(/\s+/g, ' ').trim())
+      .filter((e) => e.length > 35);
+
+    const defStarterRegex =
+      /^([A-ZÁÉÍÓÚÑ][^.:]{2,52}?)\s+((?:Poder|F[oó]rmula|Doctrina|Regla|Concepto|Categor[ií]a|Fen[oó]meno|Expediente|Metodolog[ií]a|Capacidad|Grado|Asunci[oó]n|Garant[ií]a|Principio|Modalidad|Plataforma|Dictamen|Derecho|Prestaci[oó]n|Instrumento|Sistema|Procedimiento|Conjunto|Medida|[OÓ]rgano|Situaci[oó]n|Proceso|Modelo|Escala|[IÍ]ndice|Baremo|Red|Servicio|Nivel|Tasa|Umbral|Indicador|Pacto|Acuerdo|Obligaci[oó]n|Deber|Mecanismo|Criterio|Figura|R[eé]gimen|T[eé]cnica|Herramienta|Acci[oó]n|Intervenci[oó]n|Valoraci[oó]n|Provisi[oó]n|Transferencia|Asignaci[oó]n|Pensi[oó]n|Subsidio|Ayuda|Recurso|Dispositivo|Centro|Unidad|Equipo)\b[\s\S]+)$/;
+
+    rawEntries.forEach((entry) => {
+      const m = entry.match(defStarterRegex);
+      if (m) {
+        glosario.push({
+          id: `glos-${topicId}-${glosario.length + 1}`,
+          topicId,
+          term: m[1].trim(),
+          definition: m[2].trim(),
+        });
+      } else {
+        const words = entry.split(' ');
+        const termWords = [words[0]];
+        for (let i = 1; i < Math.min(5, words.length); i++) {
+          const w = words[i];
+          if (
+            /^[A-ZÁÉÍÓÚÑ(]/.test(w) ||
+            /^(de|del|la|el|los|las|y|por|en|a|para|con|sin|al)$/i.test(w)
+          ) {
+            termWords.push(w);
+          } else {
+            break;
+          }
+        }
+        const term = termWords.join(' ').trim();
+        const definition = entry.slice(term.length).trim();
+        if (term.length >= 3 && definition.length >= 20) {
+          glosario.push({
+            id: `glos-${topicId}-${glosario.length + 1}`,
+            topicId,
+            term,
+            definition,
+          });
+        }
+      }
+    });
   }
 
-  return { microRetos, glosario };
+  const resolvedTopic = topicObj || findTopicAcrossAllCatalogs(topicId);
+  const { defaultRetos, defaultGlosario } =
+    buildDefaultRetosAndGlosarioForTopic(resolvedTopic);
+
+  return {
+    microRetos: microRetos.length > 0 ? microRetos : defaultRetos,
+    glosario: glosario.length > 0 ? glosario : defaultGlosario,
+  };
 }
 
 function extractPracticalCaseFromExtensoPdf(rawText = '', topicObj = null) {
@@ -1078,117 +1229,196 @@ function extractPracticalCaseFromExtensoPdf(rawText = '', topicObj = null) {
   };
 }
 
+function extractCleanDoctrinalSentences(rawText = '') {
+  const body = stripNonEssaySectionsFromPdf(rawText);
+
+  // Proteger abreviaturas jurídicas ("Art. 69", "Arts. 72-76", "Pág. 4") para no partir frases por la mitad
+  const protectedText = body
+    .replace(
+      /\b(Arts?|P[aá]gs?|N\.?[º°]|n\.?[º°]|D|Dña|Dr|Dra|Sr|Sra|Cap|Vol|n[uú]m|coord|dir|ed|op|cit|ss|etc|p\.?\s*ej|v\.?\s*gr|EE\.?\s*UU|CC\.?\s*AA|AA\.?\s*PP|s|S)\.\s*/g,
+      '$1__DOT__ '
+    )
+    .replace(/(\d+)\.(\d+)/g, '$1__DOT__$2')
+    .replace(/\b([IVXLCDM]+|\d+)\.\s+/g, '$1__DOT__ ');
+
+  const rawParts = protectedText.split(/(?<=[.?!])\s+(?=[A-ZÁÉÍÓÚÑ])/);
+
+  const validSentences = [];
+  for (const part of rawParts) {
+    const s = part
+      .replace(/__DOT__/g, '.')
+      .replace(/^(?:[-•*]|\d+(?:\.\d+)*[).]?|[A-Za-z][).])\s*/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (s.length < 85 || s.length > 245) continue;
+    if (ADMIN_CALL_FORBIDDEN_REGEX.test(s)) continue;
+
+    // Rechazar cualquier título, subtítulo, capítulo, acto, epílogo, paso o referencia de página
+    if (
+      /\b(CAP[IÍ]TULO\s+[IVXLCDM\d]+|ACTO\s+[IVXLCDM\d]+|EP[IÍ]LOGO|P[aá]gs?\.|[IÍ]NDICE|BR[UÚ]JULA|FICHA\s+T[EÉ]CNICA|PAR[AÁ]METRO|BATER[IÍ]A\s+OFICIAL|RESPUESTA\s+CORRECTA|JUSTIFICACI[OÓ]N|MICRO-RETO|PASO\s+[1-5]|SUB-EP[IÍ]GRAFE|TEMA\s+MAGISTRAL)\b/i.test(
+        s
+      )
+    ) {
+      continue;
+    }
+
+    // Rechazar si contiene 3 o más palabras seguidas en MAYÚSCULAS (indica título o subtítulo incrustado)
+    if (/(?:\b[A-ZÁÉÍÓÚÑ]{3,}\b\s+){2,}\b[A-ZÁÉÍÓÚÑ]{3,}\b/.test(s)) {
+      continue;
+    }
+
+    // Rechazar si tiene sub-numeraciones internas ("1. ", "2. ") o empieza por números/paréntesis ("69),")
+    if (/\b\d+\.\s+[A-ZÁÉÍÓÚÑ]/.test(s)) continue;
+    if (!/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,}\b/.test(s)) continue;
+
+    // Debe terminar en punto cerrado y no dejar paréntesis abiertos ni abreviaturas colgadas
+    if (!s.endsWith('.') || /\([A-Za-z0-9.\s-]*$/.test(s)) continue;
+    const openParens = (s.match(/\(/g) || []).length;
+    const closeParens = (s.match(/\)/g) || []).length;
+    if (openParens !== closeParens) continue;
+
+    // Debe contener contenido técnico-jurídico o doctrinal real del tema
+    if (
+      !/\b(Ley|Decreto|Art[ií]culo|Art\.|Constituci[oó]n|d[ií]as|meses|a[ñn]os|\d{4}|Beveridge|Bismarck|Esping-Andersen|Titmuss|Marshall|Richmond|servicios\s+sociales|derecho\s+subjetivo|Atenci[oó]n\s+Social|Informe\s+Social|Historia\s+Social|PIIS|PIAS|universal|contributiv[ao])\b/i.test(
+        s
+      )
+    ) {
+      continue;
+    }
+
+    validSentences.push(s);
+  }
+
+  return Array.from(new Set(validSentences));
+}
+
+function falsifyDoctrinalSentence(sentence, variantIdx = 0) {
+  let m = sentence;
+
+  const swaps = [
+    [/\b(diez|10)\s+d[ií]as\s+h[aá]biles\b/gi, 'treinta días naturales improrrogables'],
+    [/\b(veinte|20)\s+d[ií]as\b/gi, 'cuarenta y cinco días naturales'],
+    [/\b(tres|3)\s+meses\b/gi, 'doce meses naturales'],
+    [/\b(seis|6)\s+meses\b/gi, 'dos meses hábiles'],
+    [/\bh[aá]biles\b/gi, 'naturales sin exclusión de festivos'],
+    [/\bAtenci[oó]n\s+Social\s+Primaria\b/gi, 'Atención Social Especializada de segundo nivel'],
+    [/\bAtenci[oó]n\s+Social\s+Especializada\b/gi, 'Atención Social Primaria municipal'],
+    [/\bDerecho\s+Subjetivo(?:\s+Universal)?\b/gi, 'concesión graciable sujeta a disponibilidad presupuestaria anual'],
+    [/\buniversales\b/gi, 'focalizados exclusivamente mediante comprobación estricta de pobreza'],
+    [/\buniversal\b/gi, 'asistencial y estrictamente discrecional'],
+    [/\bimpuestos(?:\s+generales|\s+directos)?\b/gi, 'cotizaciones sociales exclusivas de los trabajadores en activo'],
+    [/\bfiscalidad\s+general\b/gi, 'cuotas obrero-patronales de naturaleza estrictamente contributiva'],
+    [/\bcotizaciones(?:\s+sociales|\s+laborales)?\b/gi, 'impuestos indirectos sin vinculación laboral previa'],
+    [/\bexclusiv[ao](?:mente)?\b/gi, 'compartida de forma rotatoria con personal administrativo'],
+    [/\bpreceptivo\b/gi, 'meramente facultativo y prescindible'],
+    [/\bLey\s+12\/2022\b/gi, 'Ley 11/2003 de Servicios Sociales aún vigente'],
+    [/\bDecreto\s+51\/2023\b/gi, 'Decreto 88/2002 de archivo municipal cerrado'],
+    [/\bArt(?:[ií]culo|\.)\s*16\.2\b/gi, 'Artículo 84.3 de libre designación administrativa'],
+    [/\bArt(?:[ií]culo|\.)\s*40\b/gi, 'Artículo 95 de ejecución trimestral'],
+    [/\bArt(?:[ií]culo|\.)\s*69\b/gi, 'Artículo 12 de carácter meramente informativo'],
+    [/\bsin\s+[aá]nimo\s+de\s+lucro\b/gi, 'mercantiles con ánimo de lucro prioritario'],
+    [/\bno\s+contractual\b/gi, 'contractual mediante subasta mercantil al mejor postor'],
+    [/\bdesmercantilizaci[oó]n\b/gi, 'mercantilización obligatoria de la fuerza de trabajo'],
+    [/\binviolable\b/gi, 'condicionada a la capacidad contributiva previa'],
+    [/\bprogresiva\b/gi, 'regresiva basada en tasas de copago obligatorio'],
+    [/\btercera\s+generaci[oó]n\b/gi, 'primera generación asistencialista y benéfica'],
+  ];
+
+  let changesCount = 0;
+  for (const [rgx, replacement] of swaps) {
+    if (rgx.test(m)) {
+      m = m.replace(rgx, replacement);
+      changesCount++;
+      if (changesCount >= 2) break;
+    }
+  }
+
+  if (changesCount === 0 && /\b(18\d{2}|19\d{2}|20[012]\d)\b/.test(m)) {
+    m = m.replace(/\b(18\d{2}|19\d{2}|20[012]\d)\b/, (yr) =>
+      String(Number(yr) + (variantIdx % 2 === 0 ? 14 : -12))
+    );
+    changesCount++;
+  }
+
+  if (changesCount === 0) {
+    if (/\b(establece|reconoce|garantiza|configura|sit[uú]a|define|descansa|impone)\b/i.test(m)) {
+      m = m.replace(
+        /\b(establece|reconoce|garantiza|configura|sit[uú]a|define|descansa|impone)\b/i,
+        'excluye expresamente del ámbito público y supedita a copago privado'
+      );
+    } else {
+      m = m.replace(
+        /\.$/,
+        ', quedando supeditado en todo caso a carácter graciable y disponibilidad presupuestaria municipal sin generar derecho subjetivo.'
+      );
+    }
+  }
+
+  return m;
+}
+
 function generateMutatedQuestionsFromText(text, topicId, count = 10) {
-  const cleanBodyOnly = stripNonEssaySectionsFromPdf(text);
-  const sentences = cleanBodyOnly
-    .split(/(?<=[.?!])\s+/)
-    .map((s) => s.trim())
-    .filter(
-      (s) =>
-        s.length > 70 &&
-        s.length < 270 &&
-        !ADMIN_CALL_FORBIDDEN_REGEX.test(s) &&
-        !/^(TEMA\s+\d|CAP[IÍ]TULO\s+[IVX]|ACTO\s+[IVX]|ÍNDICE|Par[aá]metro\s+Jur[ií]dico)/i.test(
-          s
-        )
+  const topicObj = findTopicAcrossAllCatalogs(topicId);
+  const topicShortTitle = topicObj
+    ? topicObj.title.replace(/^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i, '')
+    : `el epígrafe ${topicId}`;
+
+  const cleanSentences = extractCleanDoctrinalSentences(text);
+  if (cleanSentences.length < 4) {
+    return [];
+  }
+
+  const questionStems = [
+    `[${topicId}] En relación con ${topicShortTitle}, señale cuál de las siguientes afirmaciones es jurídicamente y técnicamente CORRECTA:`,
+    `[${topicId}] De acuerdo con el marco normativo y doctrinal desarrollado en este tema, indique la opción CORRECTA:`,
+    `[${topicId}] Conforme a la regulación vigente en la Comunidad de Madrid y la doctrina del Trabajo Social analizada en este epígrafe, es CORRECTO afirmar que:`,
+    `[${topicId}] Respecto a los principios, normas y modelos de intervención de este tema, señale la proposición VERDADERA:`,
+  ];
+
+  const totalToBuild = Math.min(count, cleanSentences.length);
+  const generated = [];
+
+  for (let i = 0; i < totalToBuild; i++) {
+    const truth = cleanSentences[i];
+    const other1 = cleanSentences[(i + 1) % cleanSentences.length];
+    const other2 = cleanSentences[(i + 2) % cleanSentences.length];
+    const other3 = cleanSentences[(i + 3) % cleanSentences.length];
+
+    const false1 = falsifyDoctrinalSentence(other1, i + 1);
+    const false2 = falsifyDoctrinalSentence(other2, i + 2);
+    const false3 = falsifyDoctrinalSentence(other3, i + 3);
+
+    const targetCorrectIdx = (i + topicId.charCodeAt(topicId.length - 1)) % 4;
+    const rawOptions = [false1, false2, false3];
+    rawOptions.splice(targetCorrectIdx, 0, truth);
+
+    const labeledOptions = rawOptions.map(
+      (optText, idx) => `${['A', 'B', 'C', 'D'][idx]}) ${optText}`
     );
 
-  const pool =
-    sentences.length > 0
-      ? sentences
-      : [
-          'De conformidad con la Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid, la Historia Social Única y el PIIS en 10 días hábiles constituyen instrumentos básicos bajo la responsabilidad exclusiva del Trabajador Social de Referencia.',
-        ];
+    const qObj = {
+      id: `q-mut-${topicId}-${Date.now()}-${i}`,
+      topicId,
+      difficulty:
+        i % 2 === 0
+          ? 'Alta (Contraste Doctrinal y Legal)'
+          : 'Media (Precisión Normativa CAM)',
+      originType: '🧬 GENERADOR DOCTRINAL INTELIGENTE',
+      question: questionStems[i % questionStems.length],
+      options: labeledOptions,
+      correctIndex: targetCorrectIdx,
+      explanation: `La única afirmación verdadera (${
+        ['A', 'B', 'C', 'D'][targetCorrectIdx]
+      }) recoge literalmente el contenido del tema: «${truth}» Las demás opciones contienen alteraciones deliberadas de plazos, leyes o naturaleza jurídica.`,
+    };
 
-  const mutateSentence = (s, mode) => {
-    let m = s;
-    if (mode === 1) {
-      m = m
-        .replace(/\b(diez|10)\s+d[ií]as\b/gi, 'treinta días')
-        .replace(/\b(tres|3)\s+meses\b/gi, 'seis meses')
-        .replace(/\b(seis|6)\s+meses\b/gi, 'dos meses')
-        .replace(/\bh[aá]biles\b/gi, 'naturales')
-        .replace(/\bpreceptivo\b/gi, 'meramente facultativo y no vinculante')
-        .replace(
-          /\bAtenci[oó]n\s+Social\s+Primaria\b/gi,
-          'Atención Social Especializada de segundo nivel'
-        )
-        .replace(
-          /\bderecho\s+subjetivo\b/gi,
-          'concesión graciable sujeta a disponibilidad presupuestaria'
-        );
-      if (m === s)
-        m = `${s.slice(
-          0,
-          -1
-        )}, salvo cuando el órgano directivo acuerde su suspensión discrecional en el plazo de diez días naturales.`;
-    } else if (mode === 2) {
-      m = m
-        .replace(
-          /\bComunidad\s+de\s+Madrid\b/gi,
-          'Administración General del Estado con carácter exclusivo'
-        )
-        .replace(
-          /\bLey\s+12\/2022\b/gi,
-          'antigua Ley 11/2003 aún vigente con carácter supletorio'
-        )
-        .replace(
-          /\bLey\s+4\/2023\b/gi,
-          'Ley 6/1995 de Garantías de la Infancia'
-        )
-        .replace(
-          /\bp[uú]blic[ao]\b/gi,
-          'concertado de gestión indirecta preferente'
-        );
-      if (m === s)
-        m = `${s.slice(
-          0,
-          -1
-        )}, requiriendo en todo caso autorización judicial previa de la Fiscalía Superior en el término improrrogable de cuarenta y ocho horas.`;
-    } else {
-      m = m
-        .replace(
-          /\bgarantizad[ao]s?\b/gi,
-          'condicionadas de carácter graciable'
-        )
-        .replace(
-          /\binteroperable\b/gi,
-          'de uso interno restringido al nivel primario sin acceso hospitalario'
-        )
-        .replace(
-          /\bTrabajador\/?a?\s+Social\b/gi,
-          'órgano administrativo de contratación'
-        );
-      if (m === s)
-        m = `En ningún caso resultará aplicable ${
-          s.charAt(0).toLowerCase() + s.slice(1)
-        }`;
+    if (!isDefectiveOrAdminQuestion(qObj)) {
+      generated.push(qObj);
     }
-    return m;
-  };
+  }
 
-  return Array.from(
-    { length: Math.min(count, Math.max(5, pool.length)) },
-    (_, i) => {
-      const truth = pool[i % pool.length];
-      const d1 = mutateSentence(truth, 1);
-      const d2 = mutateSentence(truth, 2);
-      const d3 = mutateSentence(truth, 3);
-      return {
-        id: `q-mut-${topicId}-${Date.now()}-${i}`,
-        topicId,
-        difficulty:
-          i % 2 === 0
-            ? 'Alta (Plazos/Excepciones)'
-            : 'Media (Literal BOCM/BOAM)',
-        originType: '🧬 MUTACIÓN JURÍDICA CRUZADA',
-        question: `[${topicId}] De conformidad con la normativa vigente en 2026 aplicable a este epígrafe, señale la afirmación CORRECTA:`,
-        options: [`A) ${truth}`, `B) ${d1}`, `C) ${d2}`, `D) ${d3}`],
-        correctIndex: 0,
-        explanation: `Respuesta verificada por trazabilidad documental: "${truth}". Los distractores contienen permutaciones de plazos, órganos o vigencia normativa.`,
-      };
-    }
-  );
+  return generated;
 }
 
 function buildMonographicQuestionsForTopic(topicObj, existingDocs = []) {
@@ -1542,10 +1772,40 @@ export default function App() {
   const [storiesLibrary, setStoriesLibrary] = useState(() => {
     const saved = localStorage.getItem('cam_stories_logic_v5');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length > 0) return parsed;
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.length > 0) {
+          return parsed.map((st) => {
+            if (
+              st.microRetos &&
+              st.microRetos.length > 0 &&
+              st.glosario &&
+              st.glosario.length > 0
+            ) {
+              return st;
+            }
+            const tObj = findTopicAcrossAllCatalogs(st.topicId);
+            const { microRetos, glosario } =
+              extractMicroRetosAndGlosarioFromPdf(
+                st.storyText || '',
+                st.topicId || 'E1',
+                tObj
+              );
+            return {
+              ...st,
+              microRetos:
+                st.microRetos && st.microRetos.length > 0
+                  ? st.microRetos
+                  : microRetos,
+              glosario:
+                st.glosario && st.glosario.length > 0 ? st.glosario : glosario,
+            };
+          });
+        }
+      } catch (e) {
+        console.warn('Error hidratando historias:', e);
+      }
     }
-    // Si no existen, genera automáticamente las primeras historias lógicas del temario
     return OFFICIAL_CAM_TOPICS.slice(0, 12).map((t) =>
       buildNarrativeStoryForTopic(t, t.lawUpdate)
     );
@@ -1672,6 +1932,21 @@ export default function App() {
 
   const [revealedRetos, setRevealedRetos] = useState({});
   const [flippedGlossary, setFlippedGlossary] = useState({});
+  const [flashcardMastery, setFlashcardMastery] = useState(() => {
+    const saved = localStorage.getItem('cam_flashcard_mastery_v5');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'cam_flashcard_mastery_v5',
+        JSON.stringify(flashcardMastery)
+      );
+    } catch (e) {
+      console.warn('Error guardando dominio de flashcards:', e);
+    }
+  }, [flashcardMastery]);
   const [customPracticalCases, setCustomPracticalCases] = useState(() => {
     const saved = localStorage.getItem('cam_custom_cases_v5');
     return saved ? JSON.parse(saved) : [];
@@ -2304,65 +2579,136 @@ export default function App() {
 
   const buildClozeCardsFromBank = (categoryFilter = 'all', count = 20) => {
     const patterns = {
-      plazos: /\b((?:veinte|diez|quince|treinta|cuarenta y ocho|setenta y dos|veinticuatro|dos|tres|cuatro|cinco|seis|ocho|nueve|doce|dieciocho)\s+(?:d[ií]as?\s+h[aá]biles|d[ií]as?\s+naturales|d[ií]as?|meses|años?|semanas?|horas?)|un\s+(?:mes|año)|10\s+d[ií]as|20\s+d[ií]as|24\s+horas|72\s+horas|30\s+horas|20\s+horas)\b/i,
-      leyes: /\b(Ley\s+Org[aá]nica\s+\d+\/\d{4}|Ley\s+\d+\/\d{4}|Real\s+Decreto(?:-ley|\s+Legislativo)?\s+\d+\/\d{4}|Decreto\s+\d+\/\d{4}|Ordenanza\s+\d+\/\d{4}|art[ií]culos?\s+\d+(?:\.\d+)?)\b/i,
-      escalas_cifras: /\b(\d+\s*%|0,00[368]\s+puntos|0,25\s+puntos|40\.000\s+euros|15\.000\s+euros|80\.000\s+euros|60\.000\s+euros|25\s+a\s+49\s+puntos|50\s+a\s+74\s+puntos|75\s+a\s+100\s+puntos|10\s+a\s+14\s+puntos|22\s+a\s+46\s+puntos|56\s+a\s+110|Grado\s+(?:I|II|III)|Clase\s+[0-4]|Nivel\s+[12])\b/i,
-      autores_organos: /\b(Mary\s+Ellen\s+Richmond|Gordon\s+Hamilton|Florence\s+Hollis|Virginia\s+Robinson|Reid\s+y\s+Laura\s+Epstein|Gerald\s+Caplan|Urie\s+Bronfenbrenner|Jack\s+Rothman|Avedis\s+Donabedian|Jonathan\s+Bradshaw|Jes[uú]s\s+Ib[aá]ñez|Norman\s+K\.\s+Denzin|McGoldrick\s+y\s+Randy\s+Gerson|Ann\s+Hartman|Teresa\s+Rossell|Beauchamp\s+y\s+James\s+F\.\s+Childress|Diego\s+Gracia|Maslach\s+y\s+Susan\s+E\.\s+Jackson|Paul\s+Watzlawick|Kimberl[eé]\s+Crenshaw|Aaron\s+Antonovsky|Sherry\s+Arnstein|SAMUR\s+Social|AMAPAD|ARRMI|Comisi[oó]n\s+de\s+Tutela\s+del\s+Menor| silencio\s+administrativo\s+(?:negativo|desestimatorio|positivo))\b/i
+      plazos:
+        /\b((?:veinte|diez|quince|treinta|cuarenta y ocho|setenta y dos|veinticuatro|dos|tres|cuatro|cinco|seis|ocho|nueve|doce|dieciocho)\s+(?:d[ií]as?\s+h[aá]biles|d[ií]as?\s+naturales|d[ií]as?|meses|a[ñn]os?|semanas?|horas?)|un\s+(?:mes|a[ñn]o)|10\s+d[ií]as(?:\s+h[aá]biles)?|20\s+d[ií]as(?:\s+h[aá]biles)?|24\s+horas|48\s+horas|72\s+horas|30\s+horas|20\s+horas)\b/i,
+      leyes:
+        /\b(Ley\s+Org[aá]nica\s+\d+\/\d{4}|Ley\s+\d+\/\d{4}|Real\s+Decreto(?:-ley|\s+Legislativo)?\s+\d+\/\d{4}|Decreto\s+\d+\/\d{4}|Ordenanza\s+\d+\/\d{4}|[Aa]rt[ií]culos?\s+\d+(?:\.\d+)?)\b/i,
+      escalas:
+        /\b(\d+\s*%|0,00[368]\s+puntos|0,25\s+puntos|40\.000\s+euros|15\.000\s+euros|80\.000\s+euros|60\.000\s+euros|25\s+a\s+49\s+puntos|50\s+a\s+74\s+puntos|75\s+a\s+100\s+puntos|10\s+a\s+14\s+puntos|22\s+a\s+46\s+puntos|56\s+a\s+110|Grado\s+(?:I|II|III)|Clase\s+[0-4]|Nivel\s+[12])\b/i,
+      autores:
+        /\b(Mary\s+Ellen\s+Richmond|Gordon\s+Hamilton|Florence\s+Hollis|Virginia\s+Robinson|Reid\s+y\s+Laura\s+Epstein|Gerald\s+Caplan|Urie\s+Bronfenbrenner|Jack\s+Rothman|Avedis\s+Donabedian|Jonathan\s+Bradshaw|Jes[uú]s\s+Ib[aá][ñn]ez|Norman\s+K\.\s+Denzin|McGoldrick\s+y\s+Randy\s+Gerson|Ann\s+Hartman|Teresa\s+Rossell|Beauchamp\s+y\s+James\s+F\.\s+Childress|Diego\s+Gracia|Maslach\s+y\s+Susan\s+E\.\s+Jackson|Paul\s+Watzlawick|Kimberl[eé]\s+Crenshaw|Aaron\s+Antonovsky|Sherry\s+Arnstein|G[øo]sta\s+Esping-Andersen|Richard\s+Titmuss|T\.?\s*H\.?\s*Marshall|William\s+Beveridge|Otto\s+von\s+Bismarck|Adela\s+Cortina|Robert\s+Castel|Amartya\s+Sen|SAMUR\s+Social|AMAPAD|ARRMI|Comisi[oó]n\s+de\s+Tutela\s+del\s+Menor|silencio\s+administrativo\s+(?:negativo|desestimatorio|positivo))\b/i,
     };
 
-    const activeRegexes =
+    const fallbackPoolsByType = {
+      plazos: [
+        '10 días hábiles',
+        '20 días hábiles',
+        'tres meses hábiles',
+        'seis meses',
+        '24 horas',
+        '72 horas',
+        'quince días naturales',
+      ],
+      leyes: [
+        'Ley 12/2022',
+        'Decreto 51/2023',
+        'Artículo 16.2',
+        'Artículo 40',
+        'Artículo 69',
+        'Ley 39/2015',
+        'Ley 4/2023',
+        'Real Decreto 888/2022',
+      ],
+      escalas: [
+        '25 a 49 puntos',
+        '50 a 74 puntos',
+        '75 a 100 puntos',
+        'Grado I',
+        'Grado II',
+        'Grado III',
+        '60%',
+        '0,25 puntos',
+      ],
+      autores: [
+        'Mary Ellen Richmond',
+        'Gøsta Esping-Andersen',
+        'Richard Titmuss',
+        'Avedis Donabedian',
+        'Urie Bronfenbrenner',
+        'Adela Cortina',
+        'Robert Castel',
+      ],
+    };
+
+    const categoriesOrder =
       categoryFilter === 'plazos'
-        ? [patterns.plazos]
+        ? ['plazos']
         : categoryFilter === 'leyes'
-        ? [patterns.leyes]
+        ? ['leyes']
         : categoryFilter === 'escalas'
-        ? [patterns.escalas_cifras]
+        ? ['escalas']
         : categoryFilter === 'autores'
-        ? [patterns.autores_organos]
-        : [patterns.plazos, patterns.escalas_cifras, patterns.autores_organos, patterns.leyes];
+        ? ['autores']
+        : ['plazos', 'escalas', 'autores', 'leyes'];
 
-    const allTargetsPool = [];
+    const poolsByType = {
+      plazos: [...fallbackPoolsByType.plazos],
+      leyes: [...fallbackPoolsByType.leyes],
+      escalas: [...fallbackPoolsByType.escalas],
+      autores: [...fallbackPoolsByType.autores],
+    };
+
     const candidateCards = [];
+    const cleanQuestions = questionBank.filter(
+      (q) => !isDefectiveOrAdminQuestion(q)
+    );
 
-    questionBank.forEach((q) => {
-      const rawCorrect = (q.options[q.correctIndex] || '').replace(/^[A-D]\)\s*/i, '');
+    cleanQuestions.forEach((q) => {
+      const rawCorrect = (q.options[q.correctIndex] || '').replace(
+        /^[A-D]\)\s*/i,
+        ''
+      );
       let matchedTarget = null;
+      let matchedType = null;
 
-      for (const rgx of activeRegexes) {
+      for (const catKey of categoriesOrder) {
+        const rgx = patterns[catKey];
         const m = rawCorrect.match(rgx);
         if (m && m[0]) {
           matchedTarget = m[0].trim();
+          matchedType = catKey;
           break;
         }
       }
 
-      if (matchedTarget) {
-        allTargetsPool.push(matchedTarget);
-        const maskedSentence = rawCorrect.replace(matchedTarget, ' [ _______ ] ');
+      if (matchedTarget && matchedType) {
+        poolsByType[matchedType].push(matchedTarget);
+        const maskedSentence = rawCorrect.replace(
+          matchedTarget,
+          ' [ _______ ] '
+        );
         candidateCards.push({
           id: `cloze-${q.id}`,
           sourceQuestionId: q.id,
           topicId: q.topicId,
+          targetType: matchedType,
           originType: q.originType,
           promptContext: q.question,
           maskedSentence,
           fullSentence: rawCorrect,
           targetAnswer: matchedTarget,
-          explanation: q.explanation
+          explanation: q.explanation,
         });
       }
     });
 
-    // Generar 3 distractores del mismo tipo para modo ágil + opción de escritura directa
-    const finalCards = candidateCards.slice(0, count).map((card, idx) => {
-      const otherTargets = Array.from(
-        new Set(allTargetsPool.filter((t) => t.toLowerCase() !== card.targetAnswer.toLowerCase()))
+    // Barajar las tarjetas candidatas para que cada Sprint de 10 min sea nuevo y variado
+    const shuffledCards = [...candidateCards].sort(() => Math.random() - 0.5);
+
+    // Generar 3 distractores EXCLUSIVAMENTE de la misma familia (plazos contra plazos, leyes contra leyes, autores contra autores)
+    const finalCards = shuffledCards.slice(0, count).map((card) => {
+      const sameTypePool = Array.from(
+        new Set(
+          (poolsByType[card.targetType] || []).filter(
+            (t) => t.toLowerCase() !== card.targetAnswer.toLowerCase()
+          )
+        )
+      ).sort(() => Math.random() - 0.5);
+
+      const distractors = sameTypePool.slice(0, 3);
+      const choices = [card.targetAnswer, ...distractors].sort(() =>
+        Math.random() - 0.5
       );
-      const distractors = otherTargets.slice(idx % Math.max(1, otherTargets.length - 3), (idx % Math.max(1, otherTargets.length - 3)) + 3);
-      while (distractors.length < 3) {
-        distractors.push(['tres meses hábiles', 'diez días naturales', 'silencio negativo'][distractors.length]);
-      }
-      const choices = [card.targetAnswer, ...distractors].sort((a, b) => a.localeCompare(b));
       return { ...card, choices };
     });
 
@@ -2371,11 +2717,11 @@ export default function App() {
       cards: finalCards,
       currentIdx: 0,
       userInput: '',
-      strictWriteMode: false, // false = Selección rápida de chips | true = Teclear sin pistas
-      results: {}, // { [cardId]: { isCorrect, userValue } }
+      strictWriteMode: false,
+      results: {},
       showSolutionCurrent: false,
-      timeLeft: 600, // 10 minutos (600 segundos)
-      isFinished: false
+      timeLeft: 600,
+      isFinished: false,
     });
     setExamSession(null);
     setActiveModule('03');
@@ -7198,11 +7544,12 @@ const restoreFullMasterBackup = async (file) => {
                       {st.microRetos && st.microRetos.length > 0 && (
                         <div className="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-300 space-y-2">
                           <span className="text-[11px] font-extrabold text-indigo-900 dark:text-indigo-200 uppercase block">
-                            ⚡ MICRO-RETOS DE REPASO RÁPIDO EN 15 SEGUNDOS (FREE RECALL SIN OPCIONES · PULSA PARA REVELAR)
+                            ⚡ MICRO-RETOS DE REPASO RÁPIDO EN 15 SEGUNDOS (FREE RECALL SIN OPCIONES · PULSA PARA REVELAR Y AUTO-EVALUAR)
                           </span>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {st.microRetos.map((mr) => {
                               const isRev = !!revealedRetos[mr.id];
+                              const mState = flashcardMastery[mr.id];
                               return (
                                 <div
                                   key={mr.id}
@@ -7212,20 +7559,62 @@ const restoreFullMasterBackup = async (file) => {
                                       [mr.id]: !prev[mr.id],
                                     }))
                                   }
-                                  className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-indigo-200 cursor-pointer transition hover:border-indigo-500 text-xs space-y-1"
+                                  className={`p-2.5 rounded-xl bg-white dark:bg-stone-900 border cursor-pointer transition text-xs space-y-1.5 ${
+                                    mState === 'mastered'
+                                      ? 'border-emerald-500 ring-1 ring-emerald-400/50'
+                                      : mState === 'review'
+                                      ? 'border-rose-400 ring-1 ring-rose-400/50'
+                                      : 'border-indigo-200 hover:border-indigo-500'
+                                  }`}
                                 >
                                   <div className="flex justify-between items-start gap-2">
                                     <b className="text-indigo-950 dark:text-indigo-200">
                                       ❓ Reto {mr.num}: {mr.question}
                                     </b>
                                     <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 font-bold shrink-0">
-                                      {isRev ? '🙈 Ocultar' : '👁️ Ver'}
+                                      {mState === 'mastered'
+                                        ? '✅ Dominado'
+                                        : mState === 'review'
+                                        ? '🔁 Repasar'
+                                        : isRev
+                                        ? '🙈 Ocultar'
+                                        : '👁️ Ver'}
                                     </span>
                                   </div>
                                   {isRev && (
-                                    <p className="text-emerald-800 dark:text-emerald-300 font-semibold pt-1 border-t border-indigo-100">
-                                      ✔ {mr.answer}
-                                    </p>
+                                    <div className="pt-1.5 border-t border-indigo-100 space-y-2">
+                                      <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                                        ✔ {mr.answer}
+                                      </p>
+                                      <div
+                                        className="flex gap-1.5"
+                                        onClick={(ev) => ev.stopPropagation()}
+                                      >
+                                        <button
+                                          onClick={() => {
+                                            touchTopicReviewDate(st.topicId);
+                                            setFlashcardMastery((p) => ({
+                                              ...p,
+                                              [mr.id]: 'mastered',
+                                            }));
+                                          }}
+                                          className="px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-700 hover:text-white text-emerald-900 font-bold text-[10px] cursor-pointer"
+                                        >
+                                          ✅ Me la sabía
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            setFlashcardMastery((p) => ({
+                                              ...p,
+                                              [mr.id]: 'review',
+                                            }))
+                                          }
+                                          className="px-2 py-0.5 rounded bg-rose-100 hover:bg-rose-700 hover:text-white text-rose-900 font-bold text-[10px] cursor-pointer"
+                                        >
+                                          🔁 Repasar mañana
+                                        </button>
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
                               );
@@ -7242,6 +7631,7 @@ const restoreFullMasterBackup = async (file) => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                             {st.glosario.map((g) => {
                               const isFlipped = !!flippedGlossary[g.id];
+                              const gState = flashcardMastery[g.id];
                               return (
                                 <div
                                   key={g.id}
@@ -7254,21 +7644,60 @@ const restoreFullMasterBackup = async (file) => {
                                   className={`p-3 rounded-xl border cursor-pointer transition text-xs flex flex-col justify-between ${
                                     isFlipped
                                       ? 'bg-emerald-900 text-white border-emerald-700 shadow-xs'
+                                      : gState === 'mastered'
+                                      ? 'bg-emerald-50 dark:bg-stone-900 border-emerald-500'
+                                      : gState === 'review'
+                                      ? 'bg-rose-50 dark:bg-stone-900 border-rose-400'
                                       : 'bg-white dark:bg-stone-900 border-amber-300 hover:border-[#D97757]'
                                   }`}
                                 >
                                   <div className="flex justify-between items-center gap-1">
                                     <span className="font-extrabold">
-                                      📌 {g.term}
+                                      {gState === 'mastered'
+                                        ? '✅ '
+                                        : gState === 'review'
+                                        ? '🔁 '
+                                        : '📌 '}
+                                      {g.term}
                                     </span>
-                                    <span className="text-[10px] opacity-75">
+                                    <span className="text-[10px] opacity-75 shrink-0">
                                       {isFlipped ? '↺ Definición' : '👆 Girar'}
                                     </span>
                                   </div>
                                   {isFlipped && (
-                                    <p className="text-[11px] leading-relaxed mt-1.5 pt-1.5 border-t border-white/20">
-                                      {g.definition}
-                                    </p>
+                                    <div className="mt-1.5 pt-1.5 border-t border-white/20 space-y-2">
+                                      <p className="text-[11px] leading-relaxed">
+                                        {g.definition}
+                                      </p>
+                                      <div
+                                        className="flex gap-1.5 pt-1"
+                                        onClick={(ev) => ev.stopPropagation()}
+                                      >
+                                        <button
+                                          onClick={() => {
+                                            touchTopicReviewDate(st.topicId);
+                                            setFlashcardMastery((p) => ({
+                                              ...p,
+                                              [g.id]: 'mastered',
+                                            }));
+                                          }}
+                                          className="px-2 py-0.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[10px] cursor-pointer border border-white/30"
+                                        >
+                                          ✅ Dominada
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            setFlashcardMastery((p) => ({
+                                              ...p,
+                                              [g.id]: 'review',
+                                            }))
+                                          }
+                                          className="px-2 py-0.5 rounded bg-rose-700 hover:bg-rose-600 text-white font-bold text-[10px] cursor-pointer border border-white/30"
+                                        >
+                                          🔁 Repasar
+                                        </button>
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
                               );
