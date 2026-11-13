@@ -726,94 +726,159 @@ function autoFixObsoleteLawsInText(rawText) {
 function getDomainSpecificKnowledgeForTopic(topicObj) {
   const full = `${topicObj.id} ${topicObj.title} ${topicObj.lawUpdate || ''}`.toLowerCase();
 
+  if (/forense|pericial|justicia|juzgado|audiencia|imlc|víctimas\s+de\s+delito|oavd|sede\s+judicial/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Título VI de la Constitución Española; Ley Orgánica 6/1985 del Poder Judicial (LOPJ, art. 479 sobre Institutos de Medicina Legal y Ciencias Forenses, reformada por LO 1/2025 de Tribunales de Instancia); Ley 1/2000 de Enjuiciamiento Civil (LEC, arts. 335 a 352 sobre el dictamen de peritos y ratificación en vista oral); Decreto 37/2006 del Instituto de Medicina Legal y Ciencias Forenses (IMLCF) de la Comunidad de Madrid; y Ley 4/2015 del Estatuto de la Víctima del Delito junto con el Real Decreto 1109/2015 de las Oficinas de Asistencia a las Víctimas del Delito (OAVD).',
+      dispositivosRed:
+        'Instituto de Medicina Legal y Ciencias Forenses de la Comunidad de Madrid (IMLCF, Servicio de Especialidades y Equipos Técnicos Psicosociales adscritos a los Tribunales de Instancia, Juzgados de Familia, Violencia sobre la Mujer, Menores, Provisión de Apoyos y Audiencia Provincial de Madrid) y Red de Oficinas de Asistencia a las Víctimas del Delito (OAVD) en sede judicial.',
+      instrumentosEspecificos:
+        'Dictamen o Informe Social Pericial Forense (encabezamiento y oficio judicial, juramento o promesa de objetividad del art. 335.2 LEC, metodología pericial y triangulación de fuentes, vaciado de autos, entrevistas periciales semiestructuradas, visita domiciliaria forense, valoración técnica e indicadores periciales, conclusiones orientadoras al Juez y defensa/ratificación oral en juicio conforme al art. 347 LEC) y Plan de Apoyo Individualizado en OAVD para prevenir la victimización secundaria.',
+      autoresDoctrina:
+        'Pilar Ruiz Rodríguez (Trabajo Social Forense y pericia social), Luis Fernando Hernández, Guía de Buenas Prácticas para la elaboración de Informes Periciales Sociales del Colegio Oficial del Trabajo Social de Madrid, Mary Ellen Richmond (Social Diagnosis y pruebas periciales/testimoniales, 1917) y Código Deontológico del Trabajo Social (arts. 15, 31 y 48-55).',
+    };
+  }
+
+  if (/seguridad\s+social|desempleo|pensiones\s+no\s+contributivas|renta\s+m[ií]nima|ingreso\s+m[ií]nimo\s+vital|pobreza\s+energ[eé]tica|empleo/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Artículo 41 de la Constitución Española; Real Decreto Legislativo 8/2015 por el que se aprueba el Texto Refundido de la Ley General de la Seguridad Social (TRLGSS: nivel contributivo y nivel no contributivo en arts. 363 a 373); Real Decreto 357/1991 de Pensiones No Contributivas; Ley 3/2023 de Empleo y Real Decreto-ley 2/2024 de reforma del nivel asistencial por desempleo; Ley 19/2021 del Ingreso Mínimo Vital (IMV y CAPI); y Ley 15/2001 junto al Decreto 126/2014 de Renta Mínima de Inserción (RMI) de la Comunidad de Madrid.',
+      dispositivosRed:
+        'Instituto Nacional de la Seguridad Social (INSS), Servicio Público de Empleo Estatal (SEPE / Agencia Española de Empleo), Oficinas de Empleo de la Comunidad de Madrid, Dirección General de Servicios Sociales e Integración de la CAM (gestión de PNC y RMI) y Centros de Servicios Sociales de Atención Social Primaria (acompañamiento y Programas Individuales de Inserción).',
+      instrumentosEspecificos:
+        'Programa Individual de Inserción (PII en RMI CAM) y Plan Individual de Atención Social (PIAS/PIIS en 10 días hábiles, art. 40 Ley 12/2022), Informe Social para acreditación de vulnerabilidad socioeconómica o unidades de convivencia especiales en el IMV (Ley 19/2021), valoración de carencia de rentas en PNC de Jubilación e Invalidez (>=65% y complemento de tercera persona >=75%), e informe de riesgo de exclusión para el Bono Social Eléctrico y suministros vitales.',
+      autoresDoctrina:
+        'William Beveridge y Otto von Bismarck (modelos de Seguridad Social universal vs contributivo), Gøsta Esping-Andersen (desmercantilización), Robert Castel (metamorfosis de la cuestión social y desafiliación), Guy Standing (precariado) y Amartya Sen (enfoque de las capacidades).',
+    };
+  }
+
+  if (/administraci[oó]n\s+educativa|orientaci[oó]n\s+educativa|psicopedag[oó]gica|escolarizaci[oó]n|eoep/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Artículo 27 de la Constitución Española; Ley Orgánica 2/2006 de Educación (LOE) modificada por la Ley Orgánica 3/2020 (LOMLOE); Decreto 23/2023, de 22 de marzo, por el que se regula la atención educativa a las diferencias individuales del alumnado en la Comunidad de Madrid; Ley Orgánica 8/2021 (LOPIVI, figura del Coordinador de Bienestar y Protección en centros educativos) y Ley 4/2023 de Infancia de la CAM.',
+      dispositivosRed:
+        'Equipos de Orientación Educativa y Psicopedagógica (EOEP generales, Equipos de Atención Temprana EAT de 0 a 6 años y Equipos Específicos), Departamentos de Orientación en Institutos de Educación Secundaria (con presencia del Profesor Técnico de Servicios a la Comunidad - PTSC / Trabajador Social), Comisiones de Escolarización Extraordinaria por urgencia social y Mesas Locales de Prevención y Control del Absentismo Escolar.',
+      instrumentosEspecificos:
+        'Evaluación Psicopedagógica e Informe Sociofamiliar del EOEP/EAT (identificación de barreras para el aprendizaje y necesidades educativas especiales ACNEE y ACNEAE), Protocolo de actuación e intervención ante el absentismo escolar en coordinación con Atención Social Primaria, Hoja de Notificación de riesgo infantil desde el ámbito educativo y Plan de Convivencia e Inclusión.',
+      autoresDoctrina:
+        'Urie Bronfenbrenner (mesosistema familia-escuela), Paulo Freire (pedagogía crítica e inclusiva), Lev Vygotsky (constructivismo sociocultural) y el índice de Inclusión Educativa de Booth y Ainscow.',
+    };
+  }
+
+  if (/ética|deontol[oó]gico|secreto\s+profesional|bio[eé]tica|método\s+cient[ií]fico|t[eé]cnicas\s+en\s+trabajo\s+social|modelos\s+de\s+intervenci[oó]n|equipo\s+interdisciplinar/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Código Deontológico de Trabajo Social (Consejo General del Trabajo Social, 2012: principios básicos de Dignidad, Libertad e Igualdad art. 7, y confidencialidad/secreto profesional arts. 48 a 55); Ley 12/2022 de Servicios Sociales de la Comunidad de Madrid (profesional de referencia exclusivo TS en art. 16.2, PIIS en 10 días hábiles en art. 40, Informe Social en art. 69 y Comité de Ética de los Servicios Sociales); Decreto 51/2023 regulador de la Historia Social Única Electrónica (HSUe) y LO 3/2018 (LOPDGDD).',
+      dispositivosRed:
+        'Equipos interdisciplinares de Atención Social Primaria y Atención Social Especializada de la Comunidad de Madrid, Unidades de Trabajo Social Sanitario del SERMAS, Equipos Psicosociales Forenses del IMLCF y Comité de Ética de los Servicios Sociales de la Comunidad de Madrid.',
+      instrumentosEspecificos:
+        'Fases del método científico (estudio-investigación, diagnóstico social, planificación, ejecución y evaluación); técnicas (entrevista social según Teresa Rossell y Kadushin, visita domiciliaria y observación); e instrumentos exclusivos: Historia Social Única Electrónica (Decreto 51/2023), Ficha Social SIUSS, Informe Social prescriptor (art. 69 Ley 12/2022), Plan Individual (PIAS/PIIS en 10 días hábiles, art. 40), Genograma (McGoldrick y Gerson), Ecomapa (Ann Hartman) y Escala de Gijón.',
+      autoresDoctrina:
+        'Mary Ellen Richmond (Social Diagnosis, 1917), Gordon Hamilton y Florence Hollis (modelo psicosocial), Virginia Robinson (modelo funcional), Helen H. Perlman (resolución de problemas), Reid y Epstein (centrado en la tarea), Caplan y Golan (intervención en crisis), Bronfenbrenner y Germain/Gitterman (sistémico-ecológico), Malcolm Payne, Beauchamp y Childress, Diego Gracia, Howard Brody y Rita Payton (deliberación bioética), y Maslach y Jackson (prevención del Burnout).',
+    };
+  }
+
+  if (/penitenciaria|personas\s+sin\s+hogar|violencia\s+de\s+g[eé]nero|igualdad\s+entre\s+mujeres|trata\s+de\s+seres\s+humanos|lgtbi|urgencia\s+y\s+emergencia\s+social|vivienda\s+social/i.test(full)) {
+    return {
+      marcoEspecifico:
+        'Ley Orgánica 1/1979 General Penitenciaria y RD 840/2011 de los Servicios de Gestión de Penas y Medidas Alternativas (SGPMA); Ley Orgánica 1/2004, Ley Orgánica 10/2022 y Ley 5/2005 de la Comunidad de Madrid contra la Violencia de Género (modificada por Ley 3/2018, título habilitante art. 31); Ley 4/2023 estatal y Leyes 2/2016 y 3/2016 de la CAM en materia LGTBI; Ley 12/2022 de Servicios Sociales de la CAM (urgencia social art. 41); y Decreto 244/2015 de la Agencia de Vivienda Social (AVS) junto al Decreto 52/2016 de adjudicación por especial necesidad.',
+      dispositivosRed:
+        'Servicios Sociales Penitenciarios y CIS; Red de Atención a Personas Sin Hogar y modelo Housing First (SAMUR Social, UMES, centros de acogida y emergencia); Red de Atención Integral para la Violencia de Género de la CAM (Puntos Municipales PMORVG, Centros de Emergencia, Centros de Acogida, Pisos Tutelados, Centros de Crisis 24h y SAVG 24h); Programa Madrileño de Información y Atención LGTBI; y Agencia de Vivienda Social de la CAM.',
+      instrumentosEspecificos:
+        'Título Habilitante administrativo expedido por Servicios Sociales para acreditar la condición de víctima de violencia de género sin denuncia previa (art. 23 LO 1/2004 y art. 31 Ley 5/2005 CAM), Tipología Europea de Sinhogarismo y Exclusión Residencial (ETHOS de FEANTSA), Informe Social de vulnerabilidad habitacional ante lanzamientos judiciales (art. 441.5 LEC), PIAS/PIIS de urgencia e Historia Social Única (Decreto 51/2023).',
+      autoresDoctrina:
+        'Sam Tsemberis (modelo Housing First), Leonore Walker (ciclo de la violencia de género), Kimberlé Crenshaw (interseccionalidad), Marcela Lagarde, Erving Goffman (instituciones totales y estigma) y Robert Castel (exclusión social).',
+    };
+  }
+
   if (/sanitari|salud|hospital|sermas|atenci[oó]n primaria de salud|mental/i.test(full)) {
     return {
       marcoEspecifico:
-        'Ley 14/1986 General de Sanidad, Ley 16/2003 de Cohesión y Calidad del SNS, Ley 12/2001 de Ordenación Sanitaria de la Comunidad de Madrid (LOSCAM), Decreto 246/2023 de estructura del SERMAS y Cartera de Servicios de Trabajo Social Sanitario de la CAM.',
+        'Ley 14/1986 General de Sanidad, Ley 16/2003 de Cohesión y Calidad del SNS, Ley 44/2003 (LOPS), Ley 41/2002 de Autonomía del Paciente, Ley 12/2001 de Ordenación Sanitaria de la Comunidad de Madrid (LOSCAM), Ley 6/2009 de Libertad de Elección Sanitaria en la CAM, Decreto 246/2023 de estructura del SERMAS y Cartera de Servicios Estandarizados de Trabajo Social Sanitario.',
       dispositivosRed:
-        'Unidades de Trabajo Social (UTS) en los Centros de Salud de Atención Primaria (Zonas Básicas de Salud), Servicios de Trabajo Social Hospitalario (planificación del alta hospitalaria precoz, intervención en crisis en Urgencias, maternidad y cuidados paliativos), Centros de Salud Mental (CSM), Hospitales de Día y red de rehabilitación psicosocial (CRPS, CRL, Mini-residencias y EASC) en coordinación sociosanitaria a través del Visor Horus y la Historia Clínica HCIS.',
+        'Unidades de Trabajo Social (UTS) en los Centros de Salud de Atención Primaria (Zonas Básicas de Salud), Servicios de Trabajo Social Hospitalario (planificación precoz del alta hospitalaria, intervención en crisis en Urgencias, maternidad, VIH/SIDA y cuidados paliativos), Centros de Salud Mental (CSM), Hospitales de Día y Red Pública de Atención Social a personas con enfermedad mental grave y duradera de la CAM (Decreto 122/1997: CRPS, CRL, Centros de Día, Mini-residencias, Pisos Supervisados y EASC) en coordinación sociosanitaria mediante el Visor Horus, HCIS y la Historia Social Única (Decreto 51/2023).',
       instrumentosEspecificos:
-        'Historia Social Sanitaria integrada en AP-Madrid/HCIS, Informe Social Sanitario al alta hospitalaria, Escala de Gijón de riesgo sociofamiliar, Índice de Barthel y Lawton-Brody, cuestionario Pfeiffer, escala de Zarit y protocolos de detección precoz de maltrato infantil, violencia de género y anciano frágil en consulta.',
+        'Historia Social Sanitaria integrada en AP-Madrid/HCIS e interoperable con la HSUe (Decreto 51/2023), Informe Social Sanitario al alta hospitalaria, Escala de Gijón de riesgo sociofamiliar, Índice de Barthel y Lawton-Brody, cuestionario Pfeiffer, escala de sobrecarga de Zarit y protocolos de detección precoz de maltrato infantil, violencia de género, seguimiento biopsicosocial en VIH/SIDA y anciano frágil.',
       autoresDoctrina:
-        'Ida Cannon (pionera del Trabajo Social Médico en el Massachusetts General Hospital), Richard Cabot, Amaya Ituarte (Trabajo Social Clínico), Dolors Colom (Trabajo Social Sanitario) y el modelo biopsicosocial de George Engel.',
+        'Ida Cannon (pionera del Trabajo Social Médico en el Massachusetts General Hospital), Richard Cabot, Amaya Ituarte (Trabajo Social Clínico), Dolors Colom (Trabajo Social Sanitario), Aaron Antonovsky (salutogénesis), Marc Lalonde y Michael Marmot (determinantes sociales de la salud) y el modelo biopsicosocial de George Engel.',
     };
   }
 
   if (/calidad|carta|evaluaci[oó]n|planificaci[oó]n|indicador|inspecci[oó]n|organiza/i.test(full)) {
     return {
       marcoEspecifico:
-        'Decreto 27/1997, de 6 de marzo, por el que se regulan las Cartas de Servicios en la Comunidad de Madrid; Ley 12/2022 de Servicios Sociales de la CAM (Título VI sobre Calidad, Inspección y Evaluación); Ley 19/2013 y Ley 10/2019 de Transparencia de la CAM; y Plan de Inspección de Servicios Sociales.',
+        'Decreto 27/1997, de 6 de marzo, por el que se regulan las Cartas de Servicios en la Comunidad de Madrid; Ley 12/2022 de Servicios Sociales de la CAM (Título VI sobre Calidad, Inspección y Registro arts. 77 a 98); Ley 11/2002 de Ordenación de la Actividad de los Centros y Servicios de Acción Social en la CAM; Ley 19/2013 y Ley 10/2019 de Transparencia de la CAM; y Plan de Inspección de Servicios Sociales.',
       dispositivosRed:
-        'Dirección General de Evaluación, Calidad e Innovación de la Consejería de Familia, Juventud y Asuntos Sociales; Subdirección General de Inspección de Servicios Sociales; Registro de Entidades, Centros y Servicios de Acción Social; y Sistema de Información de Usuarios de Servicios Sociales (SIUSS / HSUe Decreto 51/2023).',
+        'Dirección General de Evaluación, Calidad e Innovación de la Consejería de Familia, Juventud y Asuntos Sociales; Subdirección General de Inspección de Servicios Sociales; Registro de Entidades, Centros, Servicios y de Directores de Centros de Atención Social; y Sistema de Información de Usuarios de Servicios Sociales (SIUSS / HSUe Decreto 51/2023).',
       instrumentosEspecificos:
-        'Cartas de Servicios (compromisos de calidad, indicadores de seguimiento y medidas de subsanación), Ciclo PDCA de Deming (Planificar, Hacer, Verificar, Actuar), Modelo EFQM de Excelencia Europea, normas ISO 9001/UNE 158000 de servicios para la promoción de la autonomía personal, encuestas de satisfacción percibida y auditorías de procesos.',
+        'Cartas de Servicios (compromisos de calidad, indicadores de seguimiento y medidas de subsanación aprobadas por Orden del Consejero y publicadas en BOCM), Enfoque del Marco Lógico (EML), Ciclo PDCA de Deming (Planificar, Hacer, Verificar, Actuar), Modelo EFQM de Excelencia Europea, normas ISO 9001/UNE 158000, encuestas de satisfacción percibida y actas de inspección.',
       autoresDoctrina:
-        'Avedis Donabedian (tríada de evaluación de la calidad asistencial: Estructura, Proceso y Resultado), W. Edwards Deming (mejora continua), Ezequiel Ander-Egg y María José Aguilar Idáñez (evaluación de programas y proyectos sociales).',
+        'Avedis Donabedian (tríada de evaluación de la calidad asistencial: Estructura, Proceso y Resultado), W. Edwards Deming (mejora continua), Ezequiel Ander-Egg y María José Aguilar Idáñez (niveles estratégicos de planificación: Plan, Programa, Proyecto, Actividad y Tarea).',
     };
   }
 
   if (/inmigra|asilo|refugia|extranjer|intercultural/i.test(full)) {
     return {
       marcoEspecifico:
-        'Artículo 13 de la Constitución Española, Ley Orgánica 4/2000 sobre derechos y libertades de los extranjeros en España (LOEX) y su nuevo Reglamento (RD 1155/2024), Ley 12/2009 reguladora del Derecho de Asilo y de la Protección Subsidiaria, y Real Decreto 220/2022 del Sistema de Acogida de Protección Internacional (SAPI).',
+        'Artículo 13 de la Constitución Española, Ley Orgánica 4/2000 sobre derechos y libertades de los extranjeros en España (LOEX) y su nuevo Reglamento aprobado por Real Decreto 1155/2024, de 19 de noviembre (5 modalidades de arraigo: segunda oportunidad, sociolaboral, social, socioformativo y familiar), Ley 12/2009 reguladora del Derecho de Asilo y de la Protección Subsidiaria, y Real Decreto 220/2022 del Sistema de Acogida de Protección Internacional (SAPI).',
       dispositivosRed:
-        'Red de 8 Centros de Participación e Integración de Inmigrantes (CEPI) de la Comunidad de Madrid, Centro de Acogida a Refugiados (CAR de Vallecas), dispositivos de emergencia del SAPI (Fases 0, 1 y 2) y Centros de Servicios Sociales municipales (emisión de Informes de Arraigo y de Vivienda Adecuada).',
+        'Red de 8 Centros de Participación e Integración de Inmigrantes (CEPI) de la Comunidad de Madrid, Centros de Acogida a Refugiados (CAR), dispositivos de emergencia del SAPI (Fases de evaluación inicial, acogida y autonomía) y Centros de Servicios Sociales de Atención Social Primaria (emisión de Informes de Arraigo y de Adecuación de Vivienda).',
       instrumentosEspecificos:
-        'Informe Social autonómico/municipal de Inserción Social para autorización de residencia por Arraigo (Social, Socioformativo, Sociolaboral y Familiar), Informe de adecuación de vivienda para reagrupación familiar, mediación intercultural y diagnóstico del duelo migratorio.',
+        'Informe Social autonómico/municipal de Integración Social para autorización de residencia por Arraigo (art. 127 del RD 1155/2024), Informe de adecuación de vivienda para reagrupación familiar, protocolo de atención a menores extranjeros no acompañados (art. 35 LOEX), mediación intercultural y diagnóstico del duelo migratorio.',
       autoresDoctrina:
         'Joseba Achotegui (Síndrome de Ulises o síndrome del inmigrante con estrés crónico y múltiple), Carlos Giménez Romero (modelos de integración intercultural y mediación) y Kimberlé Crenshaw (enfoque de interseccionalidad).',
     };
   }
 
-  if (/adiccion|drog|sustancia|juego|caid/i.test(full)) {
+  if (/adiccion|drog|sustancia|alcohol|juego|caid/i.test(full)) {
     return {
       marcoEspecifico:
-        'Ley 5/2002, de 27 de junio, sobre Drogodependencias y otros Trastornos Adictivos de la Comunidad de Madrid; Ley 17/2003 del Fondo de bienes decomisados; Estrategia Nacional sobre Adicciones; y Ley 12/2022 de Servicios Sociales de la CAM (arts. 16.2, 40 y 69).',
+        'Ley 5/2002, de 27 de junio, sobre Drogodependencias y otros Trastornos Adictivos de la Comunidad de Madrid; Ley 17/2003 del Fondo de bienes decomisados; Estrategia Nacional sobre Adicciones del Plan Nacional sobre Drogas; y Ley 12/2022 de Servicios Sociales de la CAM (arts. 16.2, 40 y 69).',
       dispositivosRed:
-        'Red de Centros de Atención Integral a Drogodependientes (CAID de la CAM) y Centros de Atención a las Adicciones (CAD de Madrid Salud), Unidades de Desintoxicación Hospitalaria (UDH del SERMAS), Comunidades Terapéuticas, Pisos de Apoyo al Tratamiento, Servicio de Atención a Adicciones Tecnológicas (SAAT) y dispositivos de Reducción de Daños y Baja Exigencia (Salas de Venopunción, Unidades Móviles de Metadona y Centros de Calor y Café).',
+        'Red de Centros de Atención Integral a Drogodependientes (CAID de la Comunidad de Madrid), Centro Regional de Documentación de Educación Sanitaria y Adicciones de la CAM, Centros de Atención a las Adicciones (CAD de Madrid Salud), Unidades de Desintoxicación Hospitalaria (UDH del SERMAS), Comunidades Terapéuticas, Pisos de Apoyo al Tratamiento y dispositivos de Reducción del Daño y Disminución de Riesgos.',
       instrumentosEspecificos:
-        'Índice de Severidad de la Adicción (EuropASI), entrevista motivacional en las etapas del cambio, Plan Individualizado de Intervención Social (PIIS en 10 días hábiles, art. 40 Ley 12/2022), Informe Social prescriptor (art. 69) e Historia Social Única Electrónica (Decreto 51/2023).',
+        'Índice de Severidad de la Adicción (EuropASI), cuestionarios de cribado y diagnóstico de alcoholismo (AUDIT de la OMS, CAGE, MALT y cálculo de Unidades de Bebida Estándar UBE), entrevista motivacional en las etapas del cambio, Plan Individualizado de Intervención Social (PIIS en 10 días hábiles, art. 40 Ley 12/2022), Informe Social prescriptor (art. 69) e Historia Social Única Electrónica (Decreto 51/2023).',
       autoresDoctrina:
-        'Prochaska y DiClemente (modelo transteórico de las etapas del cambio: precontemplación, contemplación, preparación, acción, mantenimiento y recaída), Miller y Rollnick (entrevista motivacional) y Marlatt (prevención de recaídas y reducción de daños).',
+        'Prochaska y DiClemente (modelo transteórico de las etapas del cambio: precontemplación, contemplación, preparación, acción, mantenimiento y recaída), Miller y Rollnick (entrevista motivacional), Marlatt (prevención de recaídas y reducción de daños) y E.M. Jellinek (tipologías clínicas del alcoholismo).',
     };
   }
 
   if (/infancia|menor|adolescen|acogimiento|adopci|familia/i.test(full)) {
     return {
       marcoEspecifico:
-        'Ley Orgánica 8/2021 de Protección Integral a la Infancia y la Adolescencia frente a la Violencia (LOPIVI), Ley Orgánica 1/1996 de Protección Jurídica del Menor (reformada por Ley 26/2015), Ley 4/2023 de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid, y Ley 1/2024 de Familias.',
+        'Convención sobre los Derechos del Niño de 1989; Ley Orgánica 1/1996 de Protección Jurídica del Menor (modificada por LO 8/2015 y Ley 26/2015); Ley Orgánica 8/2021 de Protección Integral a la Infancia y la Adolescencia frente a la Violencia (LOPIVI); Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid (que deroga la antigua Ley 6/1995 y regula la Comisión de Protección a la Infancia y la Adolescencia de la CAM); Ley Orgánica 5/2000 de Responsabilidad Penal de los Menores y Ley 3/2004 de creación de la ARRMI.',
       dispositivosRed:
-        'Comisión de Tutela del Menor de la CAM, Equipos de Trabajo con Menores y Familias en Atención Social Primaria, Centros de Apoyo a las Familias (CAF), Puntos de Encuentro Familiar (PEF), Red de Centros Residenciales de Protección y programas de Acogimiento Familiar (urgencia, temporal y permanente) y ARRMI (Ley Orgánica 5/2000).',
+        'Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid (órgano colegiado que sustituye a la antigua Comisión de Tutela del Menor conforme a la Ley 4/2023), Consejos de Derechos de la Infancia y Adolescencia, Equipos de Trabajo con Menores y Familias en Atención Social Primaria, Centros de Apoyo y Encuentro Familiar (CAEF) y Puntos de Encuentro Familiar (PEF), Red de Acogimiento Familiar (urgencia, temporal máx. 2 años y permanente) y Residencial, Organismos Acreditados de Adopción Internacional (OAAI) y Agencia ARRMI.',
       instrumentosEspecificos:
-        'Instrumento VALÓRAME de valoración de la gravedad de las situaciones de riesgo y desamparo infantil en la Comunidad de Madrid, Hoja de Notificación de maltrato infantil, Genograma y Ecomapa familiar, y Plan de Intervención Familiar.',
+        'Instrumento VALÓRAME de valoración de la gravedad de las situaciones de riesgo y desamparo infantil en la Comunidad de Madrid, Registro Unificado de Maltrato Infantil (RUMA / SIMIA), figuras del Coordinador de Bienestar y del Delegado de Protección (LO 8/2021), Genograma y Ecomapa familiar, y Proyecto de Intervención Familiar.',
       autoresDoctrina:
-        'Urie Bronfenbrenner (modelo ecológico del desarrollo humano), John Bowlby y Mary Ainsworth (teoría del apego seguro e inseguro), Jorge Barudy (buenos tratos a la infancia y parentalidad positiva) y Salvador Minuchin (terapia familiar estructural).',
+        'Urie Bronfenbrenner (modelo ecológico del desarrollo humano), John Bowlby y Mary Ainsworth (teoría del apego seguro e inseguro), Jorge Barudy y Maryorie Dantagnan (buenos tratos a la infancia y parentalidad positiva) y Salvador Minuchin (terapia familiar estructural).',
     };
   }
 
   if (/dependencia|mayor|envejec|discapacidad|autonom[ií]a/i.test(full)) {
     return {
       marcoEspecifico:
-        'Artículo 49 de la Constitución Española (reformado en enero de 2024), Real Decreto Legislativo 1/2013 de derechos de las personas con discapacidad, Real Decreto 888/2022 del nuevo baremo de discapacidad (Clases 0 a 4), Ley 39/2006 (LAPAD), Decreto 54/2015 de procedimiento de dependencia en la CAM, Ley 8/2021 de reforma civil de apoyos y Ley 1/2023 de creación de la AMAPAD.',
+        'Artículo 49 de la Constitución Española (reformado en febrero de 2024), Real Decreto Legislativo 1/2013 de derechos de las personas con discapacidad, Estrategia Española 2022-2030 y Estrategia Madrileña Horizonte 2028, Real Decreto 888/2022 del nuevo baremo de discapacidad (4 baremos BLA, BDGP, BFCA y BRP; Clases 0 a 4), Ley 39/2006 (LAPAD), Decreto 54/2015 de procedimiento de dependencia en la CAM, Ley 8/2021 de reforma civil de apoyos y Ley 1/2023 de creación de la AMAPAD.',
       dispositivosRed:
-        'Dirección General de Atención al Mayor y a la Dependencia, Centros Base de Valoración y Orientación a personas con discapacidad (CVO), Agencia Madrileña de Atención Social (AMAS), Agencia Madrileña para el Apoyo a las Personas Adultas con Discapacidad (AMAPAD) y catálogo de servicios (Teleasistencia Avanzada, SAD, Centros de Día, Atención Residencial y Prestaciones Económicas PECEF, PEAP y PEVS).',
+        'Dirección General de Atención al Mayor y a la Dependencia, Red de Centros Base de Valoración y Orientación a personas con discapacidad de la CAM y CRECOVI (Centro Regional de Coordinación y Valoración Infantil), Agencia Madrileña de Atención Social (AMAS), Agencia Madrileña para el Apoyo a las Personas Adultas con Discapacidad (AMAPAD y su Comité de Ética) y catálogo del SAAD (Teleasistencia Avanzada, SAD, Centros de Día/Noche, Atención Residencial y Prestaciones Económicas PECEF, PEAP y PEVS).',
       instrumentosEspecificos:
-        'Baremo de Valoración de la Dependencia (BVD y EVE para menores de 3 años del RD 174/2011: Grado I de 25 a 49 puntos, Grado II de 50 a 74 puntos, Grado III de 75 a 100 puntos), Informe Social de Entorno, Programa Individual de Atención (PIA en plazo máximo de 6 meses) y Escala de Zarit.',
+        'Baremo de Valoración de la Dependencia (BVD y Escala de Valoración Específica EVE para menores de 3 años del RD 174/2011: Grado I de 25 a 49 puntos, Grado II de 50 a 74 puntos, Grado III de 75 a 100 puntos), Informe Social de Entorno, Programa Individual de Atención (PIA en plazo máximo de 6 meses con silencio negativo en Decreto 54/2015), e índices de Barthel, Lawton-Brody, Pfeiffer, Gijón y Zarit.',
       autoresDoctrina:
-        'Modelo de Atención Integral y Centrada en la Persona (AICP de Teresa Martínez), paradigma de Vida Independiente y modelo social de la discapacidad (Mike Oliver y Convención de la ONU de Nueva York de 2006).',
+        'Modelo de Atención Integral y Centrada en la Persona (AICP de Teresa Martínez y Tom Kitwood), paradigma de Vida Independiente y modelo social y de derechos humanos de la discapacidad (Mike Oliver y Convención de la ONU de Nueva York de 2006).',
     };
   }
 
   return {
     marcoEspecifico:
       topicObj.lawUpdate ||
-      'Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid, Decreto 51/2023 regulador de la Historia Social Única Electrónica (HSUe), Catálogo de Prestaciones del Sistema Público de Servicios Sociales y Ley 39/2015 (LPAC).',
+      'Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid, Decreto 51/2023 regulador de la Historia Social Única Electrónica (HSUe), Catálogo y Cartera de Prestaciones del Sistema Público de Servicios Sociales, Concierto Social (arts. 54 a 67) y Ley 39/2015 (LPAC).',
     dispositivosRed:
-      'Red de Centros de Servicios Sociales de Atención Social Primaria (puerta de entrada universal y territorializada conforme al artículo 16.2 de la Ley 12/2022) en articulación con la Atención Social Especializada (AMAS, AMAPAD, Red de Exclusión y Emergencia Social) y el Servicio Madrileño de Salud (SERMAS).',
+      'Red de Centros de Servicios Sociales de Atención Social Primaria (puerta de entrada universal y territorializada conforme al artículo 16.2 de la Ley 12/2022) en articulación con la Atención Social Especializada (Consejería de Familia, Juventud y Asuntos Sociales, AMAS Decreto 230/2015, AMAPAD Ley 1/2023), el Ministerio competente en Derechos Sociales e IMSERSO, el Fondo Social Europeo Plus (FSE+) y el Servicio Madrileño de Salud (SERMAS).',
     instrumentosEspecificos:
-      'Historia Social Única Electrónica (HSUe, Decreto 51/2023), Ficha Social SIUSS, Informe Social exclusivo como dictamen técnico prescriptor (artículo 69 de la Ley 12/2022), Plan Individual de Atención Social (PIAS en un plazo máximo de 10 días hábiles conforme al artículo 40), Genograma, Ecomapa y Escala de Gijón.',
+      'Historia Social Única Electrónica (HSUe, Decreto 51/2023), Ficha Social SIUSS, Informe Social exclusivo como dictamen técnico prescriptor (artículo 69 de la Ley 12/2022), Plan Individual de Atención Social (PIAS/PIIS en un plazo máximo de 10 días hábiles conforme al artículo 40), Genograma, Ecomapa y Escala de Gijón.',
     autoresDoctrina:
-      'Mary Ellen Richmond (Diagnóstico Social, 1917), Gordon Hamilton (escuela diagnóstica psicosocial), Helen Harris Perlman (resolución de problemas), Natalio Kisnerman, Ezequiel Ander-Egg y Teresa Zamanillo.',
+      'Mary Ellen Richmond (Diagnóstico Social, 1917), Gordon Hamilton (escuela diagnóstica psicosocial), Helen Harris Perlman (resolución de problemas), Richard Titmuss y Gøsta Esping-Andersen (regímenes de bienestar), T.H. Marshall (ciudadanía social), Jonathan Bradshaw (tipología de necesidades sociales), Natalio Kisnerman, Ezequiel Ander-Egg y Teresa Zamanillo.',
   };
 }
 
@@ -1701,6 +1766,234 @@ const ZeroLagBufferedTextarea = memo(function ZeroLagBufferedTextarea({
   );
 });
 
+const StrategicHighlighterViewer = memo(function StrategicHighlighterViewer({
+  text = '',
+}) {
+  const [highlightActive, setHighlightActive] = useState(true);
+  const [showLawsGreen, setShowLawsGreen] = useState(true);
+  const [showAuthorsYellow, setShowAuthorsYellow] = useState(true);
+  const [showDeadlinesPink, setShowDeadlinesPink] = useState(true);
+  const [visualSkeletonOnly, setVisualSkeletonOnly] = useState(false);
+
+  const parsedBlocks = useMemo(() => {
+    if (!text) return { paragraphs: [], counts: { laws: 0, authors: 0, deadlines: 0 } };
+
+    const tokenRegex = new RegExp(
+      [
+        // Grupo 1: Leyes, Decretos, Artículos y Normativa (VERDE)
+        '(\\b(?:Constituci[oó]n\\s+Espa[ñn]ola|Ley\\s+Org[aá]nica\\s+\\d+\\/\\d{4}|Ley\\s+\\d+\\/\\d{4}|Real\\s+Decreto(?:-Ley|\\s+Legislativo)?\\s+\\d+\\/\\d{4}|Decreto\\s+\\d+\\/\\d{4}|Orden(?:anza)?\\s+\\d+\\/\\d{4}|Art(?:[ií]culos?|\\.)\\s*\\d+(?:\\.\\d+)?(?:\\s+a\\s+\\d+)?|TREBEP|LPAC|LRJSP|LOPIVI|LOSCAM|LAPAD|HSUe|SIUSS|PIAS|PIIS|RGPD|Código\\s+Deontol[oó]gico)\\b)',
+        // Grupo 2: Autores, Escuelas y Modelos Teóricos (AMARILLO)
+        '(\\b(?:Mary\\s+(?:Ellen\\s+)?Richmond|Gordon\\s+Hamilton|Helen\\s+(?:Harris\\s+)?Perlman|Urie\\s+Bronfenbrenner|Avedis\\s+Donabedian|G[øo]sta\\s+Esping-Andersen|Richard\\s+Titmuss|T\\.?\\s*H\\.?\\s*Marshall|William\\s+Beveridge|Otto\\s+von\\s+Bismarck|Adela\\s+Cortina|Robert\\s+Castel|Amartya\\s+Sen|Ida\\s+Cannon|Richard\\s+Cabot|Amaya\\s+Ituarte|Dolors\\s+Colom|George\\s+Engel|W\\.?\\s*Edwards\\s+Deming|Ezequiel\\s+Ander-Egg|Aguilar\\s+Id[aá][ñn]ez|Joseba\\s+Achotegui|S[ií]ndrome\\s+de\\s+Ulises|Carlos\\s+Gim[eé]nez|Kimberl[eé]\\s+Crenshaw|Prochaska\\s+y\\s+DiClemente|Miller\\s+y\\s+Rollnick|Marlatt|John\\s+Bowlby|Mary\\s+Ainsworth|Jorge\\s+Barudy|Salvador\\s+Minuchin|Teresa\\s+Mart[ií]nez|Mike\\s+Oliver|Natalio\\s+Kisnerman|Teresa\\s+Zamanillo|Howard\\s+Brody|Rita\\s+Payton|Beauchamp\\s+y\\s+(?:James\\s+F\\.\\s+)?Childress|Diego\\s+Gracia|Jonathan\\s+Bradshaw|Maslach|Watzlawick|Antonovsky|Sherry\\s+Arnstein)\\b)',
+        // Grupo 3: Plazos, Baremos, Puntuaciones y Cifras Clave (ROSA)
+        '(\\b(?:(?:\\d+|diez|quince|veinte|treinta|veinticuatro|cuarenta\\s+y\\s+ocho|setenta\\s+y\\s+dos|dos|tres|cuatro|cinco|seis|doce)\\s+(?:d[ií]as?(?:\\s+h[aá]biles|\\s+naturales)?|meses|a[ñn]os?|horas?)|\\d+(?:[.,]\\d+)?\\s*%|\\d+\\s+a\\s+\\d+\\s+puntos|Grado\\s+(?:I|II|III)|Clase\\s+[0-4]|Escala\\s+de\\s+Gij[oó]n|Escala\\s+de\\s+Zarit|[IÍ]ndice\\s+de\\s+Barthel|Lawton-Brody|VAL[OÓ]RAME|BVD|EVE|silencio\\s+(?:administrativo\\s+)?(?:negativo|desestimatorio|positivo))\\b)',
+      ].join('|'),
+      'gi'
+    );
+
+    let lawsCount = 0;
+    let authorsCount = 0;
+    let deadlinesCount = 0;
+
+    const rawParas = text.split(/\n+/);
+    const paragraphs = rawParas.map((para) => {
+      const isHeading = /^\s*(?:\d+\.|ACTO\s+[IVX]+:|EP[IÍ]LOGO)/i.test(para);
+      const parts = [];
+      let lastIdx = 0;
+      let m;
+      tokenRegex.lastIndex = 0;
+
+      while ((m = tokenRegex.exec(para)) !== null) {
+        if (m.index > lastIdx) {
+          parts.push({ type: 'text', value: para.slice(lastIdx, m.index) });
+        }
+        if (m[1]) {
+          lawsCount++;
+          parts.push({ type: 'law', value: m[0] });
+        } else if (m[2]) {
+          authorsCount++;
+          parts.push({ type: 'author', value: m[0] });
+        } else if (m[3]) {
+          deadlinesCount++;
+          parts.push({ type: 'deadline', value: m[0] });
+        }
+        lastIdx = tokenRegex.lastIndex;
+      }
+      if (lastIdx < para.length) {
+        parts.push({ type: 'text', value: para.slice(lastIdx) });
+      }
+      return { isHeading, parts };
+    });
+
+    return {
+      paragraphs,
+      counts: { laws: lawsCount, authors: authorsCount, deadlines: deadlinesCount },
+    };
+  }, [text]);
+
+  return (
+    <div className="space-y-3">
+      <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 space-y-2.5 text-xs shadow-2xs">
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <div>
+            <span className="text-[10px] font-extrabold uppercase text-[#D97757] block">
+              🎨 SISTEMA DE MEMORIA FOTOGRÁFICA Y SUBRAYADO ESTRATÉGICO TRICOLOR (ANCLAJE ESPACIAL DE EXAMEN)
+            </span>
+            <span className="text-[11px] text-stone-600 dark:text-stone-300">
+              Tu cerebro recuerda posiciones y manchas de color ante el folio en blanco: activa o filtra cada capa cromática.
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              onClick={() => setHighlightActive(!highlightActive)}
+              className={`px-3 py-1.5 rounded-xl font-extrabold text-[11px] cursor-pointer transition ${
+                highlightActive
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
+              }`}
+            >
+              {highlightActive ? '🎨 Subrayado Tricolor: ON' : '📄 Texto Plano: OFF'}
+            </button>
+            <button
+              onClick={() => {
+                setHighlightActive(true);
+                setVisualSkeletonOnly(!visualSkeletonOnly);
+              }}
+              className={`px-3 py-1.5 rounded-xl font-extrabold text-[11px] cursor-pointer border transition ${
+                visualSkeletonOnly
+                  ? 'bg-indigo-700 text-white border-indigo-800 shadow-xs'
+                  : 'bg-indigo-50 dark:bg-stone-800 text-indigo-900 dark:text-indigo-300 border-indigo-300'
+              }`}
+              title="Difumina el texto secundario y deja brillar solo los títulos y los manchones de color para fijar la foto mental del tema"
+            >
+              {visualSkeletonOnly
+                ? '👁️ Viendo Solo Manchones Fotográficos (Ver Todo)'
+                : '📸 Modo Foto Mental (Difuminar Relleno)'}
+            </button>
+          </div>
+        </div>
+
+        {highlightActive && (
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+            <button
+              onClick={() => setShowLawsGreen(!showLawsGreen)}
+              className={`px-3 py-1 rounded-xl font-extrabold text-[11px] cursor-pointer border transition flex items-center gap-1.5 ${
+                showLawsGreen
+                  ? 'bg-emerald-200/90 text-emerald-950 border-emerald-500 shadow-2xs'
+                  : 'bg-stone-100 dark:bg-stone-800 text-stone-400 border-stone-300 line-through'
+              }`}
+            >
+              <span>🟢 Leyes, Decretos y Artículos</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-white/80 text-emerald-900 text-[10px]">
+                {parsedBlocks.counts.laws}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setShowAuthorsYellow(!showAuthorsYellow)}
+              className={`px-3 py-1 rounded-xl font-extrabold text-[11px] cursor-pointer border transition flex items-center gap-1.5 ${
+                showAuthorsYellow
+                  ? 'bg-amber-200/90 text-amber-950 border-amber-500 shadow-2xs'
+                  : 'bg-stone-100 dark:bg-stone-800 text-stone-400 border-stone-300 line-through'
+              }`}
+            >
+              <span>🟡 Autores, Escuelas y Doctrina</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-white/80 text-amber-900 text-[10px]">
+                {parsedBlocks.counts.authors}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setShowDeadlinesPink(!showDeadlinesPink)}
+              className={`px-3 py-1 rounded-xl font-extrabold text-[11px] cursor-pointer border transition flex items-center gap-1.5 ${
+                showDeadlinesPink
+                  ? 'bg-pink-200/90 text-pink-950 border-pink-500 shadow-2xs'
+                  : 'bg-stone-100 dark:bg-stone-800 text-stone-400 border-stone-300 line-through'
+              }`}
+            >
+              <span>🩷 Plazos, Baremos y Escalas</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-white/80 text-pink-900 text-[10px]">
+                {parsedBlocks.counts.deadlines}
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="p-6 rounded-2xl bg-white dark:bg-stone-900 border font-serif text-xs leading-loose max-h-[65vh] overflow-y-auto shadow-inner space-y-3">
+        {parsedBlocks.paragraphs.map((p, pIdx) => (
+          <p
+            key={pIdx}
+            className={
+              p.isHeading
+                ? 'font-sans font-extrabold text-sm text-slate-900 dark:text-white bg-stone-100 dark:bg-stone-800 px-3 py-1.5 rounded-lg border-l-4 border-[#D97757] mt-3'
+                : 'text-slate-800 dark:text-stone-200'
+            }
+          >
+            {p.parts.map((part, idx) => {
+              if (!highlightActive || part.type === 'text') {
+                return (
+                  <span
+                    key={idx}
+                    className={
+                      visualSkeletonOnly && !p.isHeading
+                        ? 'opacity-20 hover:opacity-100 transition-opacity'
+                        : ''
+                    }
+                  >
+                    {part.value}
+                  </span>
+                );
+              }
+              if (part.type === 'law' && showLawsGreen) {
+                return (
+                  <mark
+                    key={idx}
+                    className="bg-emerald-200/90 dark:bg-emerald-800/80 text-emerald-950 dark:text-emerald-100 font-bold px-1 py-0.5 rounded mx-0.5 border-b-2 border-emerald-500"
+                  >
+                    {part.value}
+                  </mark>
+                );
+              }
+              if (part.type === 'author' && showAuthorsYellow) {
+                return (
+                  <mark
+                    key={idx}
+                    className="bg-amber-200/95 dark:bg-amber-700/80 text-amber-950 dark:text-amber-100 font-bold px-1 py-0.5 rounded mx-0.5 border-b-2 border-amber-500"
+                  >
+                    {part.value}
+                  </mark>
+                );
+              }
+              if (part.type === 'deadline' && showDeadlinesPink) {
+                return (
+                  <mark
+                    key={idx}
+                    className="bg-pink-200/95 dark:bg-pink-800/80 text-pink-950 dark:text-pink-100 font-bold px-1 py-0.5 rounded mx-0.5 border-b-2 border-pink-500"
+                  >
+                    {part.value}
+                  </mark>
+                );
+              }
+              return (
+                <span
+                  key={idx}
+                  className={
+                    visualSkeletonOnly && !p.isHeading
+                      ? 'opacity-20 hover:opacity-100 transition-opacity'
+                      : ''
+                  }
+                >
+                  {part.value}
+                </span>
+              );
+            })}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+});
+
 const InteractiveOnboardingModal = memo(function InteractiveOnboardingModal({
   isOpen,
   onClose,
@@ -1875,6 +2168,49 @@ export default function App() {
     activeCaseBadge: '',
     activeEnunciado: '',
   });
+  const [activeCaseReferenceSolution, setActiveCaseReferenceSolution] =
+    useState('');
+  const [showSideBySideCritique, setShowSideBySideCritique] = useState(false);
+  const [humanCritiqueChecks, setHumanCritiqueChecks] = useState({
+    c1_diagnostico: false,
+    c2_bioetica: false,
+    c3_derechoSubjetivo: false,
+    c4_redCompetencial: false,
+    c5_indicadoresMedibles: false,
+  });
+
+  // SIMULACRO DÍA D (MODO RESISTENCIA Y FATIGA EXTREMA: TEST ➔ DESCANSO 15M ➔ DESARROLLO 2 BOLAS)
+  const [diaDSimulator, setDiaDSimulator] = useState({
+    isOpen: false,
+    stage: 1, // 1: Test Oficial | 2: Descanso Reglamentario 15m | 3: Desarrollo 2 Bolas bajo Fatiga | 4: Acta Final Día D
+    secondsLeft: 5100,
+    isRunning: false,
+    testQuestions: [],
+    testAnswers: {},
+    testCurrentIdx: 0,
+    testGradeOver10: null,
+    testHits: 0,
+    testErrors: 0,
+    ball1: null,
+    ball2: null,
+    chosenBall: null,
+    essayDraft: '',
+    essayAudit: null,
+  });
+
+  useEffect(() => {
+    if (!diaDSimulator.isOpen || !diaDSimulator.isRunning) return;
+    const t = setInterval(() => {
+      setDiaDSimulator((prev) => {
+        if (!prev.isOpen || !prev.isRunning) return prev;
+        if (prev.secondsLeft <= 1) {
+          return { ...prev, isRunning: false, secondsLeft: 0 };
+        }
+        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [diaDSimulator.isOpen, diaDSimulator.isRunning]);
 
   useEffect(() => {
     if (!practicalBlindSim.isActive || !practicalBlindSim.isRunning) return;
@@ -2121,15 +2457,22 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (parsed.length > 0) {
           return parsed.map((st) => {
+            const tObj = findTopicAcrossAllCatalogs(st.topicId);
+            const syncedTitle = tObj
+              ? `[${tObj.id}] ${tObj.title}${
+                  st.protagonist === 'Narración Mnemotécnica Oficial en 5 Actos'
+                    ? ' (Guía Narrativa Vivencial en 5 Actos)'
+                    : ''
+                }`
+              : st.title;
             if (
               st.microRetos &&
               st.microRetos.length > 0 &&
               st.glosario &&
               st.glosario.length > 0
             ) {
-              return st;
+              return { ...st, title: syncedTitle };
             }
-            const tObj = findTopicAcrossAllCatalogs(st.topicId);
             const { microRetos, glosario } =
               extractMicroRetosAndGlosarioFromPdf(
                 st.storyText || '',
@@ -2138,6 +2481,7 @@ export default function App() {
               );
             return {
               ...st,
+              title: syncedTitle,
               microRetos:
                 st.microRetos && st.microRetos.length > 0
                   ? st.microRetos
@@ -2240,6 +2584,44 @@ export default function App() {
       secondsLeft: 4800,
       isRunning: false,
       auditResult: null,
+    });
+  };
+
+  const launchDiaDMarathonSimulator = () => {
+    const cleanBank = questionBank.filter((q) => !isDefectiveOrAdminQuestion(q));
+    const shuffledQs = [...cleanBank]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(40, cleanBank.length));
+
+    const specificTopics = activeCatalog.filter((t) => !t.id.startsWith('G'));
+    const pool = specificTopics.length >= 2 ? specificTopics : activeCatalog;
+    const idx1 = Math.floor(Math.random() * pool.length);
+    let idx2 = Math.floor(Math.random() * pool.length);
+    if (idx2 === idx1) idx2 = (idx1 + 1) % pool.length;
+
+    const testSeconds =
+      activeConvocatoria === 'ayto'
+        ? 7740
+        : activeConvocatoria === 'sermas'
+        ? 7200
+        : 5100;
+
+    setDiaDSimulator({
+      isOpen: true,
+      stage: 1,
+      secondsLeft: testSeconds,
+      isRunning: true,
+      testQuestions: shuffledQs,
+      testAnswers: {},
+      testCurrentIdx: 0,
+      testGradeOver10: null,
+      testHits: 0,
+      testErrors: 0,
+      ball1: pool[idx1],
+      ball2: pool[idx2],
+      chosenBall: null,
+      essayDraft: '',
+      essayAudit: null,
     });
   };
 
@@ -2489,7 +2871,7 @@ export default function App() {
     });
   }, [activeCatalog, selectedBlockFilter, searchTopicQuery]);
 
-  // ESTADÍSTICAS REALES DE DOMINIO Y AUTO-ADELANTO DEL PLANIFICADOR
+  // ESTADÍSTICAS REALES DE DOMINIO Y SISTEMA DE VUELTAS POR ARRASTRE (FÓRMULA 3+1+1)
   const masteryStats = useMemo(() => {
     let dominated = 0,
       studied = 0,
@@ -2500,15 +2882,70 @@ export default function App() {
       else if (st === 'Estudiado') studied++;
       else pending++;
     });
-    const nextPriorityTopics = activeCatalog
-      .filter((t) => (topicData[t.id]?.status || 'Pendiente') === 'Pendiente')
-      .slice(0, 4);
+
+    const pendingList = activeCatalog.filter(
+      (t) => (topicData[t.id]?.status || 'Pendiente') === 'Pendiente'
+    );
+    const studiedOrDominatedList = activeCatalog
+      .filter((t) => (topicData[t.id]?.status || 'Pendiente') !== 'Pendiente')
+      .sort((a, b) => {
+        const dA = topicData[a.id]?.lastReviewedIso
+          ? new Date(topicData[a.id].lastReviewedIso).getTime()
+          : 0;
+        const dB = topicData[b.id]?.lastReviewedIso
+          ? new Date(topicData[b.id].lastReviewedIso).getTime()
+          : 0;
+        return dA - dB;
+      });
+
+    // 3 Temas de Avance (Nuevos)
+    const avance3 = pendingList.slice(0, 3);
+    // 1 Tema de Arrastre de la Vuelta Anterior (el estudiado/dominado más antiguo para no desconectar temas)
+    const arrastre1 =
+      studiedOrDominatedList[0] ||
+      activeCatalog.find((t) => t.id === 'E1') ||
+      activeCatalog[0];
+    // 1 Tema Transversal del Tronco Estatal Común (puntúa en CAM, SERMAS, Ayto y Estado)
+    const estatalCandidates = activeCatalog.filter(
+      (t) =>
+        isEstatalCommonTopic(t) &&
+        !avance3.some((av) => av.id === t.id) &&
+        t.id !== arrastre1?.id
+    );
+    const transversal1 = estatalCandidates[0] || activeCatalog[0];
+
+    const total = Math.max(1, activeCatalog.length);
+    const currentVuelta =
+      pending > 0
+        ? {
+            num: 1,
+            name: '1.ª Vuelta · Construcción de Base y Esqueletos',
+            pct: Math.round(((studied + dominated) / total) * 100),
+          }
+        : dominated < total
+        ? {
+            num: 2,
+            name: '2.ª Vuelta · Fijación por Arrastre e Interconexión Legal',
+            pct: Math.round((dominated / total) * 100),
+          }
+        : {
+            num: 3,
+            name: '3.ª Vuelta · Maestría Intensiva y Velocidad de Tribunal',
+            pct: 100,
+          };
+
     return {
       dominated,
       studied,
       pending,
       total: activeCatalog.length,
-      nextPriorityTopics,
+      nextPriorityTopics: pendingList.slice(0, 4),
+      dragPack: {
+        avance3,
+        arrastre1,
+        transversal1,
+      },
+      currentVuelta,
     };
   }, [activeCatalog, topicData]);
 
@@ -3683,7 +4120,7 @@ const restoreFullMasterBackup = async (file) => {
                           ? 'SERMAS Estatutario (50 Temas · 173 Plazas · -0,25)'
                           : e.target.value === 'ayto'
                           ? 'Ayuntamiento de Madrid (90 Temas · 3 Opciones · -1/3)'
-                          : 'CAM Orden 1049/2026 (83 Temas · 380 Plazas · -1/3)'
+                          : 'CAM Orden 1049/2026 y 1472/2026 (83 Temas · 399 Plazas · -1/3)'
                       }`
                     );
                     setTimeout(() => setStatusBanner(''), 4000);
@@ -3720,6 +4157,14 @@ const restoreFullMasterBackup = async (file) => {
                     title="Alternar entre Modo Esencial (sin sobrecarga visual) y Modo Experto Completo"
                   >
                     {isSimplifiedMode ? '🌱 Esencial' : '🚀 Experto'}
+                  </button>
+
+                  <button
+                    onClick={launchDiaDMarathonSimulator}
+                    className="px-2 py-1 rounded-xl bg-rose-800 hover:bg-rose-950 text-white text-[11px] font-extrabold cursor-pointer shadow-2xs"
+                    title="Simulacro Maratón Día D: Test Oficial + 15m Descanso + Desarrollo 2 Bolas bajo Fatiga"
+                  >
+                    ☠️ Día D
                   </button>
 
                   <button
@@ -3902,6 +4347,343 @@ const restoreFullMasterBackup = async (file) => {
                     {skeletonTrainer.evaluationResult.forgotten.join(' · ')}
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL BLOQUEANTE DEL SIMULACRO MARATÓN "DÍA D" (RESISTENCIA Y FATIGA EXTREMA) */}
+      {diaDSimulator.isOpen && (
+        <div className="fixed inset-0 bg-stone-950/90 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-stone-900 max-w-4xl w-full rounded-2xl p-5 sm:p-6 border-2 border-rose-600 shadow-2xl space-y-4 my-6">
+            <div className="flex flex-wrap justify-between items-center gap-2 border-b pb-3">
+              <div>
+                <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-400 uppercase block">
+                  ☠️ SIMULACRO OFICIAL «DÍA D» · PROTOCOLO DE RESISTENCIA Y FATIGA EXTREMA (SIN SALIR DEL AULA)
+                </span>
+                <h3 className="text-base font-extrabold">
+                  {diaDSimulator.stage === 1
+                    ? `ETAPA 1 DE 3 · CUESTIONARIO TIPO TEST (${diaDSimulator.testQuestions.length} Preguntas)`
+                    : diaDSimulator.stage === 2
+                    ? 'ETAPA 2 DE 3 · DESCANSO REGLAMENTARIO DE TRANSICIÓN (15 MINUTOS EN EL AULA)'
+                    : diaDSimulator.stage === 3
+                    ? 'ETAPA 3 DE 3 · SORTEO DE 2 BOLAS Y DESARROLLO ESCRITO BAJO FATIGA COGNITIVA (90 MIN)'
+                    : '🏆 ACTA INTEGRAL DE RESISTENCIA DEL DÍA D (TEST + DESARROLLO BAJO FATIGA)'}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {diaDSimulator.stage <= 3 && (
+                  <span className="px-3 py-1 rounded-xl bg-rose-100 text-rose-950 font-mono font-extrabold text-xs border border-rose-400">
+                    ⏱ {Math.floor(diaDSimulator.secondsLeft / 60)}:
+                    {String(diaDSimulator.secondsLeft % 60).padStart(2, '0')}
+                  </span>
+                )}
+                <button
+                  onClick={() =>
+                    setDiaDSimulator((p) => ({
+                      ...p,
+                      isOpen: false,
+                      isRunning: false,
+                    }))
+                  }
+                  className="px-2.5 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-xs font-bold cursor-pointer"
+                >
+                  ✕ Abandonar Maratón
+                </button>
+              </div>
+            </div>
+
+            {/* BARRA DE PROGRESO DE LAS 3 ETAPAS */}
+            <div className="grid grid-cols-3 gap-2 text-[11px] font-extrabold">
+              <div
+                className={`p-2 rounded-xl border text-center ${
+                  diaDSimulator.stage === 1
+                    ? 'bg-rose-700 text-white border-rose-800'
+                    : diaDSimulator.stage > 1
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                    : 'bg-stone-100 dark:bg-stone-800'
+                }`}
+              >
+                1. Test Oficial ({diaDSimulator.testGradeOver10 !== null ? `${diaDSimulator.testGradeOver10}/10` : 'En curso'})
+              </div>
+              <div
+                className={`p-2 rounded-xl border text-center ${
+                  diaDSimulator.stage === 2
+                    ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
+                    : diaDSimulator.stage > 2
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                    : 'bg-stone-100 dark:bg-stone-800'
+                }`}
+              >
+                2. Pausa Fisiológica (15 min)
+              </div>
+              <div
+                className={`p-2 rounded-xl border text-center ${
+                  diaDSimulator.stage === 3
+                    ? 'bg-rose-700 text-white border-rose-800'
+                    : diaDSimulator.stage > 3
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                    : 'bg-stone-100 dark:bg-stone-800'
+                }`}
+              >
+                3. Desarrollo con Fatiga (90 min)
+              </div>
+            </div>
+
+            {/* ETAPA 1: TEST */}
+            {diaDSimulator.stage === 1 && diaDSimulator.testQuestions.length > 0 && (() => {
+              const q = diaDSimulator.testQuestions[diaDSimulator.testCurrentIdx];
+              const ans = diaDSimulator.testAnswers[q.id];
+              return (
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between items-center text-[11px] text-stone-500">
+                    <span>
+                      Pregunta <b>{diaDSimulator.testCurrentIdx + 1}</b> de{' '}
+                      {diaDSimulator.testQuestions.length} · Tema [{q.topicId}]
+                    </span>
+                    <span>
+                      Respondidas: <b>{Object.keys(diaDSimulator.testAnswers).length}</b>
+                    </span>
+                  </div>
+
+                  <p className="text-sm font-bold leading-relaxed p-3.5 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border">
+                    {q.question}
+                  </p>
+
+                  <div className="space-y-2">
+                    {q.options.map((opt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() =>
+                          setDiaDSimulator((p) => ({
+                            ...p,
+                            testAnswers: { ...p.testAnswers, [q.id]: idx },
+                          }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-left cursor-pointer transition ${
+                          ans === idx
+                            ? 'bg-rose-700 text-white border-rose-800 font-bold'
+                            : 'bg-[#FAF8F5] dark:bg-stone-800'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-between items-center pt-3 border-t">
+                    <button
+                      disabled={diaDSimulator.testCurrentIdx === 0}
+                      onClick={() =>
+                        setDiaDSimulator((p) => ({
+                          ...p,
+                          testCurrentIdx: p.testCurrentIdx - 1,
+                        }))
+                      }
+                      className="px-3.5 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 font-bold cursor-pointer disabled:opacity-40"
+                    >
+                      ← Anterior
+                    </button>
+
+                    <div className="flex gap-2">
+                      {diaDSimulator.testCurrentIdx <
+                        diaDSimulator.testQuestions.length - 1 && (
+                        <button
+                          onClick={() =>
+                            setDiaDSimulator((p) => ({
+                              ...p,
+                              testCurrentIdx: p.testCurrentIdx + 1,
+                            }))
+                          }
+                          className="px-4 py-2 rounded-xl bg-slate-800 text-white font-bold cursor-pointer"
+                        >
+                          Siguiente →
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          let hits = 0,
+                            errors = 0;
+                          const pen = activeConvocatoria === 'sermas' ? 4 : 3;
+                          diaDSimulator.testQuestions.forEach((item) => {
+                            const a = diaDSimulator.testAnswers[item.id];
+                            if (a === item.correctIndex) hits++;
+                            else if (a !== undefined) errors++;
+                          });
+                          const net = Math.max(0, hits - errors / pen);
+                          const grade = (
+                            (net /
+                              Math.max(1, diaDSimulator.testQuestions.length)) *
+                            10
+                          ).toFixed(2);
+                          setDiaDSimulator((p) => ({
+                            ...p,
+                            stage: 2,
+                            secondsLeft: 900,
+                            isRunning: true,
+                            testGradeOver10: grade,
+                            testHits: hits,
+                            testErrors: errors,
+                          }));
+                        }}
+                        className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold cursor-pointer"
+                      >
+                        ✔ Entregar Etapa 1 (Test) e Iniciar Descanso de 15m →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ETAPA 2: DESCANSO REGLAMENTARIO DE 15 MINUTOS */}
+            {diaDSimulator.stage === 2 && (
+              <div className="p-6 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400 text-center space-y-4 text-xs">
+                <span className="px-3 py-1 rounded-full bg-emerald-700 text-white font-extrabold">
+                  ✔ 1.er Ejercicio Entregado · Nota Neta en Test: {diaDSimulator.testGradeOver10} / 10 (Aciertos: {diaDSimulator.testHits} · Fallos: {diaDSimulator.testErrors})
+                </span>
+                <h4 className="text-base font-extrabold text-amber-950 dark:text-amber-100">
+                  🧘‍♀️ PROTOCOLO DE TRANSICIÓN NEUROFISIOLÓGICA (15 MINUTOS ANTES DE LAS BOLAS)
+                </h4>
+                <p className="text-stone-700 dark:text-stone-300 max-w-xl mx-auto leading-relaxed">
+                  Tu corteza prefrontal acaba de gastar glucosa decidiendo entre distractores. No cierres esta ventana: bebe agua, estira muñeca y trapecio, haz 5 respiraciones cuadradas (4s inspirar · 4s retener · 4s espirar) y prepárate para redactar con fatiga real.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() =>
+                      setDiaDSimulator((p) => ({
+                        ...p,
+                        stage: 3,
+                        secondsLeft: 5400,
+                        isRunning: true,
+                      }))
+                    }
+                    className="px-6 py-3 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-extrabold cursor-pointer shadow-md"
+                  >
+                    🎱 Terminar Descanso y Extraer las 2 Bolas del 2.º Ejercicio (90m) →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 3: SORTEO DE 2 BOLAS Y REDACCIÓN BAJO FATIGA */}
+            {diaDSimulator.stage === 3 && (
+              <div className="space-y-4 text-xs">
+                {!diaDSimulator.chosenBall ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[diaDSimulator.ball1, diaDSimulator.ball2].map(
+                      (b, idx) =>
+                        b && (
+                          <div
+                            key={b.id}
+                            className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border-2 border-rose-500/50 space-y-3 flex flex-col justify-between"
+                          >
+                            <div>
+                              <span className="px-2.5 py-0.5 rounded bg-rose-700 text-white font-extrabold text-[11px]">
+                                🎱 BOLA {idx + 1} · [{b.id}]
+                              </span>
+                              <h4 className="text-sm font-bold mt-2">
+                                {b.title}
+                              </h4>
+                            </div>
+                            <button
+                              onClick={() =>
+                                setDiaDSimulator((p) => ({
+                                  ...p,
+                                  chosenBall: b,
+                                }))
+                              }
+                              className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-extrabold cursor-pointer"
+                            >
+                              ✍️ Elegir esta Bola y Redactar bajo Fatiga (90m)
+                            </button>
+                          </div>
+                        )
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 font-bold">
+                      ✍️ Desarrollando bajo fatiga de 2.ª hora: [{diaDSimulator.chosenBall.id}]{' '}
+                      {diaDSimulator.chosenBall.title}
+                    </div>
+                    <ZeroLagBufferedTextarea
+                      rows={14}
+                      showPacingBar={true}
+                      value={diaDSimulator.essayDraft}
+                      onCommit={(val) =>
+                        setDiaDSimulator((p) => ({ ...p, essayDraft: val }))
+                      }
+                      placeholder="Demuestra resistencia cognitiva: 1. Introducción Constitucional y Ley 12/2022... 2. Epígrafes oficiales sin dejarte ninguno... 3. Plazos, Art. 16.2, Art. 40, Art. 69 y Decreto 51/2023... 4. Conclusión analítica al Tribunal..."
+                      className="w-full p-4 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800 font-serif leading-relaxed"
+                    />
+                    <button
+                      onClick={() => {
+                        const audit = auditDocumentTextValidity(
+                          diaDSimulator.essayDraft,
+                          diaDSimulator.chosenBall
+                        );
+                        setDiaDSimulator((p) => ({
+                          ...p,
+                          stage: 4,
+                          isRunning: false,
+                          essayAudit: audit,
+                        }));
+                      }}
+                      className="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold cursor-pointer"
+                    >
+                      🏆 Finalizar Maratón «Día D» y Generar Acta Integral de Resistencia
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ETAPA 4: ACTA INTEGRAL DEL DÍA D */}
+            {diaDSimulator.stage === 4 && (
+              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-500 space-y-3 text-xs">
+                <h4 className="text-base font-extrabold text-emerald-950 dark:text-emerald-100">
+                  🏅 ACTA OFICIAL DEL SIMULACRO DE RESISTENCIA «DÍA D»
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border">
+                    <span className="text-[10px] text-stone-500 block">
+                      1.er Ejercicio (Test en Fresco)
+                    </span>
+                    <b className="text-base text-[#D97757]">
+                      {diaDSimulator.testGradeOver10} / 10
+                    </b>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border">
+                    <span className="text-[10px] text-stone-500 block">
+                      2.º Ejercicio (Desarrollo con Fatiga)
+                    </span>
+                    <b className="text-base text-emerald-700">
+                      {diaDSimulator.essayAudit?.finalScore || '0.00'} / 10
+                    </b>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border">
+                    <span className="text-[10px] text-stone-500 block">
+                      Media Combinada de Resistencia
+                    </span>
+                    <b className="text-base text-indigo-700">
+                      {(
+                        (Number(diaDSimulator.testGradeOver10 || 0) +
+                          Number(diaDSimulator.essayAudit?.finalScore || 0)) /
+                        2
+                      ).toFixed(2)}{' '}
+                      / 10
+                    </b>
+                  </div>
+                </div>
+                <p className="text-[11px] text-stone-600 dark:text-stone-300">
+                  Cobertura de sub-epígrafes bajo fatiga:{' '}
+                  <b>{diaDSimulator.essayAudit?.coveragePct || 0}%</b> ·{' '}
+                  Extensión alcanzada:{' '}
+                  <b>{diaDSimulator.essayAudit?.wordCount || 0} palabras</b>.
+                </p>
               </div>
             )}
           </div>
@@ -4541,6 +5323,145 @@ ${templateText}`
               </div>
             </div>
 
+            {/* SISTEMA DE VUELTAS POR ARRASTRE (MACRO-PLANIFICACIÓN 3+1+1 · TELARAÑA COGNITIVA) */}
+            <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border-2 border-[#D97757]/40 shadow-xs space-y-4">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-3">
+                <div>
+                  <span className="text-[11px] font-extrabold text-[#D97757] uppercase block">
+                    🕸️ SISTEMA DE VUELTAS POR ARRASTRE · MACRO-PLANIFICACIÓN DE TRIBUNAL (FÓRMULA 3 + 1 + 1)
+                  </span>
+                  <h3 className="text-base font-bold mt-0.5">
+                    {masteryStats.currentVuelta.name} ({masteryStats.currentVuelta.pct}% completado)
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    No estudies temas aislados: cada ciclo combina <b>3 Temas de Avance</b> + <b>1 Tema de Arrastre (vuelta anterior)</b> + <b>1 Tema Transversal Estatal</b> para tejer conexiones inter-normativas en el examen.
+                  </p>
+                </div>
+                <button
+                  onClick={launchDiaDMarathonSimulator}
+                  className="px-4 py-2.5 rounded-xl bg-rose-800 hover:bg-rose-950 text-white text-xs font-extrabold cursor-pointer shrink-0 shadow-xs"
+                >
+                  ☠️ Lanzar Simulacro «Día D» (Test + 15m + 2 Bolas)
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border-l-4 border-l-[#D97757] border space-y-2">
+                  <span className="text-[10px] font-extrabold uppercase text-[#D97757] block">
+                    🚀 1. TRIPLE AVANCE (MATERIA NUEVA EN COLA)
+                  </span>
+                  {masteryStats.dragPack.avance3.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {masteryStats.dragPack.avance3.map((t) => (
+                        <div
+                          key={t.id}
+                          className="p-2 rounded-lg bg-white dark:bg-stone-900 border flex justify-between items-center gap-2"
+                        >
+                          <span className="font-bold truncate">
+                            [{t.id}] {t.title.slice(0, 42)}...
+                          </span>
+                          <button
+                            onClick={() => handleGenerateMagistralTopic(t)}
+                            className="px-2 py-0.5 rounded bg-[#D97757] text-white font-bold text-[10px] shrink-0 cursor-pointer"
+                          >
+                            Atacar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-emerald-700 font-bold">
+                      ¡100% de temas iniciados! Pasa a fijación total.
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border-l-4 border-l-amber-500 border space-y-2 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-amber-800 dark:text-amber-300 block">
+                      ⚓ 2. ESLABÓN DE ARRASTRE (VUELTA ANTERIOR)
+                    </span>
+                    <p className="font-bold mt-1">
+                      [{masteryStats.dragPack.arrastre1?.id}]{' '}
+                      {masteryStats.dragPack.arrastre1?.title.slice(0, 68)}...
+                    </p>
+                    <p className="text-[11px] text-stone-500 mt-1">
+                      Conecta lo que ya estudiaste con los temas nuevos de hoy para no perder el hilo conductor ni olvidar sus plazos.
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 pt-2">
+                    <button
+                      onClick={() => {
+                        if (masteryStats.dragPack.arrastre1) {
+                          touchTopicReviewDate(
+                            masteryStats.dragPack.arrastre1.id
+                          );
+                          openSkeletonTrainerForTopic(
+                            masteryStats.dragPack.arrastre1
+                          );
+                        }
+                      }}
+                      className="flex-1 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[10px] cursor-pointer"
+                    >
+                      🧠 Esqueleto 7m Arrastre
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (masteryStats.dragPack.arrastre1) {
+                          touchTopicReviewDate(
+                            masteryStats.dragPack.arrastre1.id
+                          );
+                          launchStrategicSimulator(
+                            masteryStats.dragPack.arrastre1.id
+                          );
+                        }
+                      }}
+                      className="flex-1 py-1.5 rounded-lg bg-slate-800 text-white font-bold text-[10px] cursor-pointer"
+                    >
+                      🎯 Test Arrastre
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border-l-4 border-l-emerald-600 border space-y-2 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-emerald-800 dark:text-emerald-300 block">
+                      🇪🇸 3. ANCLA TRANSVERSAL (TRONCO ESTATAL COMÚN)
+                    </span>
+                    <p className="font-bold mt-1">
+                      [{masteryStats.dragPack.transversal1?.id}]{' '}
+                      {masteryStats.dragPack.transversal1?.title.slice(0, 68)}...
+                    </p>
+                    <p className="text-[11px] text-stone-500 mt-1">
+                      Normativa estatal básica (CE, LPAC, LAPAD, LOPIVI, Igualdad) para cruzar en el folio del 2.º y 3.er ejercicio.
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5 pt-2">
+                    <button
+                      onClick={() => {
+                        setSelectedBlockFilter('Estatal');
+                        setActiveModule('01');
+                      }}
+                      className="flex-1 py-1.5 rounded-lg bg-emerald-700 text-white font-bold text-[10px] cursor-pointer"
+                    >
+                      🇪🇸 Ver Tronco Estatal
+                    </button>
+                    <button
+                      onClick={() =>
+                        masteryStats.dragPack.transversal1 &&
+                        launchStrategicSimulator(
+                          masteryStats.dragPack.transversal1.id
+                        )
+                      }
+                      className="flex-1 py-1.5 rounded-lg bg-slate-800 text-white font-bold text-[10px] cursor-pointer"
+                    >
+                      🎯 Test Transversal
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* GUÍA DIARIA INTERACTIVA DE 4 BLOQUES (FASES 1, 2 Y 3) CON AUTO-ADELANTO */}
             <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border shadow-xs space-y-4">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-3">
@@ -4969,6 +5890,54 @@ ${templateText}`
                     {f.label}
                   </button>
                 ))}
+                {activeConvocatoria === 'cam_a2' && (
+                  <select
+                    value={
+                      selectedBlockFilter.startsWith('Bloque')
+                        ? selectedBlockFilter
+                        : ''
+                    }
+                    onChange={(e) =>
+                      setSelectedBlockFilter(e.target.value || 'Todos')
+                    }
+                    className="px-3 py-1.5 rounded-xl border text-xs font-extrabold bg-[#FAF8F5] dark:bg-stone-800 cursor-pointer"
+                    title="Filtrar por cualquiera de los 9 Bloques Específicos Oficiales del BOCM n.º 100"
+                  >
+                    <option value="">
+                      🗂️ Filtrar por Bloque BOCM (I a IX)...
+                    </option>
+                    <option value="Bloque General">
+                      I. Temario General (G1-G16 · Constitucional y Adm.)
+                    </option>
+                    <option value="Bloque Específico I">
+                      Bloque I (E1-E11 · Estructura y Ley 12/2022)
+                    </option>
+                    <option value="Bloque Específico II">
+                      Bloque II (E12-E15 · Seg. Social, Empleo, RMI e IMV)
+                    </option>
+                    <option value="Bloque Específico III">
+                      Bloque III (E16-E20 · Atención Primaria, Familia y ONG)
+                    </option>
+                    <option value="Bloque Específico IV">
+                      Bloque IV (E21-E30 · Dependencia, Mayores, SM y Discap.)
+                    </option>
+                    <option value="Bloque Específico V">
+                      Bloque V (E31-E36 · Extranjería, Sin Hogar y Violencia VG)
+                    </option>
+                    <option value="Bloque Específico VI">
+                      Bloque VI (E37-E46 · Infancia, Menores, LGTBI y Vivienda)
+                    </option>
+                    <option value="Bloque Específico VII">
+                      Bloque VII (E47-E54 · Sanidad, Salud Pública, CAID y Educ.)
+                    </option>
+                    <option value="Bloque Específico VIII">
+                      Bloque VIII (E55-E61 · Ética, Método, Técnicas y Modelos)
+                    </option>
+                    <option value="Bloque Específico IX">
+                      Bloque IX (E62-E67 · TS Forense, Pericial, OAVD y Calidad)
+                    </option>
+                  </select>
+                )}
               </div>
             </div>
 
@@ -5419,7 +6388,7 @@ ${templateText}`
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <button
                     onClick={() => launchStrategicSimulator()}
                     className="py-3.5 px-4 rounded-xl bg-[#D97757] text-white font-bold text-xs cursor-pointer"
@@ -5437,6 +6406,12 @@ ${templateText}`
                     className="py-3.5 px-4 rounded-xl bg-rose-700 text-white font-bold text-xs cursor-pointer"
                   >
                     📦 Vaciar Caja 1 Leitner ({leitnerCounts.box1})
+                  </button>
+                  <button
+                    onClick={launchDiaDMarathonSimulator}
+                    className="py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs cursor-pointer border-2 border-rose-500 shadow-xs"
+                  >
+                    ☠️ Simulacro «Día D» (Test + 15m + 2 Bolas)
                   </button>
                 </div>
 
@@ -7651,9 +8626,7 @@ ${templateText}`
                         );
                       })()}
 
-                      <div className="p-6 rounded-2xl bg-white dark:bg-stone-900 border font-serif text-xs leading-loose whitespace-pre-line max-h-[65vh] overflow-y-auto shadow-inner">
-                        {cleanActive.text}
-                      </div>
+                      <StrategicHighlighterViewer text={cleanActive.text} />
                     </div>
                   );
                 })()}
@@ -7817,6 +8790,20 @@ ${templateText}`
                       <div className="grid grid-cols-2 gap-1.5 mt-2">
                         <button
                           onClick={() => {
+                            const customModelResolution =
+                              c.fullResolutionText ||
+                              buildCaseResolutionText(c);
+                            setActiveCaseReferenceSolution(
+                              customModelResolution
+                            );
+                            setShowSideBySideCritique(false);
+                            setHumanCritiqueChecks({
+                              c1_diagnostico: false,
+                              c2_bioetica: false,
+                              c3_derechoSubjetivo: false,
+                              c4_redCompetencial: false,
+                              c5_indicadoresMedibles: false,
+                            });
                             setPracticalBlindSim({
                               isActive: true,
                               secondsLeft: 5400,
@@ -7827,9 +8814,8 @@ ${templateText}`
                             setPracticalCaseText('');
                             setPracticalRubricResult(null);
                             setStatusBanner(
-                              `⏱️ Modo Examen en Frío (90m) activado para "${c.badge}". ¡Pistas ocultas! Redacta siguiendo el Checklist en vivo.`
+                              `⏱️ Modo Examen en Frío (90m) activado para "${c.badge}". Al terminar podrás contrastar tu texto lado a lado con la solución 10/10.`
                             );
-                            setTimeout(() => setStatusBanner(''), 4500);
                           }}
                           className="py-1.5 px-2 rounded-lg bg-[#D97757] hover:bg-[#c26446] text-white font-bold text-[10px] cursor-pointer"
                         >
@@ -7840,6 +8826,9 @@ ${templateText}`
                             const customModelResolution =
                               c.fullResolutionText ||
                               buildCaseResolutionText(c);
+                            setActiveCaseReferenceSolution(
+                              customModelResolution
+                            );
                             setPracticalBlindSim((prev) => ({
                               ...prev,
                               isActive: false,
@@ -7849,7 +8838,6 @@ ${templateText}`
                             setStatusBanner(
                               `📥 Cargada la Resolución Magistral 10/10 de "${c.badge}". Pulsa el botón verde de abajo para auditarla.`
                             );
-                            setTimeout(() => setStatusBanner(''), 4000);
                           }}
                           className="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[10px] cursor-pointer"
                         >
@@ -8078,10 +9066,28 @@ ${skeleton7}` : skeleton7
                   ).length;
                   const d5 = Math.min(1.5, (evalMatches / 4) * 1.5);
 
+                  // Detector Anti-Espejismo Semántico (Detecta negaciones o mala praxis cerca de preceptos clave)
+                  const antiMirageAlerts = [];
+                  const malpracticePatterns = [
+                    {
+                      rgx: /\b(ignora|omite|prescinde|incumple|vulnera|descarta|evita)\b[^.]{0,65}\b(art[ií]culo\s+16\.2|art[ií]culo\s+40|art[ií]culo\s+69|ley\s+12\/2022|historia\s+social|informe\s+social|pias|piis|secreto\s+profesional|consentimiento)/i,
+                      msg: 'Mala praxis detectada: Se menciona un precepto o instrumento clave precedido de un verbo de omisión/vulneración («ignora/omite/prescinde»).',
+                    },
+                    {
+                      rgx: /\bsin\s+(?:abrir|elaborar|realizar|contar\s+con|emitir|respetar)\b[^.]{0,55}\b(historia\s+social|hsue|informe\s+social|pias|piis|valoraci[oó]n|diagn[oó]stico|consentimiento)/i,
+                      msg: 'Contradicción procedimental detectada: Se plantea derivar o intervenir «sin abrir/elaborar» instrumentos preceptivos (HSUe, Informe Social o PIAS).',
+                    },
+                  ];
+                  malpracticePatterns.forEach((mp) => {
+                    if (mp.rgx.test(txt)) antiMirageAlerts.push(mp.msg);
+                  });
+
                   let rawTotal = d1 + d2 + d3 + d4 + d5;
                   if (words < 250) rawTotal *= 0.65;
                   if (forbiddenAbbrevs.length > 0)
                     rawTotal -= forbiddenAbbrevs.length * 0.25;
+                  if (antiMirageAlerts.length > 0)
+                    rawTotal -= antiMirageAlerts.length * 4.0;
 
                   const total = Math.max(0, Math.min(10, rawTotal)).toFixed(2);
                   setCalcEj3(Number(total));
@@ -8098,6 +9104,7 @@ ${skeleton7}` : skeleton7
                     words,
                     handwrittenMin: Math.round(words / 23),
                     forbiddenAbbrevs,
+                    antiMirageAlerts,
                     total,
                   });
                 }}
@@ -8229,6 +9236,17 @@ ${skeleton7}` : skeleton7
                   </div>
                 </div>
 
+                {practicalRubricResult.antiMirageAlerts?.length > 0 && (
+                  <div className="p-3.5 rounded-xl bg-rose-100 dark:bg-rose-950 border-2 border-rose-600 text-rose-950 dark:text-rose-100 font-extrabold space-y-1">
+                    <span className="block uppercase text-[11px]">
+                      🚨 ALERTA DE ESPEJISMO SEMÁNTICO / MALA PRAXIS DE TRIBUNAL (-4,00 PTOS):
+                    </span>
+                    <p className="text-xs font-semibold">
+                      {practicalRubricResult.antiMirageAlerts.join(' · ')}
+                    </p>
+                  </div>
+                )}
+
                 {practicalRubricResult.forbiddenAbbrevs?.length > 0 ? (
                   <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 font-semibold">
                     ⚠️ Penalización por Siglas sin Desplegar (Pulsa el botón
@@ -8241,6 +9259,134 @@ ${skeleton7}` : skeleton7
                     práctico están correctamente desplegadas.
                   </div>
                 )}
+
+                {/* FASE DE AUTOCORRECCIÓN CRÍTICA Y AUDITORÍA HUMANA (ANTI-SESGO DE IA) */}
+                <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/30 border-2 border-indigo-300 dark:border-indigo-700 space-y-3">
+                  <div className="flex flex-wrap justify-between items-center gap-2 border-b border-indigo-200 pb-2">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-indigo-900 dark:text-indigo-200 block">
+                        ⚖️ FASE 2 OBLIGATORIA · AUTOCORRECCIÓN CRÍTICA Y AUDITORÍA HUMANA (ANTI-ESPEJISMO DE IA)
+                      </span>
+                      <p className="text-[11px] text-stone-600 dark:text-stone-300">
+                        El algoritmo valida que estén las leyes, escalas y plazos, pero el sentido clínico y ético lo validas tú (o tu compañera en rol <b>Revisora</b>):
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!activeCaseReferenceSolution) {
+                          setActiveCaseReferenceSolution(
+                            buildCaseResolutionText(OFFICIAL_10_PRACTICAL_CASES[0])
+                          );
+                        }
+                        setShowSideBySideCritique(!showSideBySideCritique);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold text-xs cursor-pointer"
+                    >
+                      {showSideBySideCritique
+                        ? '🔼 Ocultar Comparador Lado a Lado'
+                        : '🔍 Contrastar Lado a Lado con Solución 10/10'}
+                    </button>
+                  </div>
+
+                  {showSideBySideCritique && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                      <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border space-y-1">
+                        <span className="text-[10px] font-extrabold text-[#D97757] uppercase block">
+                          ✍️ TU RESOLUCIÓN REDACTADA:
+                        </span>
+                        <div className="text-[11px] font-serif whitespace-pre-line max-h-60 overflow-y-auto leading-relaxed">
+                          {practicalCaseText || 'Sin texto.'}
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-stone-900 border border-emerald-400 space-y-1">
+                        <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300 uppercase block">
+                          🏆 SOLUCIÓN MAGISTRAL 10/10 DEL TRIBUNAL:
+                        </span>
+                        <div className="text-[11px] font-serif whitespace-pre-line max-h-60 overflow-y-auto leading-relaxed">
+                          {activeCaseReferenceSolution}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {(() => {
+                    const humanChecksList = [
+                      {
+                        key: 'c1_diagnostico',
+                        label:
+                          '1. Diagnóstico Diferencial Certero: ¿Distingue el problema raíz de los síntomas secundarios sin culpabilizar a la persona?',
+                      },
+                      {
+                        key: 'c2_bioetica',
+                        label:
+                          '2. Deliberación Bioética (Brody/Payton/Beauchamp): ¿Resuelve el dilema entre autonomía y protección sin caer en paternalismo?',
+                      },
+                      {
+                        key: 'c3_derechoSubjetivo',
+                        label:
+                          '3. Rigor en Catálogo: ¿Aplica las prestaciones garantizadas como derecho subjetivo exigible y no como ayuda graciable?',
+                      },
+                      {
+                        key: 'c4_redCompetencial',
+                        label:
+                          '4. Pertinencia Competencial: ¿Deriva a los dispositivos reales de la Administración examinada sin confundir red municipal y autonómica?',
+                      },
+                      {
+                        key: 'c5_indicadoresMedibles',
+                        label:
+                          '5. Evaluación Operativa: ¿Los indicadores a 3 y 6 meses miden impacto real en la calidad de vida y no solo trámites burocráticos?',
+                      },
+                    ];
+                    const checkedCount = Object.values(
+                      humanCritiqueChecks
+                    ).filter(Boolean).length;
+                    const humanScoreOver10 = checkedCount * 2;
+                    const consolidatedScore = (
+                      Number(practicalRubricResult.total) * 0.6 +
+                      humanScoreOver10 * 0.4
+                    ).toFixed(2);
+
+                    return (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-1 gap-1.5">
+                          {humanChecksList.map((item) => (
+                            <label
+                              key={item.key}
+                              className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition ${
+                                humanCritiqueChecks[item.key]
+                                  ? 'bg-emerald-100/90 dark:bg-emerald-950/50 border-emerald-400 font-bold text-emerald-950 dark:text-emerald-100'
+                                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={!!humanCritiqueChecks[item.key]}
+                                onChange={(e) =>
+                                  setHumanCritiqueChecks((p) => ({
+                                    ...p,
+                                    [item.key]: e.target.checked,
+                                  }))
+                                }
+                              />
+                              <span>{item.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white dark:bg-stone-900 border flex flex-wrap justify-between items-center gap-2">
+                          <span>
+                            Nota Técnica Estructural (IA):{' '}
+                            <b>{practicalRubricResult.total}/10</b> · Nota Juicio
+                            Clínico Humano: <b>{humanScoreOver10}/10</b>
+                          </span>
+                          <span className="px-3 py-1 rounded-lg bg-indigo-700 text-white font-extrabold">
+                            🏅 Nota Real Consolidada (60% IA + 40% Criterio Humano):{' '}
+                            {consolidatedScore} / 10
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
           </div>
