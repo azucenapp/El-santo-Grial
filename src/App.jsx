@@ -1113,81 +1113,96 @@ function extractLiteralTestQuestionsFromPdf(rawText = '', topicId = 'E1') {
 }
 
 // EXTRACTOR AUTOMÁTICO DE MICRO-RETOS 15s, GLOSARIO Y CASO PRÁCTICO EN 5 PASOS
-function buildDefaultRetosAndGlosarioForTopic(topicObj) {
+function buildDefaultRetosAndGlosarioForTopic(topicObj, rawText = '') {
  const id = topicObj?.id || 'E1';
- const cleanTitle = (topicObj?.title || 'Servicios Sociales en la Comunidad de Madrid').replace(
-  /^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i,
-  ''
- );
+ const cleanTitle = (
+  topicObj?.title || 'Servicios Sociales en la Comunidad de Madrid'
+ ).replace(/^(Tema\s+(General|Espec[ií]fico)?\s*\d+\.?|\d+\.-)\s*/i, '');
+
+ const epigraphs = extractSubEpigraphsFromTitle(topicObj?.title || cleanTitle);
+ const lawUpdate = topicObj?.lawUpdate || '';
  const domain = getDomainSpecificKnowledgeForTopic(
-  topicObj || { id, title: cleanTitle, lawUpdate: '' }
+  topicObj || { id, title: cleanTitle, lawUpdate }
  );
+
+ const lawSegments = lawUpdate
+  .split(/;|\.(?=\s+[A-ZÁÉÍÓÚÑ])/)
+  .map((s) => s.trim())
+  .filter((s) => s.length > 8);
+
+ const pdfSentences = rawText ? extractCleanDoctrinalSentences(rawText) : [];
+
+ const ep1 = epigraphs[0] || cleanTitle;
+ const ep2 = epigraphs[1] || epigraphs[0] || 'la estructura y competencias del tema';
+ const ep3 = epigraphs[2] || epigraphs[1] || 'el régimen jurídico y prestacional';
 
  const defaultRetos = [
   {
    id: `reto-def-${id}-1`,
    topicId: id,
    num: '1',
-   question: `¿Cuál es la reserva legal exclusiva del Artículo 16.2 de la Ley 12/2022 CM aplicable a «${cleanTitle.slice(
-    0,
-    48
-   )}»?`,
-   answer:
-    'En Atención Social Primaria, el profesional de referencia de acceso al sistema será exclusivamente un Trabajador/a Social.',
+   question: `[${id}] ¿Qué normativa específica y preceptos legales regulan en 2026 «${ep1}»?`,
+   answer: lawSegments[0] || lawUpdate || domain.marcoEspecifico,
   },
   {
    id: `reto-def-${id}-2`,
    topicId: id,
    num: '2',
-   question:
-    '¿Qué plazo máximo e improrrogable fija el Artículo 40 de la Ley 12/2022 CM para elaborar el PIAS / PIIS?',
+   question: `[${id}] En relación con «${ep2}», ¿cuáles son los elementos clave, requisitos o estructura que exige el programa oficial?`,
    answer:
-    '10 días hábiles contados desde la finalización de la valoración diagnóstica.',
+    lawSegments[1] ||
+    pdfSentences[0] ||
+    `${lawUpdate || domain.marcoEspecifico} — En conexión con: ${domain.dispositivosRed}`,
   },
   {
    id: `reto-def-${id}-3`,
    topicId: id,
    num: '3',
-   question: `¿Qué instrumentos diagnósticos y escalas técnicas son clave en este epígrafe [${id}]?`,
-   answer: domain.instrumentosEspecificos,
+   question: `[${id}] ¿Qué órganos, recursos institucionales o instrumentos técnicos intervienen específicamente en «${ep3}»?`,
+   answer:
+    pdfSentences[1] ||
+    `Dispositivos/Órganos: ${domain.dispositivosRed} · Instrumentos: ${domain.instrumentosEspecificos}`,
   },
   {
    id: `reto-def-${id}-4`,
    topicId: id,
    num: '4',
-   question: `¿Qué autores y modelos doctrinales fundamentan la intervención en [${id}]?`,
-   answer: domain.autoresDoctrina,
+   question: `[${id}] ¿Qué referentes teóricos, jurisprudenciales o criterios técnicos fundamentan «${cleanTitle.slice(0, 75)}»?`,
+   answer:
+    lawSegments[2] ||
+    pdfSentences[2] ||
+    `${domain.autoresDoctrina} (${lawUpdate.slice(0, 180)})`,
   },
  ];
 
- const defaultGlosario = [
-  {
-   id: `glos-def-${id}-1`,
+ const defaultGlosario = epigraphs.slice(0, 4).map((ep, idx) => ({
+  id: `glos-def-${id}-${idx + 1}`,
+  topicId: id,
+  term: `[${id}] ${ep.slice(0, 62)}`,
+  definition:
+   lawSegments[idx] ||
+   pdfSentences[idx] ||
+   (idx === 0
+    ? `Marco normativo específico [${id}]: ${lawUpdate || domain.marcoEspecifico}`
+    : idx === 1
+    ? `Arquitectura institucional y red en [${id}]: ${domain.dispositivosRed}`
+    : idx === 2
+    ? `Instrumentos y herramientas aplicables a [${id}]: ${domain.instrumentosEspecificos}`
+    : `Fundamentación doctrinal de [${id}]: ${domain.autoresDoctrina}`),
+ }));
+
+ while (defaultGlosario.length < 4) {
+  const n = defaultGlosario.length + 1;
+  defaultGlosario.push({
+   id: `glos-def-${id}-${n}`,
    topicId: id,
-   term: `Marco Normativo [${id}]`,
-   definition: topicObj?.lawUpdate || domain.marcoEspecifico,
-  },
-  {
-   id: `glos-def-${id}-2`,
-   topicId: id,
-   term: `Red de Dispositivos [${id}]`,
-   definition: domain.dispositivosRed,
-  },
-  {
-   id: `glos-def-${id}-3`,
-   topicId: id,
-   term: 'Informe Social (Art. 69 Ley 12/2022)',
+   term: `[${id}] Clave Normativa ${n}: ${cleanTitle.slice(0, 38)}`,
    definition:
-    'Dictamen técnico exclusivo, probatorio e inalienable del Trabajador/a Social para la prescripción de prestaciones del Catálogo.',
-  },
-  {
-   id: `glos-def-${id}-4`,
-   topicId: id,
-   term: 'Historia Social Única (Decreto 51/2023)',
-   definition:
-    'Expediente digital único e interoperable de la Comunidad de Madrid conectado con Sanidad (SERMAS), Empleo y Justicia.',
-  },
- ];
+    lawSegments[n - 1] ||
+    lawUpdate ||
+    `${domain.marcoEspecifico} · ${domain.instrumentosEspecificos}`,
+  });
+ }
 
  return { defaultRetos, defaultGlosario };
 }
@@ -1291,7 +1306,7 @@ function extractMicroRetosAndGlosarioFromPdf(
 
  const resolvedTopic = topicObj || findTopicAcrossAllCatalogs(topicId);
  const { defaultRetos, defaultGlosario } =
-  buildDefaultRetosAndGlosarioForTopic(resolvedTopic);
+  buildDefaultRetosAndGlosarioForTopic(resolvedTopic, rawText);
 
  return {
   microRetos: microRetos.length > 0 ? microRetos : defaultRetos,
@@ -2501,43 +2516,27 @@ export default function App() {
 
  const [documentsLibrary, setDocumentsLibrary] = useState([]);
  const [storiesLibrary, setStoriesLibrary] = useState(() => {
-  const saved = localStorage.getItem('cam_stories_logic_v5');
+  const saved = localStorage.getItem('cam_stories_logic_v6_bocm2026');
   if (saved) {
    try {
     const parsed = JSON.parse(saved);
     if (parsed.length > 0) {
      return parsed.map((st) => {
       const tObj = findTopicAcrossAllCatalogs(st.topicId);
-      const syncedTitle = tObj
-       ? `[${tObj.id}] ${tObj.title}${
-         st.protagonist === 'Narración Mnemotécnica Oficial en 5 Actos'
-          ? ' (Guía Narrativa Vivencial en 5 Actos)'
-          : ''
-        }`
-       : st.title;
-      if (
-       st.microRetos &&
-       st.microRetos.length > 0 &&
-       st.glosario &&
-       st.glosario.length > 0
-      ) {
-       return { ...st, title: syncedTitle };
+      if (!tObj) return st;
+      const hasOldGenericReto = (st.microRetos || []).some((r) =>
+       /reserva legal exclusiva del Art[ií]culo 16\.2/i.test(r.question || '')
+      );
+      if (hasOldGenericReto || !st.microRetos?.length || !st.glosario?.length) {
+       return buildNarrativeStoryForTopic(tObj, st.storyText || tObj.lawUpdate);
       }
-      const { microRetos, glosario } =
-       extractMicroRetosAndGlosarioFromPdf(
-        st.storyText || '',
-        st.topicId || 'E1',
-        tObj
-       );
       return {
        ...st,
-       title: syncedTitle,
-       microRetos:
-        st.microRetos && st.microRetos.length > 0
-         ? st.microRetos
-         : microRetos,
-       glosario:
-        st.glosario && st.glosario.length > 0 ? st.glosario : glosario,
+       title: `[${tObj.id}] ${tObj.title}${
+        st.protagonist === 'Narración Mnemotécnica Oficial en 5 Actos'
+         ? ' (Guía Narrativa Vivencial en 5 Actos)'
+         : ''
+       }`,
       };
      });
     }
@@ -2545,7 +2544,7 @@ export default function App() {
     console.warn('Error hidratando historias:', e);
    }
   }
-  return OFFICIAL_CAM_TOPICS.slice(0, 12).map((t) =>
+  return OFFICIAL_CAM_TOPICS.map((t) =>
    buildNarrativeStoryForTopic(t, t.lawUpdate)
   );
  });
@@ -2554,7 +2553,10 @@ export default function App() {
 
  useEffect(() => {
   try {
-   localStorage.setItem('cam_stories_logic_v5', JSON.stringify(storiesLibrary));
+   localStorage.setItem(
+    'cam_stories_logic_v6_bocm2026',
+    JSON.stringify(storiesLibrary)
+   );
   } catch (e) {
    console.warn('Error guardando historias:', e);
   }
@@ -2791,38 +2793,17 @@ export default function App() {
    ? OFFICIAL_CAM_TOPICS.filter((t) => t.id.startsWith('G'))
    : OFFICIAL_CAM_TOPICS.filter((t) => t.id.startsWith('E'));
 
-  let targetTopicObj = findTopicAcrossAllCatalogs(currentTopicId);
-  const currentCoherence = verifyTopicContentCoherence(
-   item.text || '',
-   targetTopicObj,
-   searchPool,
-   item.name || ''
-  );
-
   const { bestTopic, bestScore } = findBestMatchingTopicByContent(
    item.text || '',
    searchPool,
    item.name || ''
   );
 
-  // Si el archivo tiene el desfase de numeración post-Tema 11 del BOCM 2026 (ej. "TEMA 15 Programa de zona" -> E16), reasignarlo automáticamente a su epígrafe oficial 2026
-  if (
-   bestTopic &&
-   bestScore >= 14 &&
-   (!currentCoherence.isCoherent || bestTopic.id !== currentTopicId)
-  ) {
-   const bestCoherence = verifyTopicContentCoherence(
-    item.text || '',
-    bestTopic,
-    searchPool,
-    item.name || ''
-   );
-   if (bestCoherence.matchScorePct > currentCoherence.matchScorePct) {
-    currentTopicId = bestTopic.id;
-    targetTopicObj = bestTopic;
-   }
+  if (bestTopic && bestScore >= 20 && bestTopic.id !== currentTopicId) {
+   currentTopicId = bestTopic.id;
   }
 
+  const targetTopicObj = findTopicAcrossAllCatalogs(currentTopicId);
   const refreshedAudit = auditDocumentTextValidity(
    item.text || '',
    targetTopicObj || currentTopicId,
@@ -2865,6 +2846,13 @@ export default function App() {
    const fixedDocs = (docs || []).map(alignDocumentItemToBocm2026);
    setDocumentsLibrary(fixedDocs);
    await saveToStore(STORE_DOCS, fixedDocs);
+   setStoriesLibrary(
+    OFFICIAL_CAM_TOPICS.map((t) => {
+     const matchingDocs = fixedDocs.filter((d) => d.topicId === t.id);
+     const combinedRaw = matchingDocs.map((d) => d.text || '').join('\n\n');
+     return buildNarrativeStoryForTopic(t, combinedRaw || t.lawUpdate);
+    })
+   );
   });
   getAllFromStore(STORE_ESSAYS).then(async (essays) => {
    const fixedEssays = (essays || []).map((es) => ({
@@ -4152,7 +4140,7 @@ const restoreFullMasterBackup = async (file) => {
   }
   if (data.storiesLibrary) {
    setStoriesLibrary(data.storiesLibrary);
-   localStorage.setItem('cam_stories_logic_v5', JSON.stringify(data.storiesLibrary));
+   localStorage.setItem('cam_stories_logic_v6_bocm2026', JSON.stringify(data.storiesLibrary));
   }
   if (data.customPracticalCases) {
    setCustomPracticalCases(data.customPracticalCases);
@@ -10249,23 +10237,27 @@ ${skeleton7}` : skeleton7
          <button
           onClick={() => {
            const allGenerated = activeCatalog.map((t) => {
+            const matchingDocs = documentsLibrary.filter(
+             (d) => d.topicId === t.id
+            );
             const existingEssay = essaysLibrary.find(
              (e) => e.topicId === t.id
             );
-            return buildNarrativeStoryForTopic(
-             t,
-             existingEssay ? existingEssay.text : t.lawUpdate
-            );
+            const combinedSource =
+             matchingDocs.map((d) => d.text || '').join('\n\n') ||
+             (existingEssay ? existingEssay.text : '') ||
+             t.lawUpdate;
+            return buildNarrativeStoryForTopic(t, combinedSource);
            });
            setStoriesLibrary(allGenerated);
            setStatusBanner(
-            `📖 ¡Se han generado automáticamente las ${allGenerated.length} Historias Lógicas de toda la convocatoria activa!`
+            `⚡ ¡Regenerados los Micro-Retos 15s, Flashcards de Glosario y Cuentos específicos para los ${allGenerated.length} temas oficiales!`
            );
            setTimeout(() => setStatusBanner(''), 5000);
           }}
           className="px-3.5 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold cursor-pointer"
          >
-          ✨ Autogenerar Historias de Todos los Temas ({activeCatalog.length})
+          🔄 Regenerar Retos, Flashcards y Cuentos 2026 ({activeCatalog.length} Temas)
          </button>
 
          <button
