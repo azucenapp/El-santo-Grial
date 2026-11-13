@@ -27,7 +27,7 @@ export const CAM_SPECIFIC_TITLES = [
   "Historia y evolución de los sistemas de protección social en España. Estratificación, clases sociales y su evolución. Consecuencias sociales. Pobreza y desigualdad.",
   "La Política social y el Estado del Bienestar: tipologías de política social, modelos del Estado del Bienestar y planteamientos actuales. Los servicios sociales en los modelos actuales de bienestar social.",
   "La política social en el marco de la Unión Europea. Sistema de servicios sociales en los países de la Unión Europea, comparación con los servicios sociales en España. Concepto, ejes y medidas financiadas por el Fondo Social Europeo Plus (FSE+).",
-  "Marco legislativo e institucional de los Servicios Sociales con referencia a la Administración Central, Autonómica y Local. El ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
+  "Marco legislativo e institucional de los Servicios Sociales, con referencia a la Administración central, autonómica y local. El Ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
   "La Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid: disposiciones generales. El Sistema Público de Servicios Sociales: concepto y principios rectores. Competencias. Organización funcional y territorial del Sistema público de servicios sociales: Atención Social Primaria y Atención Social Especializada. Funciones.",
   "La organización de los servicios sociales en la Comunidad de Madrid. La Consejería competente en materia de servicios sociales: estructura y competencias. La Agencia Madrileña de Atención Social: estructura y competencias. Los centros de Servicios Sociales.",
   "La Agencia Madrileña de Atención Social: organización y competencias. Recursos, centros y servicios. Marco normativo.",
@@ -37,10 +37,10 @@ export const CAM_SPECIFIC_TITLES = [
   "El Ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
   "La Seguridad Social en España. Principales características. Dimensión, financiación y evolución. Problemas actuales y líneas de reforma.",
   "Políticas Públicas de Empleo. Protección por desempleo. Prestaciones de nivel contributivo y de nivel asistencial. Régimen de las prestaciones.",
-  "Pensiones no contributivas. Pensión de invalidez. Pensión de jubilación. Otras prestaciones.",
+  "Pensiones no contributivas. Pensión por Invalidez. Pensión por Jubilación. Otras prestaciones.",
   "Renta mínima o salario social. La renta mínima de inserción en la Comunidad de Madrid: requisitos, cuantía, solicitud y programas de inserción. El Ingreso Mínimo Vital. Estrategia de prevención y lucha contra la pobreza y la exclusión social. Estrategia contra la pobreza energética.",
   "Programa de trabajo social de zona. Información, orientación y valoración. El método y la intervención en trabajo social. Niveles de intervención y técnicas e instrumentos utilizados.",
-  "Programa de familia y convivencia. Apoyo a la familia en dificultad social. La familia como espacio de intervención social. La intervención profesional del asistente social en la familia. Los Centros de Apoyo y Encuentro Familiar. La mediación familiar. Los puntos de encuentro familiar. Estrategia de protección a la maternidad y paternidad y de fomento de la natalidad y conciliación de la Comunidad de Madrid.",
+  "Programa de familia y convivencia. Apoyo a la familia en dificultad social. La familia como espacio de intervención social. La intervención profesional del trabajador social en la familia. Los Centros de Apoyo y Encuentro Familiar. La mediación familiar. Los puntos de encuentro familiar. Estrategia de protección a la maternidad y paternidad y de fomento de la natalidad y conciliación de la Comunidad de Madrid.",
   "Programa de prevención de la marginación, inserción y promoción social. Ámbito y fases de actuación desde el trabajo social. Prestaciones e intervenciones sociales para la prevención social.",
   "La promoción de la iniciativa social. Las Organizaciones no gubernamentales y su papel en la acción social. El voluntariado social. Concepto. Marco legislativo. Función del voluntariado en el Sistema de Servicios Sociales. Las necesidades sociales: concepto, características y tipología. Asociacionismo y participación ciudadana.",
   "La cooperación internacional para el desarrollo en las Administraciones Públicas. Legislación estatal y autonómica. La cooperación para el desarrollo en la Comunidad de Madrid.",
@@ -338,7 +338,7 @@ export const OFFICIAL_CAM_TOPICS = [
     "equivalentIds": [
       "AY-24"
     ],
-    "title": "Tema Específico 4. Marco legislativo e institucional de los Servicios Sociales con referencia a la Administración Central, Autonómica y Local. El ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
+    "title": "Tema Específico 4. Marco legislativo e institucional de los Servicios Sociales, con referencia a la Administración central, autonómica y local. El Ministerio competente en materia de derechos sociales: funciones y recursos. El Instituto de Mayores y Servicios Sociales (IMSERSO): competencias.",
     "lawUpdate": "Arts. 148.1.20 y 149.1.1 CE; Plan Concertado de Prestaciones Básicas (1988) y Catálogo de Referencia de Servicios Sociales (2013); Ministerio de Derechos Sociales, Consumo y Agenda 2030 (RD 209/2024) e IMSERSO."
   },
   {
@@ -457,7 +457,7 @@ export const OFFICIAL_CAM_TOPICS = [
       "S-12",
       "AY-32"
     ],
-    "title": "Tema Específico 14. Pensiones no contributivas. Pensión de invalidez. Pensión de jubilación. Otras prestaciones.",
+    "title": "Tema Específico 14. Pensiones no contributivas. Pensión por Invalidez. Pensión por Jubilación. Otras prestaciones.",
     "lawUpdate": "Título VI del TRLGSS (RDL 8/2015, arts. 363 a 373) y Real Decreto 357/1991: Pensión No Contributiva de Invalidez (grado >= 65% y complemento de tercera persona >= 75%) y de Jubilación (>= 65 años y 10 años de residencia)."
   },
   {
@@ -494,7 +494,7 @@ export const OFFICIAL_CAM_TOPICS = [
     "equivalentIds": [
       "AY-35"
     ],
-    "title": "Tema Específico 17. Programa de familia y convivencia. Apoyo a la familia en dificultad social. La familia como espacio de intervención social. La intervención profesional del asistente social en la familia. Los Centros de Apoyo y Encuentro Familiar. La mediación familiar. Los puntos de encuentro familiar. Estrategia de protección a la maternidad y paternidad y de fomento de la natalidad y conciliación de la Comunidad de Madrid.",
+    "title": "Tema Específico 17. Programa de familia y convivencia. Apoyo a la familia en dificultad social. La familia como espacio de intervención social. La intervención profesional del trabajador social en la familia. Los Centros de Apoyo y Encuentro Familiar. La mediación familiar. Los puntos de encuentro familiar. Estrategia de protección a la maternidad y paternidad y de fomento de la natalidad y conciliación de la Comunidad de Madrid.",
     "lawUpdate": "Ley 40/2003 de Protección a las Familias Numerosas; Ley 1/2007, de 21 de febrero, de Mediación Familiar de la Comunidad de Madrid; Centros de Apoyo y Encuentro Familiar (CAEF) de la CAM y Estrategia de Protección a la Maternidad y Paternidad 2022-2026."
   },
   {
@@ -1341,6 +1341,13 @@ export const OBSOLETE_TERMS_DICTIONARY = [
     alert:
       'Utiliza el término "incapacitación judicial" (Suprimido por la Ley 8/2021).',
   },
+  {
+    regex: /comisi[oó]n\s+de\s+tutela\s+del\s+menor/gi,
+    replacement:
+      'Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid (regulada por la Ley 4/2023, que sustituyó a la antigua Comisión de Tutela del Menor)',
+    alert:
+      'Cita la antigua "Comisión de Tutela del Menor" sin indicar su denominación vigente en la Ley 4/2023 y Tema E40 BOCM: "Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid".',
+  },
 ];
 
 export const FORBIDDEN_ACRONYMS_DICTIONARY = [
@@ -1464,6 +1471,42 @@ export const FORBIDDEN_ACRONYMS_DICTIONARY = [
     checkFull: /reglamento\s+general\s+de\s+protecci[oó]n\s+de\s+datos/i,
     expansion: 'Reglamento General de Protección de Datos (en adelante, RGPD)',
   },
+  {
+    acronym: 'HSUe',
+    regex: /\bHSUe\b/g,
+    checkFull: /historia\s+social\s+[uú]nica/i,
+    expansion: 'Historia Social Única electrónica (en adelante, HSUe)',
+  },
+  {
+    acronym: 'PIIS',
+    regex: /\bPIIS\b/g,
+    checkFull: /plan\s+individual(?:izado)?\s+de\s+(?:intervenci[oó]n|atenci[oó]n)\s+social/i,
+    expansion: 'Plan Individualizado de Intervención Social (en adelante, PIIS)',
+  },
+  {
+    acronym: 'IMLCF',
+    regex: /\bIMLCF\b/g,
+    checkFull: /instituto\s+de\s+medicina\s+legal\s+y\s+ciencias\s+forenses/i,
+    expansion: 'Instituto de Medicina Legal y Ciencias Forenses (en adelante, IMLCF)',
+  },
+  {
+    acronym: 'OAVD',
+    regex: /\bOAVD\b/g,
+    checkFull: /oficinas?\s+de\s+asistencia\s+a\s+(?:las\s+)?v[ií]ctimas\s+del?\s+delito/i,
+    expansion: 'Oficinas de Asistencia a las Víctimas del Delito (en adelante, OAVD)',
+  },
+  {
+    acronym: 'CAID',
+    regex: /\bCAID\b/g,
+    checkFull: /centros?\s+de\s+atenci[oó]n\s+integral\s+a\s+drogodependientes/i,
+    expansion: 'Centros de Atención Integral a Drogodependientes (en adelante, CAID)',
+  },
+  {
+    acronym: 'CRECOVI',
+    regex: /\bCRECOVI\b/g,
+    checkFull: /centro\s+regional\s+de\s+coordinaci[oó]n\s+y\s+valoraci[oó]n\s+infantil/i,
+    expansion: 'Centro Regional de Coordinación y Valoración Infantil (en adelante, CRECOVI)',
+  },
 ];
 
 export const ERROR_ROOT_CAUSES = [
@@ -1555,13 +1598,13 @@ export const OFFICIAL_10_PRACTICAL_CASES = [
     enunciado:
       'Niña de 4 años e infante de 18 meses cuyos progenitores presentan consumo activo grave y negligencia severa constatada tras fracasar durante 12 meses la intervención de preservación familiar en situación de riesgo. Ambos cuentan con abuelos maternos dispuestos a cuidarlos.',
     claves:
-      'Declaración de desamparo y asunción de tutela por ministerio de la ley (Comisión de Tutela del Menor, Ley 4/2023 CAM), prioridad del acogimiento familiar sobre el residencial (menores de 6 años, LO 1/1996 y LOPIVI), acogimiento en familia extensa y estatuto del acogedor.',
+      'Declaración de desamparo y asunción de tutela por ministerio de la ley (Comisión de Protección a la Infancia y la Adolescencia de la CAM, Ley 4/2023), prioridad del acogimiento familiar sobre el residencial (menores de 6 años, LO 1/1996 y LOPIVI), acogimiento en familia extensa y estatuto del acogedor.',
     normativaEspecifica:
       'Ley Orgánica 1/1996 de Protección Jurídica del Menor (modificada por la Ley 26/2015 y la Ley Orgánica 8/2015), Ley Orgánica de Protección Integral a la Infancia y la Adolescencia frente a la Violencia (en adelante, LOPIVI) y Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid (que derogó expresamente la Ley 6/1995), junto con el Código Civil (artículos 172 y siguientes).',
     escalasEspecificas:
       'Instrumento técnico de valoración de la gravedad de las situaciones de riesgo y desamparo infantil (VALÓRAME / sistema SIMIA), Genograma trigeneracional, Ecomapa y valoración psicosocial de idoneidad de familia extensa.',
     intervencionEspecifica:
-      'a) Medida de protección jurídica: Emisión de Informe Social de propuesta desde Atención Social Primaria hacia la Dirección General de Infancia, Familia y Fomento de la Natalidad; resolución de declaración de desamparo y asunción de la tutela automática por la Comisión de Tutela del Menor de la Comunidad de Madrid (artículo 172 del Código Civil y Ley 4/2023).\nb) Prelación del acogimiento familiar: En cumplimiento del mandato legal que prohíbe el acogimiento residencial para menores de tres años y prioriza el familiar para menores de seis años (aplicando la Escala de Valoración Específica, en adelante EVE, si concurre dependencia), se valora de urgencia la idoneidad de los abuelos maternos para formalizar un Acogimiento Familiar en Familia Extensa, asignando las prestaciones económicas de apoyo al acogimiento.',
+      'a) Medida de protección jurídica: Emisión de Informe Social de propuesta desde Atención Social Primaria hacia la Dirección General de Infancia, Familia y Fomento de la Natalidad; resolución de declaración de desamparo y asunción de la tutela automática por la Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid (que sustituye a la antigua Comisión de Tutela del Menor conforme a la Ley 4/2023 y al artículo 172 del Código Civil).\nb) Prelación del acogimiento familiar: En cumplimiento del mandato legal que prohíbe el acogimiento residencial para menores de tres años y prioriza el familiar para menores de seis años (aplicando la Escala de Valoración Específica, en adelante EVE, si concurre dependencia), se valora de urgencia la idoneidad de los abuelos maternos para formalizar un Acogimiento Familiar en Familia Extensa, asignando las prestaciones económicas de apoyo al acogimiento.',
   },
   {
     id: 'caso_7_mayores_amas',
@@ -1618,6 +1661,20 @@ export const OFFICIAL_10_PRACTICAL_CASES = [
       'Inventario de Gestión e Intervención para Jóvenes (IGI-J de valoración de riesgo de reincidencia en ARRMI), Genograma de relaciones y conflicto, Ecomapa y protocolo municipal de absentismo escolar.',
     intervencionEspecifica:
       'a) Ejecución socioeducativa y retorno escolar: Coordinación entre el equipo técnico de la Agencia de la Comunidad de Madrid para la Reeducación y Reinserción del Menor Infractor (ARRMI), el/la Profesor/a Técnico de Servicios a la Comunidad del instituto y la Comisión de Absentismo Escolar del distrito para diseñar un plan socioeducativo individualizado.\nb) Mediación familiar y apoyo parental: Derivación de ambos progenitores al Servicio de Mediación Familiar de la Comunidad de Madrid (regulado por la Ley 1/2001) o a los Centros de Apoyo a las Familias del Ayuntamiento de Madrid para consensuar pautas educativas y acuerdos parentales, tramitando paralelamente el acceso al Fondo de Garantía del Pago de Alimentos.',
+  },
+  {
+    id: 'caso_11_forense_imlc_oavd',
+    badge: '11 · ⚖️ CAM BLOQUE IX · Pericial Social Forense (IMLCF) + OAVD (Temas 62-66)',
+    enunciado:
+      'Juzgado de Violencia sobre la Mujer de Madrid libra oficio urgente al Equipo Técnico Psicosocial del Instituto de Medicina Legal y Ciencias Forenses (IMLCF) para emitir informe social forense sobre guarda y custodia y régimen de estancias de dos menores (8 y 4 años) expuestos a violencia vicaria e instrumental, cuya madre acude paralelamente a la Oficina de Asistencia a Víctimas del Delito (OAVD) en sede judicial con sintomatología de revictimización secundaria y carencia habitacional.',
+    claves:
+      'Instituto de Medicina Legal y Ciencias Forenses de la CAM (Decreto 37/2006 y art. 479 LOPJ), Metodología Pericial en Trabajo Social (arts. 335 a 352 LEC, juramento de objetividad art. 335.2 y ratificación en vista art. 347), suspensión del régimen de visitas (art. 94 Código Civil y LO 8/2021 LOPIVI) e intervención en la OAVD (Ley 4/2015 y RD 1109/2015).',
+    normativaEspecifica:
+      'Ley Orgánica 6/1985 del Poder Judicial (artículo 479 sobre los Institutos de Medicina Legal y Ciencias Forenses, reformada por Ley Orgánica 1/2025 de Tribunales de Instancia), Decreto 37/2006 de creación del Instituto de Medicina Legal y Ciencias Forenses (en adelante, IMLCF) de la Comunidad de Madrid, Ley 1/2000 de Enjuiciamiento Civil (artículos 335 a 352 sobre el dictamen de peritos), artículo 94 del Código Civil (suspensión de visitas en violencia de género), Ley 4/2015 del Estatuto de la Víctima del Delito y Real Decreto 1109/2015 de las Oficinas de Asistencia a las Víctimas del Delito (en adelante, OAVD).',
+    escalasEspecificas:
+      'Protocolo de valoración forense del riesgo de violencia de género e impacto en menores, Guía de Buenas Prácticas para la elaboración de Informes Periciales Sociales, Genograma trigeneracional de dinámica relacional, Ecomapa y Evaluación Individualizada de Necesidades de Protección de la Víctima (RD 1109/2015).',
+    intervencionEspecifica:
+      'a) Actuación Pericial Social Forense en el IMLCF (Temas 62 a 65): Recepción del oficio judicial y vaciado exhaustivo de los autos; citación y entrevistas periciales semiestructuradas por separado con ambos progenitores (evitando cualquier confrontación visual conforme a la Ley 4/2015), observación de la interacción materno-filial, visita domiciliaria forense para verificar condiciones contextuales y coordinación colateral con el centro escolar (Coordinador de Bienestar), pediatría del Servicio Madrileño de Salud (en adelante, SERMAS) y Servicios Sociales de Atención Social Primaria; emisión del Informe Social Forense con trazabilidad objetiva de las fuentes, juramento de imparcialidad (artículo 335.2 LEC), propuesta técnica motivada de atribución de guarda y custodia materna con suspensión del régimen de visitas paterno (artículo 94 del Código Civil) y posterior defensa/ratificación oral en el acto del juicio (artículo 347 LEC).\nb) Intervención desde la Oficina de Asistencia a las Víctimas del Delito - OAVD (Tema 66): Acogida, información de derechos y realización de la evaluación individualizada para prevenir la victimización secundaria (habilitación de sala de espera separada, acompañamiento a sede judicial y cámara Gesell / prueba preconstituida para el menor de 8 años); articulación en red con el Punto Municipal del Observatorio Regional de la Violencia de Género y Atención Social Primaria para expedir el Título Habilitante (Ley 5/2005 CAM) y tramitar su Plan Individualizado de Intervención Social (en adelante, PIIS) e ingreso en recurso habitacional protegido.',
   },
 ];
 
@@ -1963,14 +2020,14 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
     question:
       'De conformidad con el Título III de la Ley 4/2023 de la Comunidad de Madrid y la Ley Orgánica 1/1996, la distribución competencial entre la declaración de la situación de riesgo y la declaración de la situación de desamparo se articula del siguiente modo:',
     options: [
-      'A) La valoración, intervención y declaración administrativa de la situación de riesgo corresponde a la Entidad Local (Servicios Sociales de Atención Social Primaria / municipales) mediante un proyecto de intervención social y educativo familiar, mientras que la declaración de desamparo y la consiguiente asunción de la tutela por ministerio de la ley corresponde a la Administración Autonómica a través de la Comisión de Tutela del Menor.',
+      'A) La valoración, intervención y declaración administrativa de la situación de riesgo corresponde a la Entidad Local (Servicios Sociales de Atención Social Primaria / municipales) mediante un proyecto de intervención social y educativo familiar, mientras que la declaración de desamparo y la consiguiente asunción de la tutela por ministerio de la ley corresponde a la Administración Autonómica a través de la Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid (que sustituyó a la antigua Comisión de Tutela del Menor en la Ley 4/2023).',
       'B) Tanto la declaración de riesgo como la asunción de la tutela automática por desamparo corresponden exclusivamente al Alcalde o Junta de Gobierno Local.',
       'C) La declaración de riesgo conlleva la privación inmediata de la patria potestad y la separación del menor de su núcleo familiar.',
       'D) La situación de desamparo solo puede ser declarada por sentencia firme de la Audiencia Provincial.',
     ],
     correctIndex: 0,
     explanation:
-      'En la Ley 4/2023 CAM y arts. 17 y 18 LO 1/1996: la situación de riesgo es competencia de las Entidades Locales; la declaración de desamparo y asunción de tutela ex lege corresponde a la CAM (Comisión de Tutela del Menor).',
+      'En la Ley 4/2023 CAM y arts. 17 y 18 LO 1/1996: la situación de riesgo es competencia de las Entidades Locales; la declaración de desamparo y asunción de tutela ex lege corresponde a la CAM (Comisión de Protección a la Infancia y la Adolescencia).',
   },
   {
     id: 'q-hd-21',
@@ -3757,5 +3814,263 @@ export const HIGH_DIFFICULTY_60_QUESTIONS = [
     correctIndex: 0,
     explanation:
       'Cierre del temario específico de la CAM (Tema E67, Decreto 27/1997): las Cartas de Servicios explicitan los estándares y compromisos de calidad frente a la ciudadanía (estructura: datos identificativos y fines del órgano, relación de servicios, derechos de los usuarios, forma de presentación de quejas y sugerencias, compromisos de calidad e indicadores para su evaluación y medidas de subsanación/compensación); se aprueban por Orden del titular de la Consejería respectiva previo informe favorable de la DG de Calidad/Transparencia y se publican en el BOCM.',
+  },
+  // =========================================================================
+  // BLOQUE XXI: TEMAS ESPECÍFICOS NUEVOS BOCM N.º 100 (FORENSE, OAVD, E40, E54, E13, E7) (121-135)
+  // =========================================================================
+  {
+    id: 'q-hd-121',
+    topicId: 'E62',
+    difficulty: 'Alta (IMLCF Comunidad de Madrid: Decreto 37/2006 y Art. 479 LOPJ)',
+    originType: '⚖️ OFICIAL BOCM · TEMA ESPECÍFICO 62 (JUSTICIA E IMLCF)',
+    question:
+      'De conformidad con el artículo 479 de la Ley Orgánica 6/1985 del Poder Judicial (LOPJ) y el Decreto 37/2006, de 4 de mayo, por el que se crea el Instituto de Medicina Legal y Ciencias Forenses (IMLCF) de la Comunidad de Madrid y se aprueba su Reglamento, señale la afirmación CORRECTA sobre la naturaleza de este órgano y la integración de los Trabajadores Sociales en los equipos psicosociales:',
+    options: [
+      'A) El IMLCF de la Comunidad de Madrid es un órgano técnico adscrito a la Consejería competente en materia de Justicia cuya misión es auxiliar a los juzgados, tribunales y fiscalías mediante la práctica de pruebas periciales médicas y psicosociales; dentro de su Servicio de Especialidades se integran los Equipos Técnicos Psicosociales (compuestos por psicólogos y trabajadores sociales forenses), que emiten dictámenes periciales con plena independencia y sujeción a criterios científico-técnicos.',
+      'B) El IMLCF depende orgánicamente de los Ayuntamientos y sus informes sociales forenses tienen carácter de sentencia firme inapelable para los Magistrados de la Audiencia Provincial.',
+      'C) Los Trabajadores Sociales Forenses del IMLCF tienen atribuida la potestad jurisdiccional exclusiva para dictar autos de prisión provisional y órdenes de protección penal.',
+      'D) El Decreto 37/2006 prohíbe la existencia de trabajadores sociales en el Instituto de Medicina Legal, reservando las pericias familiares exclusivamente a médicos anatomopatólogos.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 62 del BOCM n.º 100: el IMLCF de la Comunidad de Madrid (creado por Decreto 37/2006 conforme al art. 479 LOPJ) es un órgano técnico al servicio de la Administración de Justicia cuyos equipos psicosociales (psicólogos y trabajadores sociales) auxilian a los órganos judiciales con objetividad e independencia científica.',
+  },
+  {
+    id: 'q-hd-122',
+    topicId: 'E63',
+    difficulty: 'Alta (Trabajo Social Forense, Tribunales de Instancia LO 1/2025 y Ámbito)',
+    originType: '⚖️ OFICIAL BOCM · TEMA ESPECÍFICO 63 (TRABAJO SOCIAL FORENSE)',
+    question:
+      'Conforme al programa oficial del Tema Específico 63 ("El Trabajo Social Forense: concepto, funciones y ámbito competencial. Tribunal de instancia y Audiencia Provincial de la Comunidad de Madrid") y a la Ley Orgánica 1/2025 de eficiencia del Servicio Público de Justicia, señale la opción CORRECTA:',
+    options: [
+      'A) La Ley Orgánica 1/2025 transforma la planta judicial unipersonal tradicional en los nuevos "Tribunales de Instancia" (estructurados en Secciones de Familia, Infancia y Capacidad; de Violencia sobre la Mujer; de Violencia contra la Infancia y la Adolescencia; de Menores; Civil y de Instrucción), ámbito en el que el Trabajador Social Forense actúa como perito oficial evaluando contextos sociofamiliares, parentales, de desprotección o provisión de apoyos (Ley 8/2021), extendiéndose su función pericial en segunda instancia ante las Secciones correspondientes de la Audiencia Provincial de Madrid.',
+      'B) El Trabajo Social Forense interviene exclusivamente en el orden jurisdiccional Contencioso-Administrativo para tasar bienes inmuebles embargados.',
+      'C) Los Tribunales de Instancia sustituyen al Tribunal Supremo y suprimen la intervención pericial psicosocial en procedimientos de guarda y custodia o provisión de apoyos.',
+      'D) El dictamen del Trabajador Social Forense vincula obligatoriamente al Juez o Tribunal, quien no puede apartarse de sus conclusiones ni valorarlo conforme a las reglas de la sana crítica.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 63 del BOCM n.º 100: tras la LO 1/2025 se implantan los Tribunales de Instancia con Secciones especializadas y la Audiencia Provincial en segunda instancia; el dictamen pericial social forense asesora al órgano judicial y es valorado por el Juez según las reglas de la sana crítica (art. 348 LEC).',
+  },
+  {
+    id: 'q-hd-123',
+    topicId: 'E64',
+    difficulty: 'Alta (Metodología Pericial Social y Arts. 335 a 352 LEC)',
+    originType: '⚖️ OFICIAL BOCM · TEMA ESPECÍFICO 64 (METODOLOGÍA PERICIAL)',
+    question:
+      'Según los artículos 335 a 352 de la Ley 1/2000 de Enjuiciamiento Civil (LEC) y la metodología pericial en Trabajo Social (Tema Específico 64), señale cuál de las siguientes afirmaciones sobre el juramento o promesa pericial, las fases metodológicas y el régimen de abstención/recusación o tacha es CORRECTA:',
+    options: [
+      'A) Al emitir el dictamen, todo perito deberá manifestar bajo juramento o promesa de decir verdad que ha actuado y, en su caso, actuará con la mayor objetividad posible, tomando en consideración tanto lo que pueda favorecer como lo que sea susceptible de causar perjuicio a cualquiera de las partes (art. 335.2 LEC); metodológicamente la pericia social exige triangulación de fuentes (estudio de autos, entrevistas forenses individuales, observación y coordinación colateral), pudiendo los peritos designados judicialmente ser objeto de recusación y los aportados por las partes ser objeto de tacha.',
+      'B) El perito trabajador social solo debe incluir en su informe aquellos datos que beneficien a la parte que solicitó la prueba, omitiendo los factores de riesgo desfavorables.',
+      'C) En la metodología pericial social forense está prohibido consultar el expediente judicial (autos) antes de realizar las entrevistas familiares.',
+      'D) Los peritos designados por el tribunal nunca pueden ser recusados aunque tengan parentesco de primer grado por consanguinidad con una de las partes del litigio.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 64 del BOCM n.º 100 y art. 335.2 LEC: el juramento o promesa de objetividad obliga a ponderar tanto lo favorable como lo perjudicial; los peritos judiciales son recusables (art. 124 y 343 LEC) y los de parte tachables.',
+  },
+  {
+    id: 'q-hd-124',
+    topicId: 'E65',
+    difficulty: 'Alta (Informe Social Forense: Estructura, Trazabilidad y Defensa Art. 347 LEC)',
+    originType: '⚖️ OFICIAL BOCM · TEMA ESPECÍFICO 65 (INFORME SOCIAL FORENSE)',
+    question:
+      'En relación con la elaboración y estructura del Informe Social Forense, la trazabilidad de la información y su defensa en sede judicial conforme al artículo 347 de la Ley de Enjuiciamiento Civil y la Guía de Buenas Prácticas Periciales (Tema Específico 65), señale la afirmación CORRECTA:',
+    options: [
+      'A) El informe social forense debe estructurarse diferenciando con rigor entre los datos empíricos/documentales verificados (trazabilidad de las fuentes primarias, secundarias y colaterales) y la valoración técnico-pericial expresada en lenguaje objetivo no estigmatizante; en el acto del juicio o vista (art. 347 LEC), el profesional ratifica su dictamen y responde a las solicitudes de exposición completa, explicación de puntos concretos, ampliación a extremos conexos o crítica del dictamen por el perito de la parte contraria.',
+      'B) A diferencia del informe social de Atención Primaria, el informe social forense no requiere apartado de metodología ni identificación del número de procedimiento judicial ni del colegiado.',
+      'C) Una vez registrado por escrito el informe social forense a través de LexNET, el Trabajador Social Forense está exento en todos los casos de comparecer al acto de la vista aunque lo soliciten el Juez o las partes.',
+      'D) En las conclusiones del informe social forense el perito debe redactar directamente el fallo jurídico condenatorio o absolutorio sustituyendo al Magistrado.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 65 del BOCM n.º 100: la trazabilidad exige que cada afirmación diagnóstica esté respaldada por su fuente e instrumento; en la defensa oral en sede judicial (art. 347 LEC) el perito expone, aclara y defiende metodológicamente sus conclusiones orientadoras sin invadir la función jurisdiccional.',
+  },
+  {
+    id: 'q-hd-125',
+    topicId: 'E66',
+    difficulty: 'Alta (Oficinas de Asistencia a Víctimas del Delito - OAVD: Ley 4/2015 y RD 1109/2015)',
+    originType: '⚖️ OFICIAL BOCM · TEMA ESPECÍFICO 66 (OAVD EN JUZGADOS)',
+    question:
+      'De conformidad con la Ley 4/2015, de 27 de abril, del Estatuto de la víctima del delito, y el Real Decreto 1109/2015, de 11 de diciembre, por el que se desarrollan las Oficinas de Asistencia a las Víctimas del Delito (OAVD, Tema Específico 66), la actuación del Trabajador Social en dichas oficinas comprende:',
+    options: [
+      'A) Un servicio público, multidisciplinar y gratuito que desarrolla las fases de acogida-orientación, información, intervención (jurídica, psicológica y social) y seguimiento; correspondiendo realizar una "evaluación individualizada" de la víctima para determinar sus necesidades especiales de protección a fin de prevenir la victimización secundaria o reiterada, la intimidación y las represalias, elaborando un Plan de Apoyo psicológico y social y coordinando la derivación a la red de servicios sociales, sanitarios y habitacionales.',
+      'B) Un servicio arancelario de pago reservado exclusivamente a víctimas que se personen con procurador y abogado particular como acusación privada.',
+      'C) En las OAVD el Trabajador Social actúa exclusivamente como perito judicial encargado de interrogar al investigado o acusado en el calabozo.',
+      'D) Según la Ley 4/2015, para poder recibir asistencia social o información en una OAVD es requisito indispensable que se haya dictado previamente sentencia penal firme condenatoria.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 66 del BOCM n.º 100 (arts. 10, 23 y 28 Ley 4/2015 y arts. 19 a 32 RD 1109/2015): acceso gratuito antes, durante y por un período adecuado después del proceso penal (incluso sin denuncia previa en la fase de acogida/información), siendo nuclear la evaluación individualizada para evitar la victimización secundaria.',
+  },
+  {
+    id: 'q-hd-126',
+    topicId: 'E40',
+    difficulty: 'Alta (Comisión de Protección a la Infancia y la Adolescencia CAM: Ley 4/2023)',
+    originType: '🏛️ OFICIAL BOCM · TEMA ESPECÍFICO 40 (COMISIÓN DE PROTECCIÓN CAM)',
+    question:
+      'Según la Ley 4/2023, de 22 de marzo, de Derechos, Garantías y Protección Integral de la Infancia y la Adolescencia de la Comunidad de Madrid (Tema Específico 40), ¿cuál es el órgano colegiado autonómico que sustituyó a la antigua Comisión de Tutela del Menor y cuáles son sus competencias esenciales?',
+    options: [
+      'A) La Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid, órgano colegiado adscrito a la Consejería competente en materia de infancia y familia al que corresponde declarar la situación de desamparo, asumir la tutela por ministerio de la ley, acordar la guarda administrativa, formalizar las medidas de acogimiento familiar o residencial y formular las propuestas de adopción ante la autoridad judicial.',
+      'B) El Consejo Local de Atención a la Infancia de cada Ayuntamiento, que tiene competencia exclusiva para dictar sentencias de adopción internacional.',
+      'C) La Agencia Madrileña para la Reeducación y Reinserción del Menor Infractor (ARRMI), que asume la tutela civil de todos los recién nacidos en riesgo social.',
+      'D) El Comité de Ética de la Agencia AMAPAD regulado por la Ley 1/2023.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Pregunta directa del Tema Específico 40 del BOCM n.º 100: la Ley 4/2023 de la CAM redenomina y regula la Comisión de Protección a la Infancia y la Adolescencia de la Comunidad de Madrid como órgano colegiado competente para adoptar las medidas administrativas de protección (desamparo, tutela ex lege, guarda, acogimiento y propuesta de adopción).',
+  },
+  {
+    id: 'q-hd-127',
+    topicId: 'E54',
+    difficulty: 'Alta (Trabajo Social en Administración Educativa y EOEP: Decreto 23/2023 CAM)',
+    originType: '🏛️ OFICIAL BOCM · TEMA ESPECÍFICO 54 (EDUCACIÓN Y EOEP)',
+    question:
+      'En relación con el Trabajo Social en la Administración Educativa de la Comunidad de Madrid, los Equipos de Orientación Educativa y Psicopedagógica (EOEP) y el programa de escolarización en casos de urgencia social (Tema Específico 54 y Decreto 23/2023, de 22 de marzo), señale la afirmación CORRECTA:',
+    options: [
+      'A) Los profesionales del ámbito sociofamilar (Profesores Técnicos de Servicios a la Comunidad / Trabajadores Sociales) integrados en los EOEP (Generales, de Atención Temprana de 0 a 6 años y Específicos) y en los Departamentos de Orientación evalúan el contexto sociofamiliar del alumnado con necesidades educativas especiales (ACNEE) o de compensación educativa, actúan como nexo con los Servicios Sociales de Atención Primaria, las Mesas Locales de Absentismo y Sanidad, e informan los expedientes de escolarización extraordinaria sobrevenida por urgencia social, violencia de género o desprotección.',
+      'B) Los EOEP solo intervienen en universidades privadas y carecen de competencias en la etapa de Educación Infantil de 0 a 6 años.',
+      'C) El programa de escolarización por urgencia social solo permite matricular a menores durante los primeros cinco días hábiles del mes de mayo.',
+      'D) En la Comunidad de Madrid el absentismo escolar de menores de 6 a 16 años carece de protocolo de derivación a los Servicios Sociales municipales.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 54 del BOCM n.º 100: regula las funciones del trabajador social / PTSC en la red de orientación educativa (EOEP, EAT y Departamentos de Orientación bajo el Decreto 23/2023 CAM) y la escolarización extraordinaria en supuestos de urgencia social.',
+  },
+  {
+    id: 'q-hd-128',
+    topicId: 'E42',
+    difficulty: 'Alta (Ejecución de Medidas Judiciales de Menores Infractores y ARRMI: Ley 3/2004)',
+    originType: '🏛️ OFICIAL BOCM · TEMAS ESPECÍFICOS 41 Y 42 (LO 5/2000 Y ARRMI)',
+    question:
+      'Conforme a la Ley Orgánica 5/2000, de 12 de enero, reguladora de la responsabilidad penal de los menores, y a la Ley 3/2004, de 10 de diciembre, de creación de la Agencia de la Comunidad de Madrid para la Reeducación y Reinserción del Menor Infractor (ARRMI, Temas Específicos 41 y 42), señale la opción CORRECTA:',
+    options: [
+      'A) La LO 5/2000 se aplica a personas mayores de catorce años y menores de dieciocho (cuando el autor sea menor de catorce años no se le exigirá responsabilidad penal y el Ministerio Fiscal remitirá testimonio a la Entidad Pública de protección de menores conforme al artículo 3); correspondiendo en la Comunidad de Madrid la ejecución administrativa de las medidas judiciales privativas y no privativas de libertad y de las medidas cautelares a la agencia ARRMI bajo el control del Juez de Menores.',
+      'B) La LO 5/2000 se aplica desde los doce hasta los veintiún años, y la ejecución de las medidas de internamiento corresponde a Instituciones Penitenciarias de adultos.',
+      'C) Los Equipos Técnicos de los Juzgados y Fiscalía de Menores están integrados únicamente por policías judiciales sin presencia de trabajadores sociales ni educadores.',
+      'D) En la justicia juvenil española está prohibida la conciliación o reparación del daño con la víctima (art. 19 LO 5/2000).',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Temas Específicos 41 y 42 del BOCM n.º 100: mayoría de edad penal a los 18 años y franja de responsabilidad penal juvenil de 14 a <18 años (menores de 14 exentos penalmente y derivados a protección art. 3 LO 5/2000); ejecución en la CAM por la ARRMI (Ley 3/2004).',
+  },
+  {
+    id: 'q-hd-129',
+    topicId: 'E13',
+    difficulty: 'Alta (Políticas de Empleo Ley 3/2023 y Reforma Subsidios RDL 2/2024)',
+    originType: '🏛️ OFICIAL BOCM · TEMA ESPECÍFICO 13 (EMPLEO Y DESEMPLEO)',
+    question:
+      'De acuerdo con el Texto Refundido de la Ley General de la Seguridad Social (RDL 8/2015, reformado por el Real Decreto-ley 2/2024, de 21 de mayo, de simplificación y mejora del nivel asistencial de la protección por desempleo) y la Ley 3/2023 de Empleo (Tema Específico 13), señale la afirmación CORRECTA:',
+    options: [
+      'A) La protección por desempleo se estructura en un nivel contributivo (prestación por desempleo, que exige un período mínimo de cotización de 360 días en los seis años anteriores) y un nivel asistencial (subsidio por desempleo); tras la reforma del RDL 2/2024 se suprimió el mes de espera para acceder al subsidio por agotamiento de la prestación contributiva, se reguló el complemento de apoyo al empleo para compatibilizar el subsidio con el trabajo por cuenta ajena y se facilitó la transición al Ingreso Mínimo Vital.',
+      'B) Para acceder a la prestación contributiva por desempleo se exigen al menos diez años de cotización ininterrumpida en el mismo municipio.',
+      'C) El subsidio por desempleo para mayores de 52 años fue suprimido definitivamente por el Real Decreto-ley 2/2024 y no cotiza para la pensión de jubilación.',
+      'D) El nivel asistencial por desempleo tiene carácter vitalicio para cualquier joven menor de 25 años sin cargas familiares y sin cotización previa.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 13 del BOCM n.º 100: el RDL 2/2024 modernizó el nivel asistencial por desempleo eliminando el mes de espera tras agotar la prestación contributiva, manteniendo el subsidio de mayores de 52 años (que cotiza por jubilación al 125% del tope mínimo) y creando el complemento de apoyo al empleo.',
+  },
+  {
+    id: 'q-hd-130',
+    topicId: 'E14',
+    difficulty: 'Alta (Pensiones No Contributivas de Jubilación e Invalidez: TRLGSS y RD 357/1991)',
+    originType: '🏛️ OFICIAL BOCM · TEMA ESPECÍFICO 14 (PENSIONES NO CONTRIBUTIVAS)',
+    question:
+      'Compare los requisitos legales de edad, discapacidad y residencia de la Pensión No Contributiva de Invalidez y de la Pensión No Contributiva de Jubilación reguladas en los artículos 363 a 372 del TRLGSS (RDL 8/2015) y el Real Decreto 357/1991 (Tema Específico 14), y señale la opción CORRECTA:',
+    options: [
+      'A) La Pensión No Contributiva de Invalidez exige tener dieciocho o más años y menos de sesenta y cinco, residir en territorio español y haberlo hecho durante un período de cinco años (de los cuales dos han de ser consecutivos e inmediatamente anteriores a la fecha de la solicitud) y un grado de discapacidad igual o superior al 65 % (añadiéndose un complemento del 50 % de la cuantía cuando el grado sea igual o superior al 75 % y se acredite la necesidad del concurso de otra persona para los actos esenciales de la vida); mientras que la Pensión No Contributiva de Jubilación exige haber cumplido sesenta y cinco años y residir en territorio español habiéndolo hecho durante diez años entre la edad de dieciséis años y la de devengo de la pensión, de los cuales dos deberán ser consecutivos e inmediatamente anteriores a la solicitud.',
+      'B) Ambas pensiones no contributivas se conceden a partir del 33 % de discapacidad con un único año de empadronamiento municipal previo.',
+      'C) La Pensión No Contributiva de Jubilación exige haber cotizado al menos quince años a la Seguridad Social.',
+      'D) El complemento por necesidad de tercera persona en la Pensión No Contributiva de Invalidez asciende al 100 % de la pensión y se concede a partir del 50 % de discapacidad.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Pregunta clásica del Tema Específico 14 del BOCM n.º 100 (arts. 363 y 369 TRLGSS): PNC Invalidez = 18 a <65 años, 5 años de residencia (2 inmediatamente anteriores) y discapacidad >=65% (complemento del 50% si >=75% + necesidad de tercera persona); PNC Jubilación = >=65 años y 10 años de residencia entre los 16 años y el devengo (2 inmediatamente anteriores), careciendo en ambos casos de rentas o ingresos suficientes.',
+  },
+  {
+    id: 'q-hd-131',
+    topicId: 'E7',
+    difficulty: 'Alta (Agencia Madrileña de Atención Social - AMAS: Decreto 230/2015)',
+    originType: '🏛️ OFICIAL BOCM · TEMAS ESPECÍFICOS 6 Y 7 (ORGANIZACIÓN Y AMAS)',
+    question:
+      'Conforme al Decreto 230/2015, de 20 de octubre, del Consejo de Gobierno, por el que se establece la estructura orgánica de la Agencia Madrileña de Atención Social (AMAS, Temas Específicos 6 y 7 del BOCM), señale cuál es su naturaleza jurídica y su ámbito competencial dentro de la Comunidad de Madrid:',
+    options: [
+      'A) Es un Organismo Autónomo administrativo adscrito a la Consejería competente en materia de familia y asuntos sociales (que sucedió al antiguo Servicio Regional de Bienestar Social), encargado de la gestión directa, administración y mantenimiento de la red de centros públicos de atención especializada a personas mayores (residencias y centros de día), centros de atención a personas con discapacidad intelectual, centros ocupacionales y comedores sociales de su titularidad.',
+      'B) Es una sociedad mercantil privada encargada de tramitar las solicitudes iniciales de Renta Mínima de Inserción en los Ayuntamientos.',
+      'C) Es el órgano judicial encargado de ejercer la curatela representativa de personas adultas con discapacidad en sustitución de la AMAPAD.',
+      'D) Gestiona exclusivamente los hospitales de agudos del Servicio Madrileño de Salud.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Temas Específicos 6 y 7 del BOCM n.º 100 (Ley 9/2015 y Decreto 230/2015): la Agencia Madrileña de Atención Social (AMAS) gestiona la red de centros públicos de atención social especializada (residencias de mayores, centros de día, centros de personas con discapacidad intelectual, centros ocupacionales, etc.).',
+  },
+  {
+    id: 'q-hd-132',
+    topicId: 'E46',
+    difficulty: 'Alta (Agencia de Vivienda Social CAM: Decreto 244/2015 y Decreto 52/2016)',
+    originType: '🏛️ OFICIAL BOCM · TEMA ESPECÍFICO 46 (VIVIENDA SOCIAL Y AVS)',
+    question:
+      'En relación con las políticas públicas de vivienda social en la Comunidad de Madrid, la Agencia de Vivienda Social (AVS, Decreto 244/2015) y el procedimiento de adjudicación de viviendas por especial necesidad social (Decreto 52/2016, Tema Específico 46), señale la afirmación CORRECTA:',
+    options: [
+      'A) La Agencia de Vivienda Social de la Comunidad de Madrid (organismo autónomo que sustituyó al antiguo IVIMA) gestiona el parque público autonómico de vivienda de emergencia social y especial necesidad; asimismo, en los procedimientos judiciales de desahucio o lanzamiento de vivienda habitual de personas en situación de vulnerabilidad social o económica (artículo 441.5 de la Ley de Enjuiciamiento Civil), el juzgado da traslado a los Servicios Sociales para que emitan Informe Social valorando la vulnerabilidad y propongan medidas de alternativa habitacional.',
+      'B) Las viviendas del parque público de la Agencia de Vivienda Social se adjudican mediante subasta libre al mejor postor sin baremo de necesidad social ni límite de ingresos.',
+      'C) Los Servicios Sociales de Atención Primaria tienen prohibido emitir informes de vulnerabilidad residencial ante los Juzgados de Primera Instancia.',
+      'D) La Agencia de Vivienda Social depende del Ministerio de Asuntos Exteriores y solo actúa fuera de la Comunidad de Madrid.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 46 del BOCM n.º 100: la Agencia de Vivienda Social (AVS, Decreto 244/2015) administra el parque público de vivienda social de la CAM (adjudicado por baremo de especial necesidad conforme al Decreto 52/2016), articulándose con los informes sociales de vulnerabilidad en lanzamientos (art. 441.5 LEC).',
+  },
+  {
+    id: 'q-hd-133',
+    topicId: 'E52',
+    difficulty: 'Alta (Drogodependencias y Alcoholismo en la CAM: Ley 5/2002 y Red CAID)',
+    originType: '🏛️ OFICIAL BOCM · TEMAS ESPECÍFICOS 52 Y 53 (CAID Y ALCOHOLISMO)',
+    question:
+      'Conforme a la Ley 5/2002, de 27 de junio, sobre Drogodependencias y otros Trastornos Adictivos de la Comunidad de Madrid, y a la organización de los Centros de Atención Integral a Drogodependientes (CAID) y los programas de reducción del daño y alcoholismo (Temas Específicos 52 y 53), señale la opción CORRECTA:',
+    options: [
+      'A) Los CAID de la Comunidad de Madrid constituyen los dispositivos públicos especializados de atención ambulatoria integral que realizan prevención, valoración biopsicosocial (mediante instrumentos como el EuropASI en adicciones y los cuestionarios AUDIT de la OMS, CAGE y MALT en alcoholismo), desintoxicación, deshabituación, incorporación social y programas de disminución de riesgos y reducción de daños (mantenimiento con agonistas opiáceos, intercambio de jeringuillas y educación sanitaria) desde un equipo interdisciplinar con presencia del Trabajador Social.',
+      'B) Los CAID exigen como requisito previo ineludible para ser atendido que la persona haya logrado por sí sola dos años de abstinencia total antes de la primera entrevista de acogida.',
+      'C) En los programas de reducción del daño está prohibido atender a consumidores en activo o realizar prevención de enfermedades infecciosas como el VIH o la hepatitis C.',
+      'D) Los cuestionarios AUDIT, CAGE y MALT se utilizan exclusivamente para medir las barreras arquitectónicas en viviendas de personas mayores.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Temas Específicos 52 y 53 del BOCM n.º 100: la Ley 5/2002 de la CAM articula la red CAID, las estrategias de reducción del daño en consumidores en activo y el abordaje clínico-social del alcoholismo (AUDIT, CAGE, MALT y UBE).',
+  },
+  {
+    id: 'q-hd-134',
+    topicId: 'E20',
+    difficulty: 'Alta (Cooperación Internacional para el Desarrollo: Ley 1/2023 y Ley 13/1999 CAM)',
+    originType: '🏛️ OFICIAL BOCM · TEMA ESPECÍFICO 20 (COOPERACIÓN AL DESARROLLO)',
+    question:
+      'En relación con la cooperación internacional para el desarrollo en las Administraciones Públicas, la legislación estatal (Ley 1/2023, de 20 de febrero, de Cooperación para el Desarrollo Sostenible y la Solidaridad Global) y la legislación autonómica (Ley 13/1999, de 29 de abril, de Cooperación para el Desarrollo de la Comunidad de Madrid, Tema Específico 20), señale la afirmación CORRECTA:',
+    options: [
+      'A) La Ley estatal 1/2023 derogó la antigua Ley 23/1998, alineó la política española de cooperación con la Agenda 2030 (17 Objetivos de Desarrollo Sostenible) y consagró el compromiso de alcanzar el 0,7 % de la Renta Nacional Bruta en Ayuda Oficial al Desarrollo; mientras que en la Comunidad de Madrid la Ley 13/1999 regula la cooperación descentralizada autonómica, los Planes Generales cuatrienales, el Consejo de Cooperación al Desarrollo y el Registro de ONGD.',
+      'B) Las Comunidades Autónomas y las Entidades Locales tienen constitucionalmente prohibido realizar actuaciones de cooperación al desarrollo o acción humanitaria.',
+      'C) La Ley 13/1999 de la Comunidad de Madrid destina los fondos de cooperación exclusivamente a empresas armamentísticas con ánimo de lucro.',
+      'D) La Agenda 2030 de Naciones Unidas consta únicamente de tres objetivos centrados en el comercio arancelario.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Tema Específico 20 del BOCM n.º 100: articula la nueva Ley estatal 1/2023 de Cooperación para el Desarrollo Sostenible (que sustituyó a la Ley 23/1998 y fijó la meta del 0,7% RNB y la Agenda 2030) con la Ley 13/1999 de Cooperación para el Desarrollo de la Comunidad de Madrid.',
+  },
+  {
+    id: 'q-hd-135',
+    topicId: 'E27',
+    difficulty: 'Alta (Red Pública de Atención Social a Personas con Enfermedad Mental CAM: Decreto 122/1997)',
+    originType: '🏛️ OFICIAL BOCM · TEMAS ESPECÍFICOS 26 Y 27 (SALUD MENTAL Y RED CAM)',
+    question:
+      'De acuerdo con el Decreto 122/1997 y la organización de la Red Pública de Atención Social a personas con enfermedad mental grave y duradera de la Comunidad de Madrid (Temas Específicos 26 y 27), señale cuál es la relación de dispositivos que integran dicha red social especializada y cómo se accede a ella:',
+    options: [
+      'A) La red está integrada por los Centros de Rehabilitación Psicosocial (CRPS), los Centros de Rehabilitación Laboral (CRL), los Centros de Día de soporte social, las Mini-residencias, los Pisos Supervisados, las plazas en pensiones y los Equipos de Apoyo Social Comunitario (EASC); accediéndose a sus recursos en coordinación con el Programa de Continuidad de Cuidados de los Centros de Salud Mental (CSM) del Servicio Madrileño de Salud.',
+      'B) Está integrada únicamente por hospitales psiquiátricos penitenciarios cerrados de internamiento perpetuo sin coordinación con los Centros de Salud Mental.',
+      'C) Los Equipos de Apoyo Social Comunitario (EASC) tienen prohibido intervenir en el propio domicilio o entorno comunitario de la persona con trastorno mental grave.',
+      'D) Los Centros de Rehabilitación Laboral (CRL) son centros residenciales geriátricos para mayores de 85 años con demencia vascular avanzada.',
+    ],
+    correctIndex: 0,
+    explanation:
+      'Temas Específicos 26 y 27 del BOCM n.º 100: la Red Pública de Atención Social a personas con enfermedad mental grave y duradera de la CAM (CRPS, CRL, Centros de Día, Mini-residencias, Pisos Supervisados y EASC) trabaja en estrecha coordinación sociosanitaria con los Centros de Salud Mental (CSM) del SERMAS.',
   },
 ];
