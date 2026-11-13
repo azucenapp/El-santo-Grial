@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react';
 import ThemeSwitch from './ThemeSwitch';
 import * as pdfjsLib from 'pdfjs-dist';
 import {
@@ -978,7 +978,7 @@ function extractLiteralTestQuestionsFromPdf(rawText = '', topicId = 'E1') {
     const correctIdx = { A: 0, B: 1, C: 2, D: 3 }[correctLetter] ?? 0;
 
     extracted.push({
-      id: `q-pdf-lit-${topicId}-${Date.now()}-${qNum}-${extracted.length}`,
+      id: `q-pdf-lit-${topicId}-${qNum}`,
       topicId,
       difficulty: 'Oficial PDF Extenso (Literal)',
       originType: '📘 BATERÍA OFICIAL PDF EXTENSO',
@@ -1554,16 +1554,350 @@ Todo el tratamiento documental observa el deber de secreto profesional y el Regl
 }
 
 // =========================================================================
+// 2B. ARQUITECTURA DESACOPLADA (REACT.MEMO · CERO LAG · ONBOARDING COPILOTO)
+// =========================================================================
+const IsolatedFlowTimer = memo(function IsolatedFlowTimer({
+  netStudyMinutes,
+  onIncrementNetMinute,
+}) {
+  const [timer, setTimer] = useState({ isRunning: false, secondsLeft: 3600 });
+
+  useEffect(() => {
+    if (!timer.isRunning) return;
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev.secondsLeft <= 1) {
+          return { ...prev, isRunning: false, secondsLeft: 0 };
+        }
+        if (prev.secondsLeft % 60 === 0 && onIncrementNetMinute) {
+          onIncrementNetMinute();
+        }
+        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer.isRunning, onIncrementNetMinute]);
+
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-stone-800 border border-amber-300 text-xs">
+      <span className="font-mono font-extrabold text-amber-900 dark:text-amber-300">
+        ⏱ {Math.floor(timer.secondsLeft / 60)}:
+        {String(timer.secondsLeft % 60).padStart(2, '0')}
+      </span>
+      <button
+        onClick={() => setTimer((p) => ({ ...p, isRunning: !p.isRunning }))}
+        className="px-2 py-0.5 rounded bg-[#D97757] text-white font-bold text-[10px] cursor-pointer"
+        title="Cronómetro aislado con React.memo (0 re-renderizados globales)"
+      >
+        {timer.isRunning ? '⏸' : '▶ 60m'}
+      </button>
+      <span
+        className="hidden sm:inline text-[10px] text-stone-500 font-bold"
+        title="Tiempo neto real acumulado"
+      >
+        ({netStudyMinutes}m)
+      </span>
+    </div>
+  );
+});
+
+const ZeroLagBufferedTextarea = memo(function ZeroLagBufferedTextarea({
+  value,
+  onCommit,
+  rows = 16,
+  placeholder = '',
+  className = '',
+  showPacingBar = false,
+}) {
+  const [localText, setLocalText] = useState(value || '');
+  const debounceRef = useRef(null);
+  const latestValueRef = useRef(value || '');
+  const onCommitRef = useRef(onCommit);
+  onCommitRef.current = onCommit;
+
+  useEffect(() => {
+    if (value !== latestValueRef.current) {
+      setLocalText(value || '');
+      latestValueRef.current = value || '';
+    }
+  }, [value]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleChange = (e) => {
+    const nextVal = e.target.value;
+    setLocalText(nextVal);
+    latestValueRef.current = nextVal;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      if (onCommitRef.current) onCommitRef.current(nextVal);
+    }, 260);
+  };
+
+  const handleBlur = () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      if (onCommitRef.current) onCommitRef.current(latestValueRef.current);
+    }
+  };
+
+  const wCount = useMemo(
+    () => (localText.trim() ? localText.trim().split(/\s+/).length : 0),
+    [localText]
+  );
+  const pct = Math.min(100, Math.round((wCount / 1850) * 100));
+  const barColor =
+    wCount < 1350
+      ? 'bg-amber-500'
+      : wCount <= 2450
+      ? 'bg-emerald-600'
+      : 'bg-rose-600';
+
+  return (
+    <div className="space-y-2">
+      {showPacingBar && (
+        <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 border text-[11px] space-y-1.5">
+          <div className="flex flex-wrap justify-between items-center gap-2">
+            <span className="font-bold">
+              ⚡ Editor Fluido 60fps (Buffer Anti-Lag Activo):{' '}
+              <b className="text-[#D97757]">{wCount} palabras</b> (~
+              {Math.round(wCount / 23)} min a bolígrafo · ~
+              {Math.max(1, Math.round(wCount / 130))} min lectura al Tribunal)
+            </span>
+            <span className="font-extrabold">
+              {wCount < 1350
+                ? '🟡 Corto (<1.350 pal)'
+                : wCount <= 2450
+                ? '🟢 Zona Óptima de 10 (1.350 - 2.450 pal)'
+                : '🔴 Extenso (>2.450 pal · Usa Limpiar Cabeceras)'}
+            </span>
+          </div>
+          <div className="w-full h-2 rounded-full bg-stone-200 dark:bg-stone-700 overflow-hidden">
+            <div
+              className={`h-full transition-all ${barColor}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      )}
+      <textarea
+        rows={rows}
+        value={localText}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        className={className}
+      />
+    </div>
+  );
+});
+
+const InteractiveOnboardingModal = memo(function InteractiveOnboardingModal({
+  isOpen,
+  onClose,
+  isSimplifiedMode,
+  onToggleSimplifiedMode,
+  onNavigateModule,
+}) {
+  const [step, setStep] = useState(0);
+  if (!isOpen) return null;
+
+  const steps = [
+    {
+      badge: 'PASO 1 DE 4 · FLUJO DE DOBLE SALIDA (PDFs ➔ TEST Y DESARROLLO)',
+      title: 'Cómo subir tus temas y dejar que la plataforma trabaje por ti',
+      body: 'Cuando subes tus archivos PDF en la pestaña «01 · Temario» o «04 · Desarrollo Ej. 2», el motor detecta automáticamente si es un Tratado Extenso (extrae sus 20 preguntas literales al Banco, el Caso Práctico en 5 pasos al Módulo 05 y el Glosario/Micro-Retos al Módulo 06) o si es una Narración en 5 Actos (limpia cabeceras, numera los 5 Actos, despliega siglas prohibidas y lo archiva listo para estudiar en la Biblioteca Limpia 04B).',
+      actionLabel: '📚 Ir a 01 · Temario Oficial',
+      targetMod: '01',
+    },
+    {
+      badge: 'PASO 2 DE 4 · ALGORITMO LEITNER Y GESTIÓN DEL RIESGO 50/50',
+      title: 'Cómo ganar puntos netos en el Test y no olvidar lo estudiado',
+      body: 'Cada pregunta que fallas o dejas en blanco entra automáticamente en tu «Caja 1 Leitner (+24h)». Además, durante cualquier simulacro puedes pulsar «⚖️ Marcar Duda entre 2 Opciones»: la app descarta visualmente las otras dos alternativas y al finalizar calcula cuántos puntos netos has ganado arriesgando con Esperanza Matemática positiva (+0,33 en CAM/Ayto y +0,375 en SERMAS).',
+      actionLabel: '⚡ Ir a 03 · Simulacros y Cloze',
+      targetMod: '03',
+    },
+    {
+      badge: 'PASO 3 DE 4 · VELOCIDAD MANUSCRITA Y TELEPROMPTER DE TRIBUNAL',
+      title: 'Entrena la escritura a bolígrafo (80-90m) y la lectura pública',
+      body: 'En «04 · Desarrollo Ej. 2» y «05 · Prácticos Ej. 3» dispones del Sorteo de 2 Bolas a ciegas, el Checklist en vivo de los 7 bloques del Tribunal y el Teleprompter Oral a 130 palabras/minuto, que marca en amarillo las frases de más de 45 palabras (🫁 [RESPIRA]) y en verde esmeralda los conectores analíticos (🎯 [ÉNFASIS TRIBUNAL]) para levantar la vista ante el Tribunal.',
+      actionLabel: '✍️ Ir a 04 · Desarrollo Ej. 2',
+      targetMod: '04',
+    },
+    {
+      badge: 'PASO 4 DE 4 · MODO ESENCIAL VS MODO EXPERTO Y GRUPO DE ESTUDIO',
+      title: 'Adapta la densidad visual con 1 clic y comparte con tus amigas',
+      body: 'Si en algún momento tú o tus compañeras de grupo preferís una pantalla más limpia sin métricas avanzadas ni tablas técnicas, activa abajo el «🌱 Modo Esencial (Sin Sobrecarga)». Tus datos, notas y Cajas Leitner son 100% privados en tu perfil, y podéis intercambiar paquetes de preguntas sin duplicados desde la pestaña 06.',
+      actionLabel: '🎯 Empezar en 00 · Mi Plan Diario',
+      targetMod: '00',
+    },
+  ];
+
+  const current = steps[step];
+
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-stone-900 max-w-2xl w-full rounded-2xl p-6 border-2 border-[#D97757] shadow-2xl space-y-4">
+        <div className="flex justify-between items-center border-b pb-3">
+          <div>
+            <span className="text-[10px] font-extrabold text-[#D97757] uppercase block">
+              🧭 GUÍA RÁPIDA DE BIENVENIDA Y MANUAL DE VUELO (ONBOARDING 60 SEG)
+            </span>
+            <h3 className="text-base font-extrabold mt-0.5">{current.title}</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="px-2.5 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-xs font-bold cursor-pointer"
+          >
+            ✕ Cerrar Guía
+          </button>
+        </div>
+
+        <div className="flex gap-1.5">
+          {steps.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setStep(idx)}
+              className={`h-2 flex-1 rounded-full cursor-pointer transition ${
+                idx === step
+                  ? 'bg-[#D97757]'
+                  : idx < step
+                  ? 'bg-emerald-600'
+                  : 'bg-stone-200 dark:bg-stone-700'
+              }`}
+            />
+          ))}
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-stone-800 border space-y-2.5 text-xs leading-relaxed">
+          <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold text-[10px]">
+            {current.badge}
+          </span>
+          <p className="text-stone-700 dark:text-stone-200 text-xs pt-1">
+            {current.body}
+          </p>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
+          <div>
+            <b className="text-emerald-950 dark:text-emerald-200 block">
+              🎚️ Selector de Densidad de Interfaz (Para ti o tus compañeras):
+            </b>
+            <span className="text-[11px] text-emerald-800 dark:text-emerald-300">
+              {isSimplifiedMode
+                ? '🌱 Modo Esencial Activo: Oculta métricas secundarias y deja solo lo básico.'
+                : '🚀 Modo Experto Tribunal Activo: Muestra todas las métricas, baremos y auditorías.'}
+            </span>
+          </div>
+          <button
+            onClick={onToggleSimplifiedMode}
+            className={`px-3 py-1.5 rounded-xl font-extrabold text-xs cursor-pointer shrink-0 transition ${
+              isSimplifiedMode
+                ? 'bg-emerald-700 text-white'
+                : 'bg-slate-900 text-white'
+            }`}
+          >
+            {isSimplifiedMode
+              ? '🌱 Modo Esencial (Cambiar a Experto)'
+              : '🚀 Modo Experto (Cambiar a Esencial)'}
+          </button>
+        </div>
+
+        <div className="flex flex-wrap justify-between items-center gap-2 pt-2 border-t">
+          <button
+            disabled={step === 0}
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            className="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-xs font-bold cursor-pointer disabled:opacity-40"
+          >
+            ← Paso Anterior
+          </button>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                onNavigateModule(current.targetMod);
+                onClose();
+              }}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold cursor-pointer"
+            >
+              {current.actionLabel}
+            </button>
+
+            {step < steps.length - 1 ? (
+              <button
+                onClick={() => setStep((s) => s + 1)}
+                className="px-4 py-2 rounded-xl bg-[#D97757] text-white text-xs font-extrabold cursor-pointer"
+              >
+                Siguiente Paso →
+              </button>
+            ) : (
+              <button
+                onClick={onClose}
+                className="px-4 py-2 rounded-xl bg-emerald-700 text-white text-xs font-extrabold cursor-pointer"
+              >
+                ✔ ¡Entendido, a por la plaza!
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// =========================================================================
 // 3. COMPONENTE PRINCIPAL APP
 // =========================================================================
 export default function App() {
   const [activeModule, setActiveModule] = useState('00');
   const [selectedCleanEj2Id, setSelectedCleanEj2Id] = useState(null);
+  const [isHeaderCompact, setIsHeaderCompact] = useState(false);
+  const [ej2SubTab, setEj2SubTab] = useState('clean'); // 'clean' (04B Archivo Limpio) | 'workshop' (04 Taller Editor)
+  const [plazosDuelOpen, setPlazosDuelOpen] = useState(false);
+  const [plazosFilter, setPlazosFilter] = useState('Todos');
+  const [bankSubTab, setBankSubTab] = useState('questions'); // 'questions' | 'pdfs'
+  const [memoriaSubTab, setMemoriaSubTab] = useState('all'); // 'all' | 'retos' | 'glosario' | 'cuentos' | 'grupo'
+  const [onlyReviewFlashcards, setOnlyReviewFlashcards] = useState(false);
+  const [collapsedStories, setCollapsedStories] = useState({});
+  const [practicalBlindSim, setPracticalBlindSim] = useState({
+    isActive: false,
+    secondsLeft: 5400,
+    isRunning: false,
+    activeCaseBadge: '',
+    activeEnunciado: '',
+  });
+
+  useEffect(() => {
+    if (!practicalBlindSim.isActive || !practicalBlindSim.isRunning) return;
+    const t = setInterval(() => {
+      setPracticalBlindSim((prev) => {
+        if (prev.secondsLeft <= 1)
+          return { ...prev, isRunning: false, secondsLeft: 0 };
+        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [practicalBlindSim.isActive, practicalBlindSim.isRunning]);
   const [theme, setTheme] = useState(
     () => localStorage.getItem('cam_theme_v5') || 'light'
   );
   const isDark = theme === 'dark';
   const [statusBanner, setStatusBanner] = useState('');
+
+  useEffect(() => {
+    if (!statusBanner) return;
+    const t = setTimeout(() => setStatusBanner(''), 5000);
+    return () => clearTimeout(t);
+  }, [statusBanner]);
 
   // 1. SELECTOR MULTI-CONVOCATORIA ('cam_a2' | 'sermas' | 'ayto')
   const [activeConvocatoria, setActiveConvocatoria] = useState(
@@ -1666,27 +2000,30 @@ export default function App() {
     () => loadPrivateUserData(activeProfile).netStudyMinutes
   );
 
-  // CRONÓMETRO REAL DE SESIÓN ACTIVA (60 MIN POR BLOQUE - ROI REAL)
-  const [flowTimer, setFlowTimer] = useState({
-    isRunning: false,
-    secondsLeft: 3600,
-  });
+  // MODO ESENCIAL VS EXPERTO Y ONBOARDING INTERACTIVO (ANTI-SOBRECARGA COGNITIVA)
+  const [isSimplifiedMode, setIsSimplifiedMode] = useState(
+    () => localStorage.getItem('cam_simplified_mode_v5') === 'true'
+  );
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(
+    () => !localStorage.getItem('cam_onboarding_seen_v5')
+  );
 
-  useEffect(() => {
-    if (!flowTimer.isRunning) return;
-    const interval = setInterval(() => {
-      setFlowTimer((prev) => {
-        if (prev.secondsLeft <= 1) {
-          return { ...prev, isRunning: false, secondsLeft: 0 };
-        }
-        if (prev.secondsLeft % 60 === 0) {
-          setNetStudyMinutes((m) => m + 1);
-        }
-        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [flowTimer.isRunning]);
+  const toggleSimplifiedMode = useCallback(() => {
+    setIsSimplifiedMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('cam_simplified_mode_v5', String(next));
+      return next;
+    });
+  }, []);
+
+  const closeOnboardingModal = useCallback(() => {
+    localStorage.setItem('cam_onboarding_seen_v5', 'true');
+    setIsOnboardingOpen(false);
+  }, []);
+
+  const handleIncrementNetMinute = useCallback(() => {
+    setNetStudyMinutes((m) => m + 1);
+  }, []);
 
   const switchUserProfile = (newProfileId) => {
     const priv = loadPrivateUserData(newProfileId);
@@ -1751,16 +2088,24 @@ export default function App() {
   const [bankSearchText, setBankSearchText] = useState('');
 
   const [questionBank, setQuestionBank] = useState(() => {
-    const saved = localStorage.getItem('cam_qbank_v5');
-    if (saved) {
-      const parsed = JSON.parse(saved).filter(
-        (q) => !isDefectiveOrAdminQuestion(q)
-      );
-      if (parsed.length >= 30) return parsed;
-    }
-    return HIGH_DIFFICULTY_60_QUESTIONS.filter(
+    const base60 = HIGH_DIFFICULTY_60_QUESTIONS.filter(
       (q) => !isDefectiveOrAdminQuestion(q)
     );
+    const saved = localStorage.getItem('cam_qbank_v5');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved).filter(
+          (q) => !isDefectiveOrAdminQuestion(q)
+        );
+        if (parsed.length > 0) {
+          const existingIds = new Set(parsed.map((q) => q.id));
+          return [...parsed, ...base60.filter((q) => !existingIds.has(q.id))];
+        }
+      } catch (e) {
+        console.warn('Error cargando banco:', e);
+      }
+    }
+    return base60;
   });
 
   const [peerReviewQueue, setPeerReviewQueue] = useState(() => {
@@ -1844,6 +2189,18 @@ export default function App() {
     timeLeft: 420,
     evaluationResult: null,
   });
+
+  useEffect(() => {
+    if (!skeletonTrainer.isOpen) return;
+    const t = setInterval(() => {
+      setSkeletonTrainer((prev) => {
+        if (!prev.isOpen || prev.timeLeft <= 1)
+          return { ...prev, timeLeft: 0 };
+        return { ...prev, timeLeft: prev.timeLeft - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [skeletonTrainer.isOpen]);
 
   // SIMULADOR REAL DE SORTEO DE 2 BOLAS A CIEGAS (2.º EJERCICIO · 80 MIN)
   const [twoBallsSim, setTwoBallsSim] = useState({
@@ -2101,6 +2458,16 @@ export default function App() {
     return OFFICIAL_CAM_TOPICS;
   }, [activeConvocatoria]);
 
+  const isEstatalCommonTopic = (t) => {
+    const txt = `${t.title || ''} ${t.lawUpdate || ''}`;
+    return (
+      (t.equivalentIds && t.equivalentIds.length > 0) ||
+      /\b(Constituci[oó]n|39\/2015|40\/2015|5\/2015|TREBEP|39\/2006|LAPAD|1\/2013|888\/2022|8\/2021|LOPIVI|3\/2007|1\/2004|19\/2021|Ingreso\s+M[ií]nimo\s+Vital|3\/2018|Protecci[oó]n\s+de\s+Datos|14\/1986|16\/2003|41\/2002|4\/2000|12\/2009)\b/i.test(
+        txt
+      )
+    );
+  };
+
   const filteredTopics = useMemo(() => {
     return activeCatalog.filter((t) => {
       const isGen = /^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(t.id);
@@ -2111,6 +2478,8 @@ export default function App() {
           ? !isGen
           : selectedBlockFilter === 'Generales'
           ? isGen
+          : selectedBlockFilter === 'Estatal'
+          ? isEstatalCommonTopic(t)
           : t.block === selectedBlockFilter;
       const matchQuery =
         !searchTopicQuery.trim() ||
@@ -2314,22 +2683,27 @@ export default function App() {
     if (activeEssayView?.id === essayId) {
       setActiveEssayView(remaining.length > 0 ? remaining[0] : null);
     }
+    if (selectedCleanEj2Id === essayId) {
+      setSelectedCleanEj2Id(remaining.length > 0 ? remaining[0].id : null);
+    }
     setStatusBanner(
       '🗑️ Tema eliminado correctamente. Ya puedes subir o generar la nueva versión.'
     );
-    setTimeout(() => setStatusBanner(''), 4000);
   };
 
   const clearAllSavedEssays = async () => {
+    const essayIds = new Set(essaysLibrary.map((e) => e.id));
     for (const es of essaysLibrary) {
       await deleteFromStore(STORE_ESSAYS, es.id);
+      await deleteFromStore(STORE_DOCS, es.id);
     }
     setEssaysLibrary([]);
+    setDocumentsLibrary((prev) => prev.filter((d) => !essayIds.has(d.id)));
     setActiveEssayView(null);
+    setSelectedCleanEj2Id(null);
     setStatusBanner(
-      '🧹 Todos los temas guardados en el Módulo 04 han sido eliminados.'
+      '🧹 Todos los temas guardados en el Módulo 04/04B han sido eliminados.'
     );
-    setTimeout(() => setStatusBanner(''), 4000);
   };
 
   const processPdfUpload = async (
@@ -2520,8 +2894,22 @@ export default function App() {
     }
 
     if (processedDocs.length > 0) {
+      const incomingKeys = new Set(
+        processedDocs.map((d) => `${d.topicId}__${d.docRole || d.name}`)
+      );
+      const duplicateOldDocs = documentsLibrary.filter((d) =>
+        incomingKeys.has(`${d.topicId}__${d.docRole || d.name}`)
+      );
+      for (const oldDoc of duplicateOldDocs) {
+        await deleteFromStore(STORE_DOCS, oldDoc.id);
+      }
       await saveToStore(STORE_DOCS, processedDocs);
-      setDocumentsLibrary((prev) => [...processedDocs, ...prev]);
+      setDocumentsLibrary((prev) => [
+        ...processedDocs,
+        ...prev.filter(
+          (d) => !incomingKeys.has(`${d.topicId}__${d.docRole || d.name}`)
+        ),
+      ]);
 
       if (processedEssays.length > 0) {
         const replacedTopicIds = new Set(processedEssays.map((e) => e.topicId));
@@ -2737,7 +3125,7 @@ export default function App() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [clozeSession]);
+  }, [Boolean(clozeSession), clozeSession?.isFinished]);
 
   const submitClozeAnswer = (chosenValue) => {
     if (!clozeSession) return;
@@ -2773,6 +3161,18 @@ export default function App() {
   };
   // SIMULADOR CON GESTIÓN DEL RIESGO (DUDA ENTRE 2 OPCIONES + NAVEGADOR DE 2 VUELTAS)
   const [examSession, setExamSession] = useState(null);
+
+  useEffect(() => {
+    if (!examSession || examSession.isFinished) return;
+    const timer = setInterval(() => {
+      setExamSession((prev) => {
+        if (!prev || prev.isFinished) return prev;
+        if (prev.timeLeft <= 1) return { ...prev, timeLeft: 0 };
+        return { ...prev, timeLeft: prev.timeLeft - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [Boolean(examSession), examSession?.isFinished]);
 
   const launchStrategicSimulator = (
     topicFilterId = null,
@@ -2816,6 +3216,9 @@ export default function App() {
         const uniqueMono = generatedMono.filter(
           (q) => !existingQTexts.has(q.question.trim().toLowerCase())
         );
+        if (uniqueMono.length > 0) {
+          setQuestionBank((prev) => [...uniqueMono, ...prev]);
+        }
         pool = [...topicSpecificQs, ...uniqueMono];
       }
     } else {
@@ -2833,17 +3236,33 @@ export default function App() {
     }
     if (pool.length === 0) pool = [...cleanBank];
 
-    const adaptedPool = pool.map((q) => {
-      if (!isAyto || q.options.length <= 3) return q;
-      const correctOpt = q.options[q.correctIndex] || q.options[0];
-      const wrongOpts = q.options
-        .filter((_, idx) => idx !== q.correctIndex)
-        .slice(0, 2);
-      const threeOpts = [correctOpt, ...wrongOpts].map(
-        (txt, idx) =>
-          `${['A', 'B', 'C'][idx]}) ${txt.replace(/^[A-D]\)\s*/i, '')}`
+    // Barajar aleatoriamente el orden de las preguntas y la letra de la opción correcta (A/B/C/D o A/B/C en Ayto)
+    const shuffleArr = (arr) => [...arr].sort(() => Math.random() - 0.5);
+    const shuffledPool = shuffleArr(pool);
+
+    const adaptedPool = shuffledPool.map((q) => {
+      const cleanOpts = (q.options || []).map((txt, idx) => ({
+        text: txt.replace(/^[A-Da-d][).]\s*/i, '').trim(),
+        isCorrect: idx === q.correctIndex,
+      }));
+
+      const selectedOpts =
+        isAyto && cleanOpts.length > 3
+          ? shuffleArr([
+              cleanOpts.find((o) => o.isCorrect) || cleanOpts[0],
+              ...shuffleArr(cleanOpts.filter((o) => !o.isCorrect)).slice(0, 2),
+            ])
+          : shuffleArr(cleanOpts);
+
+      const newCorrectIdx = Math.max(
+        0,
+        selectedOpts.findIndex((o) => o.isCorrect)
       );
-      return { ...q, options: threeOpts, correctIndex: 0 };
+      const relabeledOpts = selectedOpts.map(
+        (o, idx) => `${['A', 'B', 'C', 'D'][idx]}) ${o.text}`
+      );
+
+      return { ...q, options: relabeledOpts, correctIndex: newCorrectIdx };
     });
 
     const targetQuestions = splitPart
@@ -3044,6 +3463,7 @@ export default function App() {
     a.href = url;
     a.download = `PaqueteGrupo_TS_${PROFILES[activeProfile].name}.json`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   const importGroupPackageJson = async (file) => {
@@ -3101,7 +3521,9 @@ const exportFullMasterBackup = () => {
     questionBank,
     essaysLibrary,
     documentsLibrary,
-    storiesLibrary
+    storiesLibrary,
+    customPracticalCases,
+    flashcardMastery
   };
   const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -3121,6 +3543,9 @@ const restoreFullMasterBackup = async (file) => {
   try {
     const raw = await file.text();
     const data = JSON.parse(raw);
+    if (data.customNames) setCustomNames(data.customNames);
+    if (data.netStudyMinutes !== undefined)
+      setNetStudyMinutes(Number(data.netStudyMinutes) || 0);
     if (data.topicData) setTopicData(data.topicData);
     if (data.failedQuestionIds) setFailedQuestionIds(data.failedQuestionIds);
     if (data.leitnerBoxes) setLeitnerBoxes(data.leitnerBoxes);
@@ -3146,6 +3571,14 @@ const restoreFullMasterBackup = async (file) => {
       setStoriesLibrary(data.storiesLibrary);
       localStorage.setItem('cam_stories_logic_v5', JSON.stringify(data.storiesLibrary));
     }
+    if (data.customPracticalCases) {
+      setCustomPracticalCases(data.customPracticalCases);
+      localStorage.setItem('cam_custom_cases_v5', JSON.stringify(data.customPracticalCases));
+    }
+    if (data.flashcardMastery) {
+      setFlashcardMastery(data.flashcardMastery);
+      localStorage.setItem('cam_flashcard_mastery_v5', JSON.stringify(data.flashcardMastery));
+    }
     setStatusBanner('✅ Restauración completa verificada al 100%: Todos tus temas, historias lógicas, notas y avances han sido recuperados.');
   } catch {
     setStatusBanner('⚠️ El archivo de copia de seguridad no es válido.');
@@ -3170,150 +3603,210 @@ const restoreFullMasterBackup = async (file) => {
   }, [essaysLibrary]);
 
   const MODULES_NAV = [
-    { id: '00', code: '00', label: 'Mi preparación y 4 Bloques' },
-    { id: '01', code: '01', label: `Temario (${activeCatalog.length})` },
-    { id: '02', code: '02', label: `Banco (${questionBank.length})` },
+    { id: '00', code: '00', label: '🎯 Mi Plan y Bloques' },
+    { id: '01', code: '01', label: `📚 Temario (${activeCatalog.length})` },
+    {
+      id: '02',
+      code: '02',
+      label: `🗄️ Banco y PDFs (${questionBank.length})`,
+    },
     {
       id: '03',
       code: '03',
-      label: `Simulacros (Caja 1: ${leitnerCounts.box1})`,
+      label: `⚡ Simulacros y Plazos (Caja 1: ${leitnerCounts.box1})`,
     },
-    { id: '04', code: '04', label: `🛠️ Taller Ej. 2 (${essaysLibrary.length})` },
     {
-      id: '04B',
-      code: '04B',
-      label: `✅ Ej. 2 Corregidos (${correctedEj2Topics.length}/67)`,
+      id: '04',
+      code: '04',
+      label: `✍️ Desarrollo Ej. 2 (${correctedEj2Topics.length}/67)`,
     },
-    { id: '05', code: '05', label: '10 Supuestos (5 Dim)' },
-    { id: '06', code: '06', label: `Lab PDF (${documentsLibrary.length})` },
+    {
+      id: '05',
+      code: '05',
+      label: `📋 Prácticos Ej. 3 (${
+        OFFICIAL_10_PRACTICAL_CASES.length + customPracticalCases.length
+      })`,
+    },
     {
       id: '07',
-      code: '07',
-      label: `📖 Historias y Lógica (${storiesLibrary.length})`,
+      code: '06',
+      label: `🧠 Memoria, Glosario y Grupo (${storiesLibrary.length})`,
     },
-    { id: '08', code: '08', label: `Grupo (${peerReviewQueue.length})` },
   ];
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] dark:bg-stone-950 text-slate-800 dark:text-stone-100 font-sans pb-14 transition-colors">
-      {/* CABECERA MULTI-CONVOCATORIA, CRONÓMETRO DE FLUJO, BACKUP 100% Y MULTI-PERFIL */}
-      <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 py-3 space-y-2.5">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#D97757] text-white flex items-center justify-center font-extrabold shadow-xs">
-                TS
-              </div>
-              <div>
-                <span className="text-[11px] font-bold text-[#D97757] uppercase tracking-wider">
-                  PLATAFORMA TRIPLE CONVOCATORIA · CAM (83) · SERMAS (50) · AYTO
-                  MADRID (90)
-                </span>
-                <h1 className="text-base font-bold text-slate-800 dark:text-white">
-                  Sistema Integral de Plaza · Paridad Universal, Leitner,
-                  Gestión del Riesgo y Auditoría 2026
-                </h1>
-              </div>
-            </div>
+      {/* CABECERA COMPACTA E INTELIGENTE (OPTIMIZADA PARA MÓVIL Y ESCRITORIO) */}
+      <header className="bg-white/95 dark:bg-stone-900/95 backdrop-blur-xs border-b border-stone-200 dark:border-stone-800 sticky top-0 z-30 shadow-xs">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 space-y-2">
+          {!isHeaderCompact && (
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2">
+              <div className="flex items-center justify-between w-full lg:w-auto gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#D97757] text-white flex items-center justify-center font-extrabold text-xs sm:text-sm shadow-xs shrink-0">
+                    TS
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#D97757] uppercase tracking-wider block leading-tight">
+                      TRIPLE CONVOCATORIA · CAM (83) · SERMAS (50) · AYTO (90) · TRONCO ESTATAL
+                    </span>
+                    <h1 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-white leading-tight">
+                      Sistema Integral de Plaza · Leitner, Riesgo 50/50, Cloze y Auditoría Tribunal
+                    </h1>
+                  </div>
+                </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-stone-800 border border-amber-300 text-xs">
-                <span className="font-mono font-extrabold text-amber-900 dark:text-amber-300">
-                  ⏱ {Math.floor(flowTimer.secondsLeft / 60)}:
-                  {String(flowTimer.secondsLeft % 60).padStart(2, '0')}
-                </span>
                 <button
-                  onClick={() =>
-                    setFlowTimer((p) => ({ ...p, isRunning: !p.isRunning }))
-                  }
-                  className="px-2 py-0.5 rounded bg-[#D97757] text-white font-bold text-[10px] cursor-pointer"
+                  onClick={() => setIsHeaderCompact(true)}
+                  className="lg:hidden px-2 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 border text-[10px] font-bold text-stone-600 dark:text-stone-300 shrink-0 cursor-pointer"
+                  title="Compactar cabecera para ganar pantalla en el móvil"
                 >
-                  {flowTimer.isRunning ? '⏸' : '▶ 60m'}
+                  🔼 Compactar
                 </button>
-                <span
-                  className="text-[10px] text-stone-500 font-bold"
-                  title="Tiempo neto real acumulado"
-                >
-                  ({netStudyMinutes}m netos)
-                </span>
               </div>
 
-              <select
-                value={activeConvocatoria}
-                onChange={(e) => {
-                  setActiveConvocatoria(e.target.value);
-                  setSelectedBlockFilter('Todos');
-                  setExamSession(null);
-                  setStatusBanner(
-                    `🔄 Convocatoria activa: ${
-                      e.target.value === 'sermas'
-                        ? 'SERMAS Estatutario (50 Temas · 173 Plazas · -0,25)'
-                        : e.target.value === 'ayto'
-                        ? 'Ayuntamiento de Madrid (90 Temas · 3 Opciones · -1/3)'
-                        : 'CAM Orden 1049/2026 (83 Temas · 380 Plazas · -1/3)'
-                    }`
-                  );
-                  setTimeout(() => setStatusBanner(''), 4000);
-                }}
-                className="px-3 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 text-xs font-extrabold bg-[#FAF8F5] dark:bg-stone-800 cursor-pointer"
-              >
-                <option value="cam_a2">
-                  🏛️ CAM Orden 1049/2026 (83 Temas · 380 Plazas)
-                </option>
-                <option value="sermas">
-                  🏥 SERMAS Res. 20/10/2026 (50 Temas · 173 Plazas)
-                </option>
-                <option value="ayto">
-                  🏢 Ayuntamiento de Madrid (90 Temas · 3 Opciones)
-                </option>
-              </select>
+              <div className="flex flex-wrap items-center gap-1.5 w-full lg:w-auto justify-between lg:justify-end">
+                <IsolatedFlowTimer
+                  netStudyMinutes={netStudyMinutes}
+                  onIncrementNetMinute={handleIncrementNetMinute}
+                />
 
-              <button
-                onClick={syncCommonTopicsAcrossExams}
-                className="px-2.5 py-1.5 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold cursor-pointer"
-                title="Sincroniza preguntas equivalentes entre CAM, SERMAS y Ayuntamiento"
-              >
-                🔗 Puente Comunes
-              </button>
+                <select
+                  value={activeConvocatoria}
+                  onChange={(e) => {
+                    setActiveConvocatoria(e.target.value);
+                    setSelectedBlockFilter('Todos');
+                    setExamSession(null);
+                    setStatusBanner(
+                      `🔄 Convocatoria activa: ${
+                        e.target.value === 'sermas'
+                          ? 'SERMAS Estatutario (50 Temas · 173 Plazas · -0,25)'
+                          : e.target.value === 'ayto'
+                          ? 'Ayuntamiento de Madrid (90 Temas · 3 Opciones · -1/3)'
+                          : 'CAM Orden 1049/2026 (83 Temas · 380 Plazas · -1/3)'
+                      }`
+                    );
+                    setTimeout(() => setStatusBanner(''), 4000);
+                  }}
+                  className="px-2.5 py-1 rounded-xl border border-stone-300 dark:border-stone-700 text-[11px] font-extrabold bg-[#FAF8F5] dark:bg-stone-800 cursor-pointer max-w-[210px] sm:max-w-none truncate"
+                >
+                  <option value="cam_a2">
+                    🏛️ CAM Orden 1049/2026 (83 Temas)
+                  </option>
+                  <option value="sermas">
+                    🏥 SERMAS Res. 20/10/2026 (50 Temas)
+                  </option>
+                  <option value="ayto">
+                    🏢 Ayuntamiento Madrid (90 Temas)
+                  </option>
+                </select>
 
-              <button
-                onClick={exportFullMasterBackup}
-                className="px-2.5 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold cursor-pointer"
-                title="Descargar Copia de Seguridad Total 100% (.json)"
-              >
-                🛡️ Backup
-              </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={syncCommonTopicsAcrossExams}
+                    className="px-2 py-1 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-[11px] font-bold cursor-pointer"
+                    title="Sincroniza preguntas equivalentes entre CAM, SERMAS y Ayuntamiento"
+                  >
+                    🔗 Puente
+                  </button>
 
-              <span className="px-2.5 py-1.5 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border text-xs font-bold text-[#D97757]">
-                👤 {PROFILES[activeProfile].name}
-              </span>
-              <ThemeSwitch
-                isDark={isDark}
-                onToggle={() => setTheme(isDark ? 'light' : 'dark')}
-              />
+                  <button
+                    onClick={toggleSimplifiedMode}
+                    className={`px-2 py-1 rounded-xl text-[11px] font-bold cursor-pointer border transition ${
+                      isSimplifiedMode
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                        : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 border-stone-300 dark:border-stone-700'
+                    }`}
+                    title="Alternar entre Modo Esencial (sin sobrecarga visual) y Modo Experto Completo"
+                  >
+                    {isSimplifiedMode ? '🌱 Esencial' : '🚀 Experto'}
+                  </button>
+
+                  <button
+                    onClick={() => setIsOnboardingOpen(true)}
+                    className="px-2 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold cursor-pointer"
+                    title="Abrir Guía Interactiva de Funcionamiento en 4 Pasos"
+                  >
+                    🧭 Guía
+                  </button>
+
+                  <button
+                    onClick={exportFullMasterBackup}
+                    className="px-2 py-1 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-[11px] font-bold cursor-pointer"
+                    title="Descargar Copia de Seguridad Total 100% (.json)"
+                  >
+                    🛡️ Backup
+                  </button>
+
+                  <span className="hidden sm:inline-block px-2 py-1 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border text-[11px] font-bold text-[#D97757]">
+                    👤 {PROFILES[activeProfile].name}
+                  </span>
+                  <ThemeSwitch
+                    isDark={isDark}
+                    onToggle={() => setTheme(isDark ? 'light' : 'dark')}
+                  />
+                  <button
+                    onClick={() => setIsHeaderCompact(true)}
+                    className="hidden lg:inline-block px-2 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 border text-[10px] font-bold text-stone-600 dark:text-stone-300 cursor-pointer"
+                    title="Modo lectura sin distracciones (compactar cabecera)"
+                  >
+                    🔼
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          <nav className="flex overflow-x-auto md:flex-wrap gap-1.5 pt-1.5 pb-1 border-t border-stone-100 dark:border-stone-800 no-scrollbar">
-            {MODULES_NAV.map((m) => (
+          <nav className="flex items-center overflow-x-auto md:flex-wrap gap-1.5 pt-1 pb-0.5 border-t border-stone-100 dark:border-stone-800 no-scrollbar">
+            {isHeaderCompact && (
               <button
-                key={m.id}
-                onClick={() => setActiveModule(m.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
-                  activeModule === m.id
-                    ? 'bg-[#D97757] text-white shadow-sm ring-2 ring-[#D97757]/30'
-                    : 'bg-[#FAF8F5] dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200/70 border border-stone-200/70 dark:border-stone-700'
-                }`}
+                onClick={() => setIsHeaderCompact(false)}
+                className="px-2.5 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-800 text-[11px] font-extrabold shrink-0 cursor-pointer"
+                title="Mostrar barra superior completa"
               >
-                <span className="opacity-75 font-mono text-[10px]">
-                  {m.code}
-                </span>
-                <span>{m.label}</span>
+                🔽 Mostrar Barra Superior
               </button>
-            ))}
+            )}
+            {MODULES_NAV.map((m) => {
+              const isCurrent =
+                activeModule === m.id ||
+                (m.id === '04' && activeModule === '04B') ||
+                (m.id === '02' && activeModule === '06') ||
+                (m.id === '07' && activeModule === '08');
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    if (m.id === '04' && correctedEj2Topics.length > 0) {
+                      setEj2SubTab('clean');
+                    }
+                    setActiveModule(m.id);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
+                    isCurrent
+                      ? 'bg-[#D97757] text-white shadow-sm ring-2 ring-[#D97757]/30'
+                      : 'bg-[#FAF8F5] dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200/70 border border-stone-200/70 dark:border-stone-700'
+                  }`}
+                >
+                  <span className="opacity-75 font-mono text-[10px]">
+                    {m.code}
+                  </span>
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
       </header>
+
+      {/* MODAL DE ONBOARDING INTERACTIVO Y SELECTOR DE COMPLEJIDAD VISUAL */}
+      <InteractiveOnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={closeOnboardingModal}
+        isSimplifiedMode={isSimplifiedMode}
+        onToggleSimplifiedMode={toggleSimplifiedMode}
+        onNavigateModule={(modId) => setActiveModule(modId)}
+      />
 
       {/* MODAL DEL ENTRENADOR DE ESQUELETO EN FRÍO (7 MINUTOS - ACTIVE RECALL) */}
       {skeletonTrainer.isOpen && skeletonTrainer.topic && (
@@ -3328,20 +3821,26 @@ const restoreFullMasterBackup = async (file) => {
                   [{skeletonTrainer.topic.id}] {skeletonTrainer.topic.title}
                 </h3>
               </div>
-              <button
-                onClick={() =>
-                  setSkeletonTrainer({
-                    isOpen: false,
-                    topic: null,
-                    userRecallText: '',
-                    timeLeft: 420,
-                    evaluationResult: null,
-                  })
-                }
-                className="text-xs font-bold px-2.5 py-1 rounded bg-stone-200 dark:bg-stone-800 cursor-pointer"
-              >
-                ✕ Cerrar
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-950 font-mono font-extrabold text-xs">
+                  ⏱ {Math.floor(skeletonTrainer.timeLeft / 60)}:
+                  {String(skeletonTrainer.timeLeft % 60).padStart(2, '0')}
+                </span>
+                <button
+                  onClick={() =>
+                    setSkeletonTrainer({
+                      isOpen: false,
+                      topic: null,
+                      userRecallText: '',
+                      timeLeft: 420,
+                      evaluationResult: null,
+                    })
+                  }
+                  className="text-xs font-bold px-2.5 py-1 rounded bg-stone-200 dark:bg-stone-800 cursor-pointer"
+                >
+                  ✕ Cerrar
+                </button>
+              </div>
             </div>
 
             <p className="text-xs text-stone-600 dark:text-stone-300">
@@ -3350,13 +3849,13 @@ const restoreFullMasterBackup = async (file) => {
               recuerdes de este tema antes de abrir el texto:
             </p>
 
-            <textarea
+            <ZeroLagBufferedTextarea
               rows={6}
               value={skeletonTrainer.userRecallText}
-              onChange={(e) =>
+              onCommit={(nextVal) =>
                 setSkeletonTrainer((prev) => ({
                   ...prev,
-                  userRecallText: e.target.value,
+                  userRecallText: nextVal,
                 }))
               }
               placeholder="1. Introducción y marco constitucional... 2. Ley 12/2022... 3. Plazos e instrumentos..."
@@ -3494,36 +3993,95 @@ const restoreFullMasterBackup = async (file) => {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-xs flex flex-wrap justify-between items-center gap-2">
-                  <span>
-                    <b>🔒 Modo Examen Real (Sin Ayuda):</b> Redacta el esquema y desarrollo sin mirar el PDF. Palabras escritas:{' '}
-                    <b>
-                      {twoBallsSim.userDraft.trim()
-                        ? twoBallsSim.userDraft.trim().split(/\s+/).length
-                        : 0}
-                    </b>{' '}
-                    / Meta 1.850 pal.
-                  </span>
-                  <button
-                    onClick={() =>
-                      setTwoBallsSim((prev) => ({
-                        ...prev,
-                        isRunning: !prev.isRunning,
-                      }))
-                    }
-                    className="px-2.5 py-1 rounded bg-amber-700 text-white font-bold text-[11px] cursor-pointer"
-                  >
-                    {twoBallsSim.isRunning ? '⏸ Pausar Reloj' : '▶ Reanudar'}
-                  </button>
-                </div>
+                {(() => {
+                  const wCount = twoBallsSim.userDraft.trim()
+                    ? twoBallsSim.userDraft.trim().split(/\s+/).length
+                    : 0;
+                  const pct = Math.min(100, Math.round((wCount / 1850) * 100));
+                  const barColor =
+                    wCount < 1350
+                      ? 'bg-amber-500'
+                      : wCount <= 2350
+                      ? 'bg-emerald-600'
+                      : 'bg-rose-600';
+                  return (
+                    <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 text-xs space-y-2">
+                      <div className="flex flex-wrap justify-between items-center gap-2">
+                        <span>
+                          <b>🔒 Modo Examen Real:</b> Palabras escritas:{' '}
+                          <b>{wCount}</b> / Meta óptima 1.850 pal (~
+                          {Math.round(wCount / 23)} min a mano)
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => {
+                              const t = twoBallsSim.chosenTopic;
+                              const eps = extractSubEpigraphsFromTitle(
+                                t?.title || ''
+                              );
+                              const templateText = `1. INTRODUCCIÓN TÉCNICA, ENCUADRE CONSTITUCIONAL Y OBJETO DEL TEMA
+El abordaje científico-técnico de «${
+                                t?.title || ''
+                              }» parte del Estado Social y Democrático de Derecho (artículos 1.1, 9.2, 10.1, 14 y 39 a 50 de la Constitución Española, en adelante CE, tras la reforma del artículo 49 de enero de 2024), del Estatuto de Autonomía de la Comunidad de Madrid (Ley Orgánica 3/1983, artículo 26.1.23) y de la Ley 12/2022, de 21 de diciembre, de Servicios Sociales de la Comunidad de Madrid, consolidando el tránsito desde la beneficencia discrecional hacia el reconocimiento de derechos subjetivos exigibles.
 
-                <textarea
+${eps
+                                .map(
+                                  (ep, idx) =>
+                                    `${idx + 2}. ${ep.toUpperCase()}
+[Desarrollar aquí contenido normativo, dispositivos de red, instrumentos y autores...]
+`
+                                )
+                                .join('\n')}
+${
+                                eps.length + 2
+                              }. SÍNTESIS METODOLÓGICA, DIAGNÓSTICO E INDICADORES DE EVALUACIÓN (CIERRE AL TRIBUNAL)
+En conclusión, cabe destacar que la intervención profesional sobre este epígrafe se articula desde la Atención Social Primaria bajo la dirección exclusiva del Trabajador/a Social como Profesional de Referencia (artículo 16.2 de la Ley 12/2022), integrando la valoración en la Historia Social Única electrónica (Decreto 51/2023), el Informe Social prescriptor (artículo 69) y el Plan Individual de Atención Social en el plazo máximo de 10 días hábiles (artículo 40), con evaluación continua a los 3 y 6 meses y observancia de la Ley Orgánica 3/2018 y el Código Deontológico.`;
+                              setTwoBallsSim((prev) => ({
+                                ...prev,
+                                userDraft: prev.userDraft
+                                  ? `${prev.userDraft}
+
+${templateText}`
+                                  : templateText,
+                              }));
+                            }}
+                            className="px-2.5 py-1 rounded bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-[11px] cursor-pointer"
+                            title="Inserta el esqueleto numerado de epígrafes + introducción y conclusión comodín de alta puntuación"
+                          >
+                            ✨ Insertar Plantilla Arranque/Cierre 10/10
+                          </button>
+                          <button
+                            onClick={() =>
+                              setTwoBallsSim((prev) => ({
+                                ...prev,
+                                isRunning: !prev.isRunning,
+                              }))
+                            }
+                            className="px-2.5 py-1 rounded bg-amber-700 text-white font-bold text-[11px] cursor-pointer"
+                          >
+                            {twoBallsSim.isRunning
+                              ? '⏸ Pausar Reloj'
+                              : '▶ Reanudar'}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-stone-200 dark:bg-stone-700 overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${barColor}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <ZeroLagBufferedTextarea
                   rows={12}
                   value={twoBallsSim.userDraft}
-                  onChange={(e) =>
+                  onCommit={(nextVal) =>
                     setTwoBallsSim((prev) => ({
                       ...prev,
-                      userDraft: e.target.value,
+                      userDraft: nextVal,
                     }))
                   }
                   placeholder="1. INTRODUCCIÓN Y ENCUADRE CONSTITUCIONAL... 2. DESARROLLO DE SUB-EPÍGRAFES OFICIALES... 3. LEY 12/2022 (ARTS. 16.2, 40 Y 69)... 4. CONCLUSIÓN Y EVALUACIÓN..."
@@ -3593,8 +4151,15 @@ const restoreFullMasterBackup = async (file) => {
                 ? tribunalReader.text.trim().split(/\s+/).length
                 : 0;
               const targetReadMinutes = Math.max(1, Math.round(words / 130));
-              const sentences = tribunalReader.text
+              const protectedForSpeech = tribunalReader.text
+                .replace(
+                  /\b(Arts?|P[aá]gs?|N\.?[º°]|n\.?[º°]|D|Dña|Dr|Dra|Sr|Sra|Cap|Vol|n[uú]m|s|S)\.\s*/g,
+                  '$1__DOT__ '
+                )
+                .replace(/(\d+)\.(\d+)/g, '$1__DOT__$2');
+              const sentences = protectedForSpeech
                 .split(/(?<=[.?!])\s+/)
+                .map((s) => s.replace(/__DOT__/g, '.'))
                 .filter((s) => s.trim().length > 0);
               const longSentencesCount = sentences.filter(
                 (s) => s.trim().split(/\s+/).length > 45
@@ -3764,7 +4329,11 @@ const restoreFullMasterBackup = async (file) => {
                       const wCount = sent.trim().split(/\s+/).length;
                       const isLong = wCount > 45;
                       const hasLaw =
-                        /\b(Ley|Decreto|Art[ií]culo|Art\.|Constituci[oó]n|Plazo|10\s+d[ií]as|PIAS|HSUe)\b/i.test(
+                        /\b(Ley|Decreto|Art[ií]culo|Art\.|Constituci[oó]n|Plazo|10\s+d[ií]as|PIAS|PIIS|HSUe)\b/i.test(
+                          sent
+                        );
+                      const hasTransitionConnector =
+                        /(?:^\s*(?:[1-6]\.|ACTO\s+[IVX]+)|\b(?:En\s+conclusi[oó]n|Cabe\s+destacar|Por\s+consiguiente|En\s+consecuencia|Asimismo|No\s+obstante|Desde\s+la\s+perspectiva|Señores\s+miembros\s+del\s+Tribunal)\b)/i.test(
                           sent
                         );
                       return (
@@ -3773,9 +4342,19 @@ const restoreFullMasterBackup = async (file) => {
                           className={`inline ${
                             isLong
                               ? 'bg-amber-100/90 dark:bg-amber-950/60 px-1 rounded border-b border-amber-400'
+                              : hasTransitionConnector
+                              ? 'bg-emerald-50/90 dark:bg-emerald-950/50 px-1 rounded border-l-4 border-emerald-600'
                               : ''
                           }`}
                         >
+                          {hasTransitionConnector && (
+                            <span
+                              className="text-[10px] font-sans font-extrabold text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded bg-emerald-200/80 mx-1"
+                              title="Conector de transición o inicio de epígrafe: enfatiza el tono y mira al Tribunal"
+                            >
+                              🎯 [ÉNFASIS TRIBUNAL]
+                            </span>
+                          )}
                           {hasLaw ? <b>{sent}</b> : sent}{' '}
                           {isLong && (
                             <span
@@ -4213,7 +4792,8 @@ const restoreFullMasterBackup = async (file) => {
               </div>
             </div>
 
-            {/* CALCULADORA OFICIAL DEL BAREMO RMER DEL SERMAS */}
+            {/* CALCULADORA OFICIAL DEL BAREMO RMER DEL SERMAS (OCULTA EN MODO ESENCIAL SALVO CONVOCATORIA SERMAS) */}
+            {(!isSimplifiedMode || activeConvocatoria === 'sermas') && (
             <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border-2 border-sky-600/30 shadow-xs space-y-4">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-2 border-b pb-3">
                 <div>
@@ -4314,6 +4894,7 @@ const restoreFullMasterBackup = async (file) => {
                 </div>
               </div>
             </div>
+            )}
           </div>
         )}
 
@@ -4363,6 +4944,13 @@ const restoreFullMasterBackup = async (file) => {
                         /^(G|S-[1-7]$|AY-([1-9]|1\d|20)$)/.test(t.id)
                       ).length
                     } · Solo Test Ej. 1)`,
+                  },
+                  {
+                    id: 'Estatal',
+                    label: `🇪🇸 Tronco Estatal y Común (${
+                      activeCatalog.filter((t) => isEstatalCommonTopic(t))
+                        .length
+                    } · Puntúa en CAM, SERMAS, Ayto y Estado)`,
                   },
                   {
                     id: 'Todos',
@@ -4529,9 +5117,10 @@ const restoreFullMasterBackup = async (file) => {
                           type="file"
                           accept=".pdf"
                           multiple
-                          onChange={(e) =>
-                            processPdfUpload(e.target.files, true, t)
-                          }
+                          onChange={(e) => {
+                            processPdfUpload(e.target.files, true, t);
+                            e.target.value = '';
+                          }}
                           className="hidden"
                         />
                       </label>
@@ -4556,7 +5145,40 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {/* MÓDULO 02 · BANCO DE PREGUNTAS (60 OFICIALES + MUTACIÓN)          */}
         {/* ================================================================= */}
-        {activeModule === '02' && (
+        {(activeModule === '02' || activeModule === '06') && (
+          <div className="mb-4 p-2 rounded-2xl bg-white dark:bg-stone-900 border shadow-xs flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => {
+                  setBankSubTab('questions');
+                  setActiveModule('02');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                  activeModule === '02' && bankSubTab === 'questions'
+                    ? 'bg-[#D97757] text-white shadow-xs'
+                    : 'bg-[#FAF8F5] dark:bg-stone-800 border text-stone-700 dark:text-stone-300'
+                }`}
+              >
+                ❓ 1. Banco de Preguntas Verificado ({questionBank.length})
+              </button>
+              <button
+                onClick={() => {
+                  setBankSubTab('pdfs');
+                  setActiveModule('02');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                  activeModule === '06' ||
+                  (activeModule === '02' && bankSubTab === 'pdfs')
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-[#FAF8F5] dark:bg-stone-800 border text-stone-700 dark:text-stone-300'
+                }`}
+              >
+                📄 2. Laboratorio de Archivos PDF ({documentsLibrary.length})
+              </button>
+            </div>
+          </div>
+        )}
+        {activeModule === '02' && bankSubTab === 'questions' && (
           <div className="space-y-4">
             <div className="bg-white dark:bg-stone-900 p-5 rounded-2xl border space-y-3">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-3">
@@ -4862,6 +5484,136 @@ const restoreFullMasterBackup = async (file) => {
                       🎓 Autores/Órganos
                     </button>
                   </div>
+                </div>
+
+                {/* COMPARADOR INTERACTIVO ANTI-CONFUSIÓN DE PLAZOS Y SILENCIOS (CAM vs SERMAS vs AYTO vs ESTADO) */}
+                <div className="p-4 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-300 space-y-3">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-sky-800 dark:text-sky-300 block">
+                        ⚖️ TABLA INTERACTIVA ANTI-CONFUSIÓN DE TRIBUNAL · CAM vs SERMAS vs AYUNTAMIENTO vs ESTADO
+                      </span>
+                      <h3 className="text-sm font-bold">
+                        Contraste directo de Plazos, Silencios Administrativos, Baremos y Artículos Nucleares
+                      </h3>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={exportMasterCheatSheet6PagesPDF}
+                        className="px-3 py-1.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold cursor-pointer"
+                      >
+                        📊 Descargar PDF 6 Págs
+                      </button>
+                      <button
+                        onClick={() => setPlazosDuelOpen(!plazosDuelOpen)}
+                        className="px-3 py-1.5 rounded-xl bg-sky-800 text-white text-xs font-bold cursor-pointer"
+                      >
+                        {plazosDuelOpen
+                          ? '🔼 Ocultar Tabla de Plazos'
+                          : '👁️ Abrir Comparador de Plazos y Silencios'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {plazosDuelOpen && (
+                    <div className="space-y-2.5 pt-2 border-t border-sky-200 text-xs">
+                      <div className="flex flex-wrap gap-1.5">
+                        {['Todos', 'CAM Ley 12/2022', 'Dependencia/Discap.', 'Estado LPAC/IMV', 'SERMAS/Ayto'].map(
+                          (cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => setPlazosFilter(cat)}
+                              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] cursor-pointer ${
+                                plazosFilter === cat
+                                  ? 'bg-sky-800 text-white'
+                                  : 'bg-white dark:bg-stone-900 border'
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          )
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {[
+                          {
+                            cat: 'CAM Ley 12/2022',
+                            proc: 'Elaboración del PIAS / PIIS (Art. 40 Ley 12/2022 CM)',
+                            plazo: '10 días hábiles tras valoración diagnóstica',
+                            silencio: 'Impulso de oficio por TS de Referencia (Art. 16.2)',
+                          },
+                          {
+                            cat: 'CAM Ley 12/2022',
+                            proc: 'Informe Social Prescriptor Exclusivo (Art. 69 Ley 12/2022)',
+                            plazo: 'Preceptivo y exclusivo del Trabajador/a Social',
+                            silencio: 'Historia Social Única interoperable (Decreto 51/2023)',
+                          },
+                          {
+                            cat: 'Dependencia/Discap.',
+                            proc: 'Resolución de Grado y PIA en Dependencia (Decreto 54/2015 CAM y Ley 39/2006)',
+                            plazo: 'Máximo 6 meses desde solicitud (BVD: G.I 25-49, G.II 50-74, G.III 75-100)',
+                            silencio: 'Silencio Negativo / Desestimatorio',
+                          },
+                          {
+                            cat: 'Dependencia/Discap.',
+                            proc: 'Reconocimiento de Grado de Discapacidad (RD 888/2022 · 4 Baremos BLA/BDGP/BFCA/BRP)',
+                            plazo: 'Máximo 6 meses (Clases 0 a 4 · Pensión No Contrib. >=65% + complemento >=75%)',
+                            silencio: 'Silencio Negativo (Reclamación previa 30 días hábiles, Art. 71 LRJS)',
+                          },
+                          {
+                            cat: 'Estado LPAC/IMV',
+                            proc: 'Ingreso Mínimo Vital (Ley 19/2021 INSS) vs RMI CAM (Ley 15/2001)',
+                            plazo: 'IMV: 6 meses para resolver | RMI CAM: 3 meses para resolver',
+                            silencio: 'Ambos con Silencio Administrativo Negativo',
+                          },
+                          {
+                            cat: 'Estado LPAC/IMV',
+                            proc: 'Recursos LPAC 39/2015: Alzada vs Reposición Potestativo',
+                            plazo: 'Interposición: 1 mes (si acto expreso) | Resolución: 3 meses (Alzada) / 1 mes (Reposición)',
+                            silencio: 'Desestimatorio (salvo alzada contra silencio con excepción legal)',
+                          },
+                          {
+                            cat: 'SERMAS/Ayto',
+                            proc: 'SERMAS Concurso-Oposición (Res. 20/10/2026) vs CAM (Orden 1049/2026) vs Ayto Madrid',
+                            plazo: 'CAM: 80+5 pregs (-1/3) | SERMAS: 100+10 (-0,25) | Ayto: 120+9 (3 opciones A/B/C, -1/3)',
+                            silencio: 'Baremo RMER SERMAS: 0,008 SNS / 0,006 Otras AAPP (SAMUR/Ayto) / 0,003 Privado',
+                          },
+                          {
+                            cat: 'SERMAS/Ayto',
+                            proc: 'Tarjeta Social / Emergencia Ayuntamiento de Madrid (Ordenanza 10/2022)',
+                            plazo: 'Resolución máxima 3 meses · Tramitación de urgencia en Atención Social Primaria',
+                            silencio: 'Silencio Negativo (Prestación económica municipal)',
+                          },
+                        ]
+                          .filter(
+                            (r) =>
+                              plazosFilter === 'Todos' || r.cat === plazosFilter
+                          )
+                          .map((item, i) => (
+                            <div
+                              key={i}
+                              className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-sky-200 space-y-1"
+                            >
+                              <div className="flex justify-between items-center">
+                                <span className="text-[10px] font-extrabold text-[#D97757] uppercase">
+                                  {item.cat}
+                                </span>
+                              </div>
+                              <p className="font-bold text-slate-800 dark:text-stone-100">
+                                {item.proc}
+                              </p>
+                              <p className="text-emerald-800 dark:text-emerald-300 font-semibold">
+                                ⏱️ <b>Plazo / Regla:</b> {item.plazo}
+                              </p>
+                              <p className="text-stone-500 text-[11px]">
+                                ⚖️ <b>Efecto / Clave:</b> {item.silencio}
+                              </p>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {clozeSession && (
@@ -5582,7 +6334,49 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {/* MÓDULO 04 · AULA DE TEMAS 10/10, RE-AUDITORÍA, SIGLAS Y PDF       */}
         {/* ================================================================= */}
-        {activeModule === '04' && (
+        {(activeModule === '04' || activeModule === '04B') && (
+          <div className="mb-4 p-2 rounded-2xl bg-white dark:bg-stone-900 border shadow-xs flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => {
+                  setEj2SubTab('clean');
+                  setActiveModule('04B');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                  activeModule === '04B' ||
+                  (activeModule === '04' && ej2SubTab === 'clean' && correctedEj2Topics.length > 0)
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-[#FAF8F5] dark:bg-stone-800 border text-stone-700 dark:text-stone-300'
+                }`}
+              >
+                ✅ 1. Biblioteca Limpia para Estudiar ({correctedEj2Topics.length}/67 Temas Específicos)
+              </button>
+              <button
+                onClick={() => {
+                  setEj2SubTab('workshop');
+                  setActiveModule('04');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                  activeModule === '04' &&
+                  (ej2SubTab === 'workshop' || correctedEj2Topics.length === 0)
+                    ? 'bg-[#D97757] text-white shadow-xs'
+                    : 'bg-[#FAF8F5] dark:bg-stone-800 border text-stone-700 dark:text-stone-300'
+                }`}
+              >
+                🛠️ 2. Taller Editor y Corrector 1-Clic ({essaysLibrary.length} borradores)
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={launchTwoBallsBlindDraw}
+                className="px-3.5 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold cursor-pointer"
+              >
+                🎱 Sorteo Oficial 2 Bolas a Ciegas (80m)
+              </button>
+            </div>
+          </div>
+        )}
+        {activeModule === '04' && (ej2SubTab === 'workshop' || correctedEj2Topics.length === 0) && (
           <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-4">
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-3">
               <div>
@@ -5672,9 +6466,10 @@ const restoreFullMasterBackup = async (file) => {
                     type="file"
                     accept=".pdf"
                     multiple
-                    onChange={(e) =>
-                      processPdfUpload(e.target.files, true, null)
-                    }
+                    onChange={(e) => {
+                      processPdfUpload(e.target.files, true, null);
+                      e.target.value = '';
+                    }}
                     className="hidden"
                   />
                 </label>
@@ -5939,13 +6734,14 @@ const restoreFullMasterBackup = async (file) => {
                           type="file"
                           accept=".pdf"
                           multiple
-                          onChange={(e) =>
+                          onChange={(e) => {
                             processPdfUpload(
                               e.target.files,
                               true,
                               findTopicAcrossAllCatalogs(activeEssayView.topicId)
-                            )
-                          }
+                            );
+                            e.target.value = '';
+                          }}
                           className="hidden"
                         />
                       </label>
@@ -6610,11 +7406,11 @@ const restoreFullMasterBackup = async (file) => {
                   );
                 })()}
 
-                <textarea
+                <ZeroLagBufferedTextarea
                   rows={18}
+                  showPacingBar={true}
                   value={activeEssayView.text}
-                  onChange={async (e) => {
-                    const newText = e.target.value;
+                  onCommit={async (newText) => {
                     const newAudit = auditDocumentTextValidity(
                       newText,
                       activeEssayView.topicId
@@ -6648,7 +7444,7 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {/* MÓDULO 04B · TEMARIO DEFINITIVO EJERCICIO 2 (CORREGIDO Y LISTO)   */}
         {/* ================================================================= */}
-        {activeModule === '04B' && (
+        {(activeModule === '04B' || (activeModule === '04' && ej2SubTab === 'clean' && correctedEj2Topics.length > 0)) && (
           <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-5 shadow-xs">
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-4">
               <div>
@@ -6670,7 +7466,10 @@ const restoreFullMasterBackup = async (file) => {
 
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setActiveModule('04')}
+                  onClick={() => {
+                    setEj2SubTab('workshop');
+                    setActiveModule('04');
+                  }}
                   className="px-3.5 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-xs font-bold cursor-pointer"
                 >
                   🛠️ Ir al Taller / Corrector (04)
@@ -6681,9 +7480,10 @@ const restoreFullMasterBackup = async (file) => {
                     type="file"
                     accept=".pdf"
                     multiple
-                    onChange={(e) =>
-                      processPdfUpload(e.target.files, true, null)
-                    }
+                    onChange={(e) => {
+                      processPdfUpload(e.target.files, true, null);
+                      e.target.value = '';
+                    }}
                     className="hidden"
                   />
                 </label>
@@ -6808,6 +7608,7 @@ const restoreFullMasterBackup = async (file) => {
                           <button
                             onClick={() => {
                               setActiveEssayView(cleanActive);
+                              setEj2SubTab('workshop');
                               setActiveModule('04');
                             }}
                             className="px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-bold cursor-pointer"
@@ -6961,9 +7762,10 @@ const restoreFullMasterBackup = async (file) => {
                   <input
                     type="file"
                     accept=".json"
-                    onChange={(e) =>
-                      restoreFullMasterBackup(e.target.files?.[0])
-                    }
+                    onChange={(e) => {
+                      restoreFullMasterBackup(e.target.files?.[0]);
+                      e.target.value = '';
+                    }}
                     className="hidden"
                   />
                 </label>
@@ -7005,35 +7807,222 @@ const restoreFullMasterBackup = async (file) => {
                         <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
                           {c.enunciado}
                         </p>
-                        <p className="text-[10px] text-emerald-800 dark:text-emerald-300 mt-1.5">
-                          <b>Claves de Tribunal:</b> {c.claves}
-                        </p>
+                        {(!practicalBlindSim.isActive ||
+                          practicalBlindSim.activeCaseBadge !== c.badge) && (
+                          <p className="text-[10px] text-emerald-800 dark:text-emerald-300 mt-1.5">
+                            <b>Claves de Tribunal:</b> {c.claves}
+                          </p>
+                        )}
                       </div>
-                      <button
-                        onClick={() => {
-                          const customModelResolution =
-                            c.fullResolutionText || buildCaseResolutionText(c);
-                          setPracticalCaseText(customModelResolution);
-                          setStatusBanner(
-                            `✍️ Cargada la Resolución en 5 Pasos de "${c.badge}". Pulsa el botón verde de abajo para auditarla.`
-                          );
-                          setTimeout(() => setStatusBanner(''), 4000);
-                        }}
-                        className="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] cursor-pointer mt-2"
-                      >
-                        📥 Cargar Resolución 10/10 de este Supuesto
-                      </button>
+                      <div className="grid grid-cols-2 gap-1.5 mt-2">
+                        <button
+                          onClick={() => {
+                            setPracticalBlindSim({
+                              isActive: true,
+                              secondsLeft: 5400,
+                              isRunning: true,
+                              activeCaseBadge: c.badge,
+                              activeEnunciado: c.enunciado,
+                            });
+                            setPracticalCaseText('');
+                            setPracticalRubricResult(null);
+                            setStatusBanner(
+                              `⏱️ Modo Examen en Frío (90m) activado para "${c.badge}". ¡Pistas ocultas! Redacta siguiendo el Checklist en vivo.`
+                            );
+                            setTimeout(() => setStatusBanner(''), 4500);
+                          }}
+                          className="py-1.5 px-2 rounded-lg bg-[#D97757] hover:bg-[#c26446] text-white font-bold text-[10px] cursor-pointer"
+                        >
+                          ✍️ Resolver en Frío (90m)
+                        </button>
+                        <button
+                          onClick={() => {
+                            const customModelResolution =
+                              c.fullResolutionText ||
+                              buildCaseResolutionText(c);
+                            setPracticalBlindSim((prev) => ({
+                              ...prev,
+                              isActive: false,
+                              isRunning: false,
+                            }));
+                            setPracticalCaseText(customModelResolution);
+                            setStatusBanner(
+                              `📥 Cargada la Resolución Magistral 10/10 de "${c.badge}". Pulsa el botón verde de abajo para auditarla.`
+                            );
+                            setTimeout(() => setStatusBanner(''), 4000);
+                          }}
+                          className="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-[10px] cursor-pointer"
+                        >
+                          📥 Ver Solución 10/10
+                        </button>
+                      </div>
                     </div>
                   );
                 }
               )}
             </div>
 
-            <textarea
+            {practicalBlindSim.isActive && (
+              <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400 text-xs space-y-1.5">
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <span className="font-extrabold text-amber-950 dark:text-amber-200">
+                    🔒 SIMULACRO CIEGO 3.er EJERCICIO ACTIVO · {practicalBlindSim.activeCaseBadge}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded bg-white dark:bg-stone-900 font-mono font-extrabold text-amber-900 dark:text-amber-200 border">
+                      ⏱ {Math.floor(practicalBlindSim.secondsLeft / 60)}:
+                      {String(practicalBlindSim.secondsLeft % 60).padStart(
+                        2,
+                        '0'
+                      )}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setPracticalBlindSim((p) => ({
+                          ...p,
+                          isRunning: !p.isRunning,
+                        }))
+                      }
+                      className="px-2.5 py-1 rounded bg-amber-700 text-white font-bold cursor-pointer"
+                    >
+                      {practicalBlindSim.isRunning ? '⏸ Pausar' : '▶ Reanudar'}
+                    </button>
+                    <button
+                      onClick={() =>
+                        setPracticalBlindSim((p) => ({
+                          ...p,
+                          isActive: false,
+                          isRunning: false,
+                        }))
+                      }
+                      className="px-2 py-1 rounded bg-stone-200 dark:bg-stone-800 font-bold cursor-pointer"
+                    >
+                      ✕ Salir Modo Frío
+                    </button>
+                  </div>
+                </div>
+                <p className="text-stone-700 dark:text-stone-300 italic">
+                  «{practicalBlindSim.activeEnunciado}»
+                </p>
+              </div>
+            )}
+
+            {(() => {
+              const lower = practicalCaseText.toLowerCase();
+              const wCount = practicalCaseText.trim()
+                ? practicalCaseText.trim().split(/\s+/).length
+                : 0;
+              const checks = [
+                {
+                  label: '1. Encuadre y Demanda',
+                  ok: /acogida|demanda|método\s+científico|richmond|hamilton|deontol[oó]gico|16\.2/.test(
+                    lower
+                  ),
+                },
+                {
+                  label: '2. Técnicas y Escalas',
+                  ok: /historia\s+social|hsue|51\/2023|informe\s+social|69|genograma|ecomapa|gij[oó]n|zarit|barthel|bvd|val[oó]rame/.test(
+                    lower
+                  ),
+                },
+                {
+                  label: '3. Diagnóstico y Pronóstico',
+                  ok: /diagn[oó]stic[ao]|pron[oó]stico|riesgo|vulnerabilidad|convivencial|socioecon[oó]mic/.test(
+                    lower
+                  ),
+                },
+                {
+                  label: '4. Marco Legal 2026',
+                  ok: /constituci[oó]n|12\/2022|39\/2015|39\/2006|4\/2023|8\/2021|888\/2022|10\/2022/.test(
+                    lower
+                  ),
+                },
+                {
+                  label: '5. Obj. General y Específicos',
+                  ok: /objetivo\s+general|objetivos\s+espec[ií]ficos/.test(
+                    lower
+                  ),
+                },
+                {
+                  label: '6. PIAS/PIIS (10d) y Catálogo',
+                  ok: /10\s+d[ií]as|art[ií]culo\s+40|garantizada|condicionada|derecho\s+subjetivo/.test(
+                    lower
+                  ),
+                },
+                {
+                  label: `7. Red (${
+                    activeConvocatoria === 'ayto'
+                      ? 'Ayto: SAMUR/CAD/CAF'
+                      : activeConvocatoria === 'sermas'
+                      ? 'SERMAS: UTS/Horus/CSM'
+                      : 'CAM: ASP/ASE/AMAS/CAID'
+                  }) + Eval + RGPD`,
+                  ok:
+                    /evaluaci[oó]n|indicador/.test(lower) &&
+                    /protecci[oó]n\s+de\s+datos|3\/2018|rgpd|secreto\s+profesional/.test(
+                      lower
+                    ),
+                },
+              ];
+              const doneCount = checks.filter((c) => c.ok).length;
+              return (
+                <div className="p-3 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border space-y-2 text-xs">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
+                    <span className="font-extrabold text-slate-700 dark:text-stone-200">
+                      🧭 CHECKLIST EN VIVO DE LOS 7 BLOQUES DEL TRIBUNAL ({doneCount}/7 cubiertos · {wCount} palabras)
+                    </span>
+                    <button
+                      onClick={() => {
+                        const skeleton7 = `1. ENCUADRE METODOLÓGICO, RECEPCIÓN DE LA DEMANDA Y PROFESIONAL DE REFERENCIA (ART. 16.2 LEY 12/2022)
+
+2. RECOGIDA DE INFORMACIÓN, TÉCNICAS, HISTORIA SOCIAL ÚNICA (DECRETO 51/2023) Y ESCALAS VALIDADAS
+
+3. DIAGNÓSTICO SOCIAL DIFERENCIAL POR ÁREAS Y PRONÓSTICO EVOLUTIVO
+
+4. MARCO NORMATIVO VIGENTE APLICABLE AL SUPUESTO (ESTATAL, AUTONÓMICO CAM Y LOCAL)
+
+5. FORMULACIÓN DE OBJETIVOS (OBJETIVO GENERAL Y OBJETIVOS ESPECÍFICOS OPERATIVOS)
+
+6. DISEÑO DEL PLAN INDIVIDUAL (PIAS / PIIS EN 10 DÍAS HÁBILES, ART. 40), INFORME SOCIAL (ART. 69) Y PRESTACIONES GARANTIZADAS VS CONDICIONADAS
+
+7. COORDINACIÓN EN RED INTERINSTITUCIONAL, EVALUACIÓN (3 Y 6 MESES), INDICADORES Y PROTECCIÓN DE DATOS (LO 3/2018 Y SECRETO PROFESIONAL)
+`;
+                        setPracticalCaseText((prev) =>
+                          prev ? `${prev}
+
+${skeleton7}` : skeleton7
+                        );
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-[11px] cursor-pointer"
+                    >
+                      ✨ Insertar Esqueleto de 7 Pasos Vacío
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
+                    {checks.map((ch, idx) => (
+                      <div
+                        key={idx}
+                        className={`px-2 py-1.5 rounded-lg border text-[10px] font-bold transition ${
+                          ch.ok
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border-emerald-400'
+                            : 'bg-white dark:bg-stone-900 text-stone-500 border-stone-200 dark:border-stone-700'
+                        }`}
+                      >
+                        {ch.ok ? '✅ ' : '⬜ '}
+                        {ch.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            <ZeroLagBufferedTextarea
               rows={14}
+              showPacingBar={true}
               value={practicalCaseText}
-              onChange={(e) => setPracticalCaseText(e.target.value)}
-              placeholder="Selecciona uno de los 10 supuestos oficiales de arriba o redacta aquí tu propia resolución siguiendo los 7 bloques metodológicos..."
+              onCommit={(nextVal) => setPracticalCaseText(nextVal)}
+              placeholder="Selecciona uno de los supuestos de arriba (en Modo Frío 90m o viendo su Solución 10/10) o pulsa «✨ Insertar Esqueleto de 7 Pasos Vacío» para empezar a redactar..."
               className="w-full p-4 rounded-xl border text-xs bg-[#FAF8F5] dark:bg-stone-800 font-serif leading-relaxed"
             />
 
@@ -7077,7 +8066,7 @@ const restoreFullMasterBackup = async (file) => {
 
                   const netMatches = (
                     lower.match(
-                      /atenci[oó]n\s+social\s+primaria|especializada|salud\s+mental|horus|samur|fiscal|educativa|caid|crps|amapad|amas/g
+                      /atenci[oó]n\s+social\s+primaria|especializada|salud\s+mental|horus|hcis|uts|samur|madrid\s+salud|cad|caf|tarjeta\s+familias|fiscal|educativa|caid|crps|amapad|amas|cepi|cvo/g
                     ) || []
                   ).length;
                   const d4 = Math.min(2.0, (netMatches / 4) * 2.0);
@@ -7096,6 +8085,10 @@ const restoreFullMasterBackup = async (file) => {
 
                   const total = Math.max(0, Math.min(10, rawTotal)).toFixed(2);
                   setCalcEj3(Number(total));
+                  setPracticalBlindSim((prev) => ({
+                    ...prev,
+                    isRunning: false,
+                  }));
                   setPracticalRubricResult({
                     d1: d1.toFixed(2),
                     d2: d2.toFixed(2),
@@ -7256,7 +8249,7 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {/* MÓDULO 06 · LABORATORIO DOCUMENTAL PDF                            */}
         {/* ================================================================= */}
-        {activeModule === '06' && (
+        {(activeModule === '06' || (activeModule === '02' && bankSubTab === 'pdfs')) && (
           <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-4">
             <div className="flex justify-between items-center">
               <div>
@@ -7277,7 +8270,10 @@ const restoreFullMasterBackup = async (file) => {
                     type="file"
                     accept=".pdf"
                     multiple
-                    onChange={(e) => processPdfUpload(e.target.files, false)}
+                    onChange={(e) => {
+                      processPdfUpload(e.target.files, false);
+                      e.target.value = '';
+                    }}
                     className="hidden"
                   />
                 </label>
@@ -7355,7 +8351,43 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {/* MÓDULO 07 · HISTORIAS LÓGICAS, CUENTOS DE CASO Y MNEMOTECNIA      */}
         {/* ================================================================= */}
-        {activeModule === '07' && (
+        {(activeModule === '07' || activeModule === '08') && (
+          <div className="mb-4 p-2 rounded-2xl bg-white dark:bg-stone-900 border shadow-xs flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'all', label: '🗂️ 1. Vista Completa' },
+                { id: 'retos', label: '⚡ 2. Solo Micro-Retos 15s' },
+                { id: 'glosario', label: '📌 3. Solo Flashcards Glosario' },
+                { id: 'cuentos', label: '📖 4. Solo Cuentos / 5 Actos' },
+                {
+                  id: 'grupo',
+                  label: `👥 5. Grupo de Estudio y Perfiles (${peerReviewQueue.length})`,
+                },
+              ].map((tab) => {
+                const isAct =
+                  (activeModule === '08' && tab.id === 'grupo') ||
+                  (activeModule === '07' && memoriaSubTab === tab.id);
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setMemoriaSubTab(tab.id);
+                      setActiveModule('07');
+                    }}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                      isAct
+                        ? 'bg-[#D97757] text-white shadow-xs'
+                        : 'bg-[#FAF8F5] dark:bg-stone-800 border text-stone-700 dark:text-stone-300'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {activeModule === '07' && memoriaSubTab !== 'grupo' && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-4 shadow-xs">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-3">
@@ -7480,6 +8512,60 @@ const restoreFullMasterBackup = async (file) => {
                 </div>
               </div>
 
+              {(() => {
+                let totalCards = 0,
+                  masteredCount = 0,
+                  reviewCount = 0;
+                storiesLibrary.forEach((st) => {
+                  (st.microRetos || []).forEach((mr) => {
+                    totalCards++;
+                    if (flashcardMastery[mr.id] === 'mastered') masteredCount++;
+                    else if (flashcardMastery[mr.id] === 'review') reviewCount++;
+                  });
+                  (st.glosario || []).forEach((g) => {
+                    totalCards++;
+                    if (flashcardMastery[g.id] === 'mastered') masteredCount++;
+                    else if (flashcardMastery[g.id] === 'review') reviewCount++;
+                  });
+                });
+                const pendingCount = Math.max(
+                  0,
+                  totalCards - masteredCount - reviewCount
+                );
+                return (
+                  <div className="p-3 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border flex flex-wrap justify-between items-center gap-2 text-xs">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="font-extrabold text-slate-700 dark:text-stone-200">
+                        📊 Progreso Global de Tarjetas (Retos 15s + Glosario):
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold">
+                        ✅ Dominadas: {masteredCount}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-900 font-bold">
+                        🔁 Para Repasar: {reviewCount}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-stone-200 dark:bg-stone-700 font-bold">
+                        📌 Nuevas/Pendientes: {pendingCount}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setOnlyReviewFlashcards(!onlyReviewFlashcards)
+                      }
+                      className={`px-3 py-1 rounded-lg font-extrabold cursor-pointer transition ${
+                        onlyReviewFlashcards
+                          ? 'bg-rose-700 text-white'
+                          : 'bg-white dark:bg-stone-900 border text-rose-800 dark:text-rose-300'
+                      }`}
+                    >
+                      {onlyReviewFlashcards
+                        ? '🔎 Viendo solo Pendientes/Repaso · Ver Todas'
+                        : '🔁 Ocultar las ya Dominadas (Repaso Focalizado)'}
+                    </button>
+                  </div>
+                );
+              })()}
+
               <div className="grid grid-cols-1 gap-4">
                 {storiesLibrary
                   .filter(
@@ -7528,26 +8614,58 @@ const restoreFullMasterBackup = async (file) => {
                         </div>
                       </div>
 
-                      <div className="text-[11px] text-stone-600 dark:text-stone-300 font-semibold">
-                        🧭 <b>Secuencia lógica del tema:</b> {st.epigraphOrder}
-                      </div>
+                      {(memoriaSubTab === 'all' ||
+                        memoriaSubTab === 'cuentos') && (
+                        <>
+                          <div className="flex flex-wrap justify-between items-center gap-2 text-[11px] text-stone-600 dark:text-stone-300 font-semibold">
+                            <span>
+                              🧭 <b>Secuencia lógica del tema:</b>{' '}
+                              {st.epigraphOrder}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setCollapsedStories((p) => ({
+                                  ...p,
+                                  [st.id]: !p[st.id],
+                                }))
+                              }
+                              className="px-2.5 py-0.5 rounded bg-stone-200 dark:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-[10px] cursor-pointer"
+                            >
+                              {collapsedStories[st.id]
+                                ? '🔽 Desplegar Cuento / 5 Actos'
+                                : '🔼 Plegar Texto Largo'}
+                            </button>
+                          </div>
 
-                      <div className="p-4 rounded-xl bg-white dark:bg-stone-900 border font-serif text-xs leading-relaxed whitespace-pre-line">
-                        {st.storyText}
-                      </div>
+                          {!collapsedStories[st.id] && (
+                            <div className="p-4 rounded-xl bg-white dark:bg-stone-900 border font-serif text-xs leading-relaxed whitespace-pre-line">
+                              {st.storyText}
+                            </div>
+                          )}
 
-                      <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 text-emerald-950 dark:text-emerald-200 text-[11px]">
-                        <b>💡 Acrónimo / Anclaje Mnemotécnico de Examen:</b>{' '}
-                        {st.logicHook}
-                      </div>
+                          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 text-emerald-950 dark:text-emerald-200 text-[11px]">
+                            <b>💡 Acrónimo / Anclaje Mnemotécnico de Examen:</b>{' '}
+                            {st.logicHook}
+                          </div>
+                        </>
+                      )}
 
-                      {st.microRetos && st.microRetos.length > 0 && (
+                      {(memoriaSubTab === 'all' ||
+                        memoriaSubTab === 'retos') &&
+                        st.microRetos &&
+                        st.microRetos.length > 0 && (
                         <div className="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-300 space-y-2">
                           <span className="text-[11px] font-extrabold text-indigo-900 dark:text-indigo-200 uppercase block">
                             ⚡ MICRO-RETOS DE REPASO RÁPIDO EN 15 SEGUNDOS (FREE RECALL SIN OPCIONES · PULSA PARA REVELAR Y AUTO-EVALUAR)
                           </span>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {st.microRetos.map((mr) => {
+                            {st.microRetos
+                              .filter(
+                                (mr) =>
+                                  !onlyReviewFlashcards ||
+                                  flashcardMastery[mr.id] !== 'mastered'
+                              )
+                              .map((mr) => {
                               const isRev = !!revealedRetos[mr.id];
                               const mState = flashcardMastery[mr.id];
                               return (
@@ -7623,13 +8741,19 @@ const restoreFullMasterBackup = async (file) => {
                         </div>
                       )}
 
-                      {st.glosario && st.glosario.length > 0 && (
+                      {(memoriaSubTab === 'all' || memoriaSubTab === 'glosario') && st.glosario && st.glosario.length > 0 && (
                         <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-300 space-y-2">
                           <span className="text-[11px] font-extrabold text-amber-900 dark:text-amber-200 uppercase block">
                             🗂️ TARJETAS FLASH · GLOSARIO TÉCNICO-JURÍDICO EXACTO PARA EL TRIBUNAL (TOCA CADA CONCEPTO PARA GIRAR)
                           </span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                            {st.glosario.map((g) => {
+                            {st.glosario
+                              .filter(
+                                (g) =>
+                                  !onlyReviewFlashcards ||
+                                  flashcardMastery[g.id] !== 'mastered'
+                              )
+                              .map((g) => {
                               const isFlipped = !!flippedGlossary[g.id];
                               const gState = flashcardMastery[g.id];
                               return (
@@ -7715,7 +8839,7 @@ const restoreFullMasterBackup = async (file) => {
         {/* ================================================================= */}
         {/* MÓDULO 08 · GRUPO DE ESTUDIO Y PERFILES AISLADOS                  */}
         {/* ================================================================= */}
-        {activeModule === '08' && (
+        {(activeModule === '08' || (activeModule === '07' && memoriaSubTab === 'grupo')) && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border space-y-4">
               <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 border-b pb-3">
@@ -7741,9 +8865,10 @@ const restoreFullMasterBackup = async (file) => {
                     <input
                       type="file"
                       accept=".json"
-                      onChange={(e) =>
-                        importGroupPackageJson(e.target.files?.[0])
-                      }
+                      onChange={(e) => {
+                        importGroupPackageJson(e.target.files?.[0]);
+                        e.target.value = '';
+                      }}
                       className="hidden"
                     />
                   </label>
